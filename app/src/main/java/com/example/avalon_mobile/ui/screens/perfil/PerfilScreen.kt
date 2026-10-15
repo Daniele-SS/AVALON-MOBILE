@@ -21,13 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -198,7 +195,6 @@ private fun ItemAjuste(icon: Int, texto: String, onClick: () -> Unit, perigo: Bo
 
 private val camposCorrigiveis = listOf("Nome", "CPF", "E-mail", "Cargo", "Setor", "GHE", "Matrícula")
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, String) -> Unit, onFechar: () -> Unit) {
     var campo by rememberSaveable { mutableStateOf(camposCorrigiveis.first()) }
@@ -215,16 +211,17 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
                 Text("Solicitação enviada. O RH vai analisar e você será notificado.", fontFamily = Inter, color = TextPrimary)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ExposedDropdownMenuBox(expanded = expandido, onExpandedChange = { expandido = it }) {
-                        OutlinedTextField(
-                            value = campo,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Campo") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandido) },
-                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
+                    // Seletor com componentes estáveis (o ExposedDropdownMenuBox é experimental).
+                    Box {
+                        OutlinedButton(
+                            onClick = { expandido = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Campo: $campo", Modifier.weight(1f), fontFamily = Inter, color = TextPrimary)
+                            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        }
+                        DropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
                             camposCorrigiveis.forEach { opcao ->
                                 DropdownMenuItem(text = { Text(opcao) }, onClick = { campo = opcao; expandido = false })
                             }

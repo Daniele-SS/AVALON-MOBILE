@@ -130,3 +130,25 @@ fun <T> LoadStateContent(state: LoadState<T>, onRetry: () -> Unit, content: @Com
 
 /** Snackbar global, fornecido pelo scaffold raiz da navegação. */
 val LocalSnackbarHostState = androidx.compose.runtime.staticCompositionLocalOf { androidx.compose.material3.SnackbarHostState() }
+
+/**
+ * Grade de colunas fixas feita só com Row/Column (APIs estáveis). Substitui o FlowRow,
+ * que é experimental e teve a assinatura alterada entre versões do Compose.
+ */
+@Composable
+fun <T> GradeFixa(
+    itens: List<T>,
+    colunas: Int,
+    espaco: Dp,
+    modifier: Modifier = Modifier,
+    item: @Composable androidx.compose.foundation.layout.RowScope.(T) -> Unit
+) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(espaco)) {
+        itens.chunked(colunas).forEach { linha ->
+            androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(espaco)) {
+                linha.forEach { item(it) }
+                repeat(colunas - linha.size) { androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}

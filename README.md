@@ -13,6 +13,8 @@ Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o pr
 | 3 | 6.4 férias; 6.5.4 documentos/holerites; 6.5.2 correção cadastral; 6.7 feedback | Férias (saldo + solicitação), Documentos, Downloads, Benefícios, Solicitar correção, Feedbacks e resposta |
 | 4 | 6.6 pesquisas/avaliações com alerta de obrigatórias; 6.3.1–6.3.4 dashboard, mural, atalhos e notificações | Pesquisas, Responder/Revisar (anônima), Riscos psicossociais (NR-1), Home, Mural de avisos, Notificações, Mais |
 
+Documentação completa do código (pacotes, arquivos, classes, fluxos): [`docs/DOCUMENTACAO.md`](docs/DOCUMENTACAO.md).
+
 ### Executar
 
 1. Abrir no Android Studio e rodar o módulo `app` (minSdk 27).

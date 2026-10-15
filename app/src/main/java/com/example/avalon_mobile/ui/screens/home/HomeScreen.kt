@@ -6,8 +6,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonWordmark
+import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.theme.Actor
@@ -150,16 +149,9 @@ private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: 
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
-    FlowRow(
-        Modifier.fillMaxWidth().padding(horizontal = 26.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        maxItemsInEachRow = 4
-    ) {
-        Atalho.entries.forEach { atalho ->
+    GradeFixa(Atalho.entries, colunas = 4, espaco = 10.dp, modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp)) { atalho ->
             Card(
                 onClick = { onAtalho(atalho) },
                 modifier = Modifier.weight(1f).height(78.dp),
@@ -172,8 +164,5 @@ private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
                     Text(atalho.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = TextPrimary, maxLines = 1)
                 }
             }
-        }
-        // Mantém a última linha alinhada à grade de 4 colunas.
-        repeat((4 - Atalho.entries.size % 4) % 4) { Spacer(Modifier.weight(1f)) }
     }
 }
