@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonTopBar
+import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.DangerContainer
@@ -54,7 +53,6 @@ enum class Modulo(val label: String, val icon: Int) {
 }
 
 /** Todos os módulos do colaborador (Figma "Mais"). */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Unit) {
     Column(Modifier.fillMaxSize().background(Background)) {
@@ -62,13 +60,7 @@ fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Uni
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
             Text("Todos os módulos e serviços do colaborador.", fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
             Spacer(Modifier.height(16.dp))
-            FlowRow(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                maxItemsInEachRow = 3
-            ) {
-                Modulo.entries.forEach { m ->
+            GradeFixa(Modulo.entries, colunas = 3, espaco = 12.dp, modifier = Modifier.fillMaxWidth()) { m ->
                     Card(
                         onClick = { onModulo(m) },
                         modifier = Modifier.weight(1f).height(86.dp),
@@ -81,8 +73,6 @@ fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Uni
                             Text(m.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = TextPrimary, textAlign = TextAlign.Center, lineHeight = 13.sp)
                         }
                     }
-                }
-                repeat((3 - Modulo.entries.size % 3) % 3) { Spacer(Modifier.weight(1f)) }
             }
             Spacer(Modifier.height(20.dp))
             Row(

@@ -1,19 +1,15 @@
 package com.example.avalon_mobile.ui.screens.ferias
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DateRangePicker
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SelectableDates
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDateRangePickerState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,84 +17,108 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
-import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.TextPrimary
+import com.example.avalon_mobile.ui.theme.TextSecondary
+import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.viewmodel.SolicitacaoState
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-/** Formulário de solicitação de férias (o protótipo só tem o botão; o formulário segue o contrato `FeriasInput`). */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Formulário de solicitação de férias (o protótipo só tem o botão; os campos seguem o contrato `FeriasInput`).
+ * Usa apenas componentes estáveis: AlertDialog do Compose e o DatePickerDialog nativo do Android.
+ */
 @Composable
 fun SolicitarFeriasSheet(
     state: SolicitacaoState,
     onEnviar: (LocalDate, LocalDate, String) -> Unit,
     onFechar: () -> Unit
 ) {
-    val hojeUtc = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-    val pickerState = rememberDateRangePickerState(
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis > hojeUtc
+    val context = LocalContext.current
+    var inicioIso by rememberSaveable { mutableStateOf<String?>(null) }
+    var fimIso by rememberSaveable { mutableStateOf<String?>(null) }
+    var observacao by rememberSaveable { mutableStateOf("") }
+    val inicio = inicioIso?.let(LocalDate::parse)
+    val fim = fimIso?.let(LocalDate::parse)
+
+    fun escolherData(inicial: LocalDate, minima: LocalDate, aoEscolher: (LocalDate) -> Unit) {
+        DatePickerDialog(
+            context,
+            { _, ano, mes, dia -> aoEscolher(LocalDate.of(ano, mes + 1, dia)) },
+            inicial.year, inicial.monthValue - 1, inicial.dayOfMonth
+        ).apply {
+            datePicker.minDate = minima.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        }.show()
+    }
+
+    val amanha = LocalDate.now().plusDays(1)
+
+    AlertDialog(
+        onDismissRequest = onFechar,
+        containerColor = Color.White,
+        title = {
+            Text(
+                if (state is SolicitacaoState.Enviada) "Solicitação enviada" else "Solicitar férias",
+                fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary
+            )
+        },
+        text = {
+            if (state is SolicitacaoState.Enviada) {
+                Text("Seu pedido segue para aprovação do gestor e, depois, do RH. Você será notificado.", fontFamily = Inter, color = StatusApprovedText)
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        CampoData("Início", inicio, Modifier.weight(1f)) {
+                            escolherData(inicio ?: amanha, amanha) { d ->
+                                inicioIso = d.toString()
+                                if (fim != null && fim.isBefore(d)) fimIso = null
+                            }
+                        }
+                        CampoData("Fim", fim, Modifier.weight(1f)) {
+                            val minimo = inicio ?: amanha
+                            escolherData(fim ?: minimo.plusDays(4), minimo) { d -> fimIso = d.toString() }
+                        }
+                    }
+                    if (inicio != null && fim != null) {
+                        Text("${ChronoUnit.DAYS.between(inicio, fim) + 1} dias selecionados", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = Navy)
+                    }
+                    AvalonTextField("Observação (opcional)", observacao, { observacao = it.take(255) }, singleLine = false)
+                    if (state is SolicitacaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
+                }
+            }
+        },
+        confirmButton = {
+            if (state is SolicitacaoState.Enviada) {
+                TextButton(onClick = onFechar) { Text("Fechar", color = Navy, fontFamily = Inter) }
+            } else {
+                TextButton(
+                    onClick = { if (inicio != null && fim != null) onEnviar(inicio, fim, observacao) },
+                    enabled = inicio != null && fim != null && state !is SolicitacaoState.Enviando
+                ) { Text(if (state is SolicitacaoState.Enviando) "Enviando…" else "Enviar", color = Navy, fontFamily = Inter) }
+            }
+        },
+        dismissButton = {
+            if (state !is SolicitacaoState.Enviada) TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
         }
     )
-    var observacao by rememberSaveable { mutableStateOf("") }
-    val inicio = pickerState.selectedStartDateMillis?.toLocalDate()
-    val fim = pickerState.selectedEndDateMillis?.toLocalDate()
+}
 
-    ModalBottomSheet(
-        onDismissRequest = onFechar,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color.White
-    ) {
-        Column(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (state is SolicitacaoState.Enviada) {
-                Text("Solicitação enviada", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
-                Text("Seu pedido segue para aprovação do gestor e, depois, do RH. Você será notificado.", fontFamily = Inter, color = StatusApprovedText)
-                AvalonPrimaryButton("Fechar", onClick = onFechar)
-            } else {
-                DateRangePicker(
-                    state = pickerState,
-                    modifier = Modifier.fillMaxWidth().height(440.dp),
-                    title = { Text("Selecione o período", Modifier.padding(start = 16.dp, top = 8.dp), fontFamily = Inter, color = TextPrimary) },
-                    showModeToggle = false,
-                    colors = DatePickerDefaults.colors(
-                        containerColor = Color.White,
-                        selectedDayContainerColor = Navy,
-                        todayDateBorderColor = Navy,
-                        dayInSelectionRangeContainerColor = DayWork
-                    )
-                )
-                if (inicio != null && fim != null) {
-                    Text(
-                        "${ChronoUnit.DAYS.between(inicio, fim) + 1} dias selecionados",
-                        fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = Navy
-                    )
-                }
-                AvalonTextField("Observação (opcional)", observacao, { observacao = it.take(255) }, singleLine = false)
-                if (state is SolicitacaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
-                AvalonPrimaryButton(
-                    "Enviar solicitação",
-                    onClick = { if (inicio != null && fim != null) onEnviar(inicio, fim, observacao) },
-                    enabled = inicio != null && fim != null,
-                    loading = state is SolicitacaoState.Enviando
-                )
-            }
+@Composable
+private fun CampoData(rotulo: String, data: LocalDate?, modifier: Modifier, onClick: () -> Unit) {
+    Column(modifier) {
+        Text(rotulo, fontFamily = Inter, fontSize = 12.sp, color = TextSecondary)
+        OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
+            Text(data?.let { Datas.dataCurta(it.toString()) } ?: "Selecionar", fontFamily = Inter, color = TextPrimary)
         }
     }
 }
-
-private fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
