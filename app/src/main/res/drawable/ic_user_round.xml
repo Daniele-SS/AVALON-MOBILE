@@ -6,13 +6,13 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:pathData="M7.0,8.0a5.0,5.0 0 1,0 10.0,0a5.0,5.0 0 1,0 -10.0,0"
+        android:pathData="M7,8 C7,8.878 7.231,9.74 7.67,10.5 C8.109,11.26 8.74,11.891 9.5,12.33 C10.26,12.769 11.122,13 12,13 C12.878,13 13.74,12.769 14.5,12.33 C15.26,11.891 15.891,11.26 16.33,10.5 C16.769,9.74 17,8.878 17,8 C17,7.122 16.769,6.26 16.33,5.5 C15.891,4.74 15.26,4.109 14.5,3.67 C13.74,3.231 12.878,3 12,3 C11.122,3 10.26,3.231 9.5,3.67 C8.74,4.109 8.109,4.74 7.67,5.5 C7.231,6.26 7,7.122 7,8"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M20 21a8 8 0 0 0-16 0"
+        android:pathData="M20,21 C20,19.596 19.63,18.216 18.928,17 C18.226,15.784 17.216,14.774 16,14.072 C14.784,13.37 13.404,13 12,13 C10.596,13 9.216,13.37 8,14.072 C6.784,14.774 5.774,15.784 5.072,17 C4.37,18.216 4,19.596 4,21"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"

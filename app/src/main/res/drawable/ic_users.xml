@@ -6,25 +6,25 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:pathData="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+        android:pathData="M16,21 L16,19 C16,18.298 15.815,17.608 15.464,17 C15.113,16.392 14.608,15.887 14,15.536 C13.392,15.185 12.702,15 12,15 L6,15 C5.298,15 4.608,15.185 4,15.536 C3.392,15.887 2.887,16.392 2.536,17 C2.185,17.608 2,18.298 2,19 L2,21"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M16 3.128a4 4 0 0 1 0 7.744"
+        android:pathData="M16,3.128 C16.569,3.275 17.098,3.547 17.551,3.922 C18.003,4.297 18.367,4.768 18.617,5.3 C18.867,5.832 18.996,6.412 18.996,7 C18.996,7.588 18.867,8.168 18.617,8.7 C18.367,9.232 18.003,9.703 17.551,10.078 C17.098,10.453 16.569,10.725 16,10.872"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M22 21v-2a4 4 0 0 0-3-3.87"
+        android:pathData="M22,21 L22,19 C22,18.412 21.87,17.832 21.619,17.3 C21.369,16.768 21.004,16.298 20.552,15.923 C20.099,15.548 19.569,15.277 19,15.13"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M5.0,7.0a4.0,4.0 0 1,0 8.0,0a4.0,4.0 0 1,0 -8.0,0"
+        android:pathData="M5,7 C5,7.702 5.185,8.392 5.536,9 C5.887,9.608 6.392,10.113 7,10.464 C7.608,10.815 8.298,11 9,11 C9.702,11 10.392,10.815 11,10.464 C11.608,10.113 12.113,9.608 12.464,9 C12.815,8.392 13,7.702 13,7 C13,6.298 12.815,5.608 12.464,5 C12.113,4.392 11.608,3.887 11,3.536 C10.392,3.185 9.702,3 9,3 C8.298,3 7.608,3.185 7,3.536 C6.392,3.887 5.887,4.392 5.536,5 C5.185,5.608 5,6.298 5,7"
         android:strokeWidth="2"
         android:strokeColor="#FF000000"
         android:strokeLineCap="round"
