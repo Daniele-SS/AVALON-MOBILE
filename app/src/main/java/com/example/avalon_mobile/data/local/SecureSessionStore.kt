@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import android.util.Log
 import com.example.avalon_mobile.model.UsuarioResumo
 import com.google.gson.Gson
 import java.security.KeyStore
@@ -40,10 +41,14 @@ class SecureSessionStore(context: Context, private val gson: Gson) {
             }
     }
 
+    /**
+     * Persiste a sessão. Se o Keystore do aparelho falhar (emuladores/ROMs com Keystore instável),
+     * a sessão segue válida só em memória: o login não pode cair por causa da persistência.
+     */
     @Synchronized
-    fun write(session: Session) {
+    fun write(session: Session): Boolean = runCatching {
         prefs.edit().putString(KEY_SESSION, encrypt(gson.toJson(session))).apply()
-    }
+    }.onFailure { Log.e(TAG, "Falha ao cifrar a sessão; mantida apenas em memória", it) }.isSuccess
 
     @Synchronized
     fun clear() {
@@ -81,6 +86,7 @@ class SecureSessionStore(context: Context, private val gson: Gson) {
     }
 
     private companion object {
+        const val TAG = "SecureSessionStore"
         const val PREFS = "avalon_secure_session"
         const val KEY_SESSION = "session"
         const val ANDROID_KEYSTORE = "AndroidKeyStore"

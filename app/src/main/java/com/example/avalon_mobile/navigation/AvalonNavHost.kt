@@ -113,7 +113,7 @@ private fun NavHostController.irParaAba(route: String) = navigate(route) {
 
 /** Limpa a pilha inteira (login/logout/sessão expirada). */
 private fun NavHostController.reiniciarEm(route: String) = navigate(route) {
-    popUpTo(0) { inclusive = true }
+    popUpTo(graph.id) { inclusive = true }
     launchSingleTop = true
 }
 
