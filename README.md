@@ -4,7 +4,7 @@ Aplicativo mobile da plataforma **AVALON**, desenvolvido pela equipe **Nexus**, 
 
 ## Status
 
-Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o protótipo do Figma e o contrato OpenAPI do Back-end (`openapi.yaml`, v2.1.0). Enquanto o Back-end responde `501` nas rotas do contrato, o app roda com dados de demonstração (`USE_MOCK_API = true`).
+Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o protótipo do Figma e o contrato OpenAPI do Back-end (`openapi.yaml`, v2.1.0). O login usa a API e o banco reais (`USE_MOCK_AUTH = false`); os módulos das Sprints 2–4 seguem com dados de demonstração (`USE_MOCK_API = true`) até o Back-end publicar as rotas.
 
 | Sprint | Itens do planejamento | Telas / implementação |
 |---|---|---|
@@ -18,8 +18,9 @@ Documentação completa do código (pacotes, arquivos, classes, fluxos): [`docs/
 ### Executar
 
 1. Abrir no Android Studio e rodar o módulo `app` (minSdk 27).
-2. Modo demonstração (padrão): login `ana.lucia` / senha `123456`. O login `inativo` / `123456` demonstra a conta inativa.
-3. API real: em `app/build.gradle.kts`, `USE_MOCK_API = false` e `API_BASE_URL` com o IP da máquina da API (`10.0.2.2` no emulador).
+2. Subir o banco e a API (porta 8080). Login com usuários da carga inicial, por exemplo `rafael.martins` / `123456`.
+3. Emulador acessa a API em `10.0.2.2`; em celular físico, trocar `API_BASE_URL` pelo IP da máquina.
+4. Sem API: `USE_MOCK_AUTH = true` e login de demonstração `ana.lucia` / `123456`.
 
 ### Estrutura
 

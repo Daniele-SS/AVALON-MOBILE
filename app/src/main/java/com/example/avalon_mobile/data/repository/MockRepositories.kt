@@ -93,7 +93,10 @@ class MockAuthRepository(
     }
 }
 
-class MockAvalonRepository(private val pdfFactory: PdfFactory) : AvalonRepository {
+class MockAvalonRepository(
+    private val pdfFactory: PdfFactory,
+    private val usuarioLogado: () -> UsuarioResumo? = { null }
+) : AvalonRepository {
 
     private val ferias = MockData.ferias.toMutableList()
     private val respostasFeedback = mutableMapOf<Int, MutableList<RespostaFeedback>>()
@@ -119,7 +122,11 @@ class MockAvalonRepository(private val pdfFactory: PdfFactory) : AvalonRepositor
 
     override suspend fun comunicados() = ok(MockData.comunicados)
 
-    override suspend fun perfil() = ok(MockData.colaborador)
+    override suspend fun perfil() = ok(
+        usuarioLogado()
+            ?.let { MockData.colaborador.copy(id = it.idColaborador, nome = it.nome) }
+            ?: MockData.colaborador
+    )
 
     override suspend fun solicitarCorrecao(solicitacao: SolicitacaoCorrecao) = ok(Unit)
 

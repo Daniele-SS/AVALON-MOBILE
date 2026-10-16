@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Fonte única da sessão em memória, sincronizada com o [SecureSessionStore]. */
-class SessionManager(private val store: SecureSessionStore) {
+class SessionManager(private val store: SessionStore) {
 
     private val _session = MutableStateFlow(store.read())
     val session: StateFlow<Session?> = _session.asStateFlow()

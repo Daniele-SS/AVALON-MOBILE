@@ -21,7 +21,6 @@ import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
 import com.example.avalon_mobile.model.LoginRequest
 import com.example.avalon_mobile.model.LogoutRequest
-import com.example.avalon_mobile.model.NivelAcesso
 import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.model.Pesquisa
@@ -56,13 +55,8 @@ class RemoteAuthRepository(
         when (val result = call.execute { api.login(LoginRequest(login.trim(), senha)) }) {
             is AppResult.Failure -> result
             is AppResult.Success -> {
-                // O app mobile é o canal do Colaborador (RN 12.1.2); Gestor e RH usam a Web.
-                if (result.data.usuario.nivelAcesso.id != NivelAcesso.COLABORADOR) {
-                    AppResult.Failure(AppError("PERFIL_NAO_SUPORTADO", "Este aplicativo é exclusivo para colaboradores. Gestores e RH devem acessar pela Web."))
-                } else {
-                    sessionManager.start(result.data)
-                    AppResult.Success(result.data.usuario)
-                }
+                sessionManager.start(result.data)
+                AppResult.Success(result.data.usuario)
             }
         }
 

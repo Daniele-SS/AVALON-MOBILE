@@ -24,8 +24,9 @@ android {
         // 10.0.2.2 é o localhost da máquina host visto pelo emulador; em dispositivo físico,
         // troque pelo IP da máquina que roda a API na mesma rede.
         buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
-        // true = dados de demonstração em memória (as rotas do contrato ainda respondem 501).
-        // Mude para false quando o Back-end publicar os endpoints do Swagger.
+        // USE_MOCK_AUTH = false: login, renovação e logout pela API real (rotas /auth).
+        // USE_MOCK_API = true: módulos das Sprints 2-4 em demonstração até a API publicar as rotas.
+        buildConfigField("boolean", "USE_MOCK_AUTH", "false")
         buildConfigField("boolean", "USE_MOCK_API", "true")
     }
 

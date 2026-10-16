@@ -66,10 +66,10 @@ class AppContainer(context: Context) {
     private val apiCall = ApiCall(gson)
 
     val authRepository: AuthRepository =
-        if (BuildConfig.USE_MOCK_API) MockAuthRepository(sessionManager, appScope)
+        if (BuildConfig.USE_MOCK_AUTH) MockAuthRepository(sessionManager, appScope)
         else RemoteAuthRepository(api, apiCall, sessionManager, appScope)
 
     val avalonRepository: AvalonRepository =
-        if (BuildConfig.USE_MOCK_API) MockAvalonRepository(pdfFactory)
+        if (BuildConfig.USE_MOCK_API) MockAvalonRepository(pdfFactory) { sessionManager.current?.usuario }
         else RemoteAvalonRepository(api, apiCall, sessionManager)
 }

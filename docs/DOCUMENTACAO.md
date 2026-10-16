@@ -32,9 +32,9 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | Plataforma | Android, `minSdk 27` (Android 8.1), `targetSdk 36` |
 | Linguagem / UI | Kotlin + Jetpack Compose (Material 3) |
 | Pacote | `com.example.avalon_mobile` |
-| Público | Somente o perfil **Colaborador** (Gestor e RH usam a aplicação Web) |
+| Público | Autoatendimento do colaborador. Qualquer perfil (Colaborador, Gestor, RH) pode entrar e vê os próprios dados (TS08: regras de perfil iguais na Web e no mobile) |
 | Rede | Retrofit + OkHttp + Gson, seguindo o contrato `openapi.yaml` v2.1.0 do repositório de Back-end |
-| Modo demonstração | `USE_MOCK_API = true` (padrão): dados em memória, sem servidor |
+| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): módulos das Sprints 2–4 em demonstração até a API publicar as rotas |
 
 ### O que o app faz
 
@@ -48,8 +48,9 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 ### Executar
 
 1. Abrir a pasta do projeto no Android Studio e rodar o módulo `app`.
-2. Login de demonstração: `ana.lucia` / `123456`. O login `inativo` / `123456` demonstra conta inativa.
-3. Para usar a API real: em `app/build.gradle.kts`, `USE_MOCK_API = false` e `API_BASE_URL` com o endereço da API.
+2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
+3. Login com qualquer usuário da carga inicial, por exemplo `rafael.martins` / `123456` (Colaborador), `carlos.oliveira` / `123456` (Gestor), `ana.souza` / `123456` (RH).
+4. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia` / `123456` (`inativo` / `123456` demonstra conta inativa).
 
 ---
 
@@ -87,7 +88,7 @@ flowchart TD
 | `data/local` | Guardar a sessão cifrada no aparelho | — |
 | `model` | Definir o formato dos dados (iguais aos JSONs do contrato) | Não tem lógica, salvo propriedades derivadas simples |
 
-**Por que assim:** trocar o modo demonstração pela API real exige mudar só uma flag (`USE_MOCK_API`), porque telas e ViewModels dependem das interfaces, não das implementações.
+**Por que assim:** trocar o modo demonstração pela API real exige mudar só duas flags (`USE_MOCK_AUTH` para o login e `USE_MOCK_API` para os demais módulos), porque telas e ViewModels dependem das interfaces, não das implementações.
 
 ### 2.2 Ciclo de uma tela
 
@@ -207,7 +208,8 @@ Catálogo central de versões de bibliotecas. Bibliotecas adicionadas para o app
 | Trecho | Função |
 |---|---|
 | `buildConfigField("String", "API_BASE_URL", ...)` | Endereço da API. `10.0.2.2` é o "localhost do computador" visto de dentro do emulador. Em celular físico, trocar pelo IP da máquina que roda a API |
-| `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = dados de demonstração; `false` = API real |
+| `buildConfigField("boolean", "USE_MOCK_AUTH", "false")` | `false` = login, renovação e logout pela API real (`/auth`); `true` = login de demonstração |
+| `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = módulos das Sprints 2–4 com dados de demonstração; `false` = API real |
 | `buildFeatures { buildConfig = true }` | Gera a classe `BuildConfig` com os dois campos acima |
 | `implementation(...)` | Declara as bibliotecas do catálogo |
 
@@ -388,7 +390,8 @@ Padroniza o retorno de qualquer operação de dados.
 | `refresher` | Renovador de token. Usa um cliente **sem** autenticador para não entrar em laço infinito |
 | `api` | A `AvalonApi` com o interceptador (anexa o token) e o autenticador (renova em 401) |
 | `apiCall` | Tradutor de respostas HTTP para `AppResult` |
-| `authRepository`, `avalonRepository` | Escolhe Mock ou Remote conforme `USE_MOCK_API` |
+| `authRepository` | Escolhe Mock ou Remote conforme `USE_MOCK_AUTH` |
+| `avalonRepository` | Escolhe Mock ou Remote conforme `USE_MOCK_API`. O Mock recebe uma função que devolve o usuário logado, para personalizar o perfil |
 
 ### `data/local/SecureSessionStore.kt`
 
@@ -397,6 +400,7 @@ Guarda a sessão no aparelho de forma cifrada (6.2.3).
 | Membro | O que faz |
 |---|---|
 | `Session` | O que é guardado: tokens, instante de expiração e o usuário |
+| `SessionStore` | Interface (`read`, `write`, `clear`) de onde a sessão é guardada. Produção usa o `SecureSessionStore`; os testes usam uma implementação em memória |
 | `read()` | Lê e decifra. Se não conseguir (chave invalidada, arquivo corrompido), apaga e devolve `null` em vez de travar o app |
 | `write(session)` | Converte para JSON, cifra e grava. Se o Keystore do aparelho falhar, registra no log e devolve `false`: o login continua, com a sessão só em memória |
 | `clear()` | Apaga a sessão |
@@ -406,7 +410,7 @@ Guarda a sessão no aparelho de forma cifrada (6.2.3).
 
 ### `data/local/SessionManager.kt`
 
-Fonte única da sessão em memória, sincronizada com o `SecureSessionStore`.
+Fonte única da sessão em memória, sincronizada com um `SessionStore` (em produção, o `SecureSessionStore`).
 
 | Membro | O que faz |
 |---|---|
@@ -456,7 +460,7 @@ Implementação que fala com a API real.
 
 | Função | Detalhe relevante |
 |---|---|
-| `RemoteAuthRepository.login` | Recusa logins de Gestor/RH (`PERFIL_NAO_SUPORTADO`): o app é exclusivo do Colaborador |
+| `RemoteAuthRepository.login` | Envia login e senha; em sucesso inicia a sessão. Aceita os três perfis (TS08) |
 | `RemoteAuthRepository.logout` | Revoga no servidor e apaga localmente mesmo se a rede falhar |
 | `idColaborador` | Pega o id do titular da sessão para montar as consultas |
 | `naoDisponivel(...)` | Resposta honesta para funções sem rota no contrato (correção cadastral, adesão a benefício): mensagem de "ainda não possui rota", nunca um falso sucesso |
@@ -476,6 +480,7 @@ Implementação de demonstração, com as mesmas regras do contrato e os textos 
 | `redefinirSenha` | Aceita qualquer código de 8 caracteres |
 | `LATENCIA` | Atraso artificial (500 ms) para simular a rede e exibir os indicadores de carregamento |
 | `MockAvalonRepository` | Guarda estado em memória: pedidos de férias criados, respostas de feedback, pesquisas respondidas |
+| `perfil()` | Cadastro de demonstração com o id e o nome do usuário realmente logado (quando o login é real) |
 | `solicitarFerias` | Recusa datas que se sobrepõem a pedidos não recusados (`FERIAS_SOBREPOSTAS`) |
 | `responderPesquisa` | Recusa reenvio (`PESQUISA_JA_RESPONDIDA`) e falta de obrigatórias (`RESPOSTA_OBRIGATORIA_AUSENTE`) |
 | `baixarDocumento` | Gera um PDF de demonstração com o `PdfFactory` |
@@ -681,9 +686,10 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 ### Ligar a API real
 
-1. Back-end rodando e com as rotas do contrato publicadas (sem `501`).
-2. `app/build.gradle.kts`: `USE_MOCK_API` → `"false"`; `API_BASE_URL` → `"http://<IP-da-máquina>:8080/"` (emulador: `10.0.2.2`).
-3. Sincronizar o Gradle e rodar.
+1. Banco carregado e API rodando (`node app.js`, porta 8080).
+2. `app/build.gradle.kts`: `API_BASE_URL` → `"http://<IP-da-máquina>:8080/"` (emulador: `10.0.2.2`). O login já usa a API (`USE_MOCK_AUTH = false`).
+3. Quando o Back-end publicar as rotas das Sprints 2–4: `USE_MOCK_API` → `"false"`.
+4. Sincronizar o Gradle e rodar.
 
 ### Adicionar uma tela nova
 

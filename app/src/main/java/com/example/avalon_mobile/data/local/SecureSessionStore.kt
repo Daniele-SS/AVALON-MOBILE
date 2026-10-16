@@ -21,17 +21,23 @@ data class Session(
     val usuario: UsuarioResumo
 )
 
+interface SessionStore {
+    fun read(): Session?
+    fun write(session: Session): Boolean
+    fun clear()
+}
+
 /**
  * Armazenamento seguro do token (6.2.3): os tokens são cifrados com AES-256-GCM usando uma
  * chave não exportável do Android Keystore antes de irem para o SharedPreferences.
  * O arquivo está excluído do backup (res/xml/backup_rules.xml).
  */
-class SecureSessionStore(context: Context, private val gson: Gson) {
+class SecureSessionStore(context: Context, private val gson: Gson) : SessionStore {
 
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     @Synchronized
-    fun read(): Session? {
+    override fun read(): Session? {
         val blob = prefs.getString(KEY_SESSION, null) ?: return null
         return runCatching { gson.fromJson(decrypt(blob), Session::class.java) }
             .getOrElse {
@@ -46,12 +52,12 @@ class SecureSessionStore(context: Context, private val gson: Gson) {
      * a sessão segue válida só em memória: o login não pode cair por causa da persistência.
      */
     @Synchronized
-    fun write(session: Session): Boolean = runCatching {
+    override fun write(session: Session): Boolean = runCatching {
         prefs.edit().putString(KEY_SESSION, encrypt(gson.toJson(session))).apply()
     }.onFailure { Log.e(TAG, "Falha ao cifrar a sessão; mantida apenas em memória", it) }.isSuccess
 
     @Synchronized
-    fun clear() {
+    override fun clear() {
         prefs.edit().remove(KEY_SESSION).apply()
     }
 
