@@ -85,6 +85,12 @@ class MockAuthRepository(
         else AppResult.Failure(AppError("TOKEN_REDEFINICAO_INVALIDO", "O código expirou ou já foi utilizado.", 422))
     }
 
+    override suspend fun alterarSenha(senhaAtual: String, novaSenha: String, confirmacao: String): AppResult<Unit> {
+        delay(LATENCIA)
+        return if (senhaAtual == SENHA_DEMO) AppResult.Success(Unit)
+        else AppResult.Failure(AppError("SENHA_ATUAL_INCORRETA", "A senha atual está incorreta.", 422))
+    }
+
     companion object {
         const val LOGIN_DEMO = "ana.lucia"
         const val LOGIN_INATIVO = "inativo"

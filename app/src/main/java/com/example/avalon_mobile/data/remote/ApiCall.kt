@@ -27,7 +27,7 @@ class ApiCall(private val gson: Gson) {
     private fun parseError(response: Response<*>): AppError {
         val erro = runCatching { gson.fromJson(response.errorBody()?.charStream(), ApiErro::class.java) }.getOrNull()
         val codigo = erro?.codigo ?: when (response.code()) {
-            501 -> AppError.NAO_IMPLEMENTADO
+            404, 501 -> AppError.NAO_IMPLEMENTADO
             else -> "HTTP_${response.code()}"
         }
         return AppError(codigo, mensagemPara(codigo, erro?.mensagem), response.code())
@@ -38,6 +38,7 @@ class ApiCall(private val gson: Gson) {
         "CONTA_INATIVA" -> "Esta conta está inativa. Procure o RH."
         "TOKEN_INVALIDO" -> "Sua sessão expirou. Faça login novamente."
         "MUITAS_TENTATIVAS" -> "Muitas tentativas. Aguarde alguns minutos e tente de novo."
+        "SENHA_ATUAL_INCORRETA" -> "A senha atual está incorreta."
         "TOKEN_REDEFINICAO_INVALIDO" -> "O código expirou ou já foi utilizado."
         "FERIAS_SOBREPOSTAS" -> "Já existe um pedido de férias nesse período."
         "PESQUISA_JA_RESPONDIDA", "AVALIACAO_JA_RESPONDIDA" -> "Você já respondeu este questionário."

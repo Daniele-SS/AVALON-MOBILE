@@ -65,6 +65,7 @@ fun PerfilScreen(
     onPrivacidade: () -> Unit,
     onNotificacoes: () -> Unit,
     onTermos: () -> Unit,
+    onAlterarSenha: () -> Unit,
     onSair: () -> Unit,
     viewModel: PerfilViewModel = avalonViewModel { c, _ -> PerfilViewModel(c.avalonRepository, c.authRepository) }
 ) {
@@ -83,6 +84,7 @@ fun PerfilScreen(
                         Text("Solicitar correção", fontFamily = Inter, fontSize = 15.sp, color = Navy)
                     }
                     AvalonCard(radius = 16.dp, border = BorderSoft, contentPadding = 15.dp) {
+                        ItemAjuste(R.drawable.ic_shield_check, "Alterar Senha", onAlterarSenha)
                         ItemAjuste(R.drawable.ic_lock, "Configurações de Privacidade e Anonimato (LGPD)", onPrivacidade)
                         ItemAjuste(R.drawable.ic_bell, "Gerenciar Notificações", onNotificacoes)
                         ItemAjuste(R.drawable.ic_clipboard, "Termos de Uso e Políticas", onTermos)
