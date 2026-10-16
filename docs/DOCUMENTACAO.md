@@ -22,6 +22,8 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 12. [Testes](#12-testes)
 13. [Divergências conhecidas (Figma × contrato × app)](#13-divergências-conhecidas)
 14. [Glossário](#14-glossário)
+15. [Integração com o back-end (rotas `/auth`)](#15-integração-com-o-back-end)
+16. [Histórico de atualizações](#16-histórico-de-atualizações)
 
 ---
 
@@ -51,6 +53,36 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
 3. Login com qualquer usuário da carga inicial, por exemplo `rafael.martins` / `123456` (Colaborador), `carlos.oliveira` / `123456` (Gestor), `ana.souza` / `123456` (RH).
 4. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia` / `123456` (`inativo` / `123456` demonstra conta inativa).
+
+### Usuários para teste
+
+**Banco real** (carga inicial do `script.sql`, repositório AVALON-BANCO_DE_DADOS). Usados quando `USE_MOCK_AUTH = false` (padrão):
+
+| Login | Senha | Perfil | Nome completo | Matrícula | Setor | Cargo |
+|---|---|---|---|---|---|---|
+| `ana.souza` | `123456` | RH | Ana Carolina Souza | MAT001 | Recursos Humanos | Analista de Recursos Humanos |
+| `carlos.oliveira` | `123456` | Gestor | Carlos Eduardo Oliveira | MAT002 | Tecnologia da Informação | Gestor de Equipe |
+| `rafael.martins` | `123456` | Colaborador | Rafael Henrique Martins | MAT003 | Tecnologia da Informação | Desenvolvedor de Sistemas |
+| `juliana.santos` | `123456` | Colaborador | Juliana Alves Santos | MAT004 | Administrativo | Analista Administrativo |
+| `marcos.lima` | `123456` | Colaborador | Marcos Vinicius Lima | MAT005 | Financeiro | Analista Administrativo |
+| `beatriz.costa` | `123456` | Colaborador | Beatriz Fernanda Costa | MAT006 | Recursos Humanos | Analista de Recursos Humanos |
+| `lucas.ferreira` | `123456` | Colaborador | Lucas Gabriel Ferreira | MAT007 | Tecnologia da Informação | Desenvolvedor de Sistemas |
+| `fernanda.rocha` | `123456` | Colaborador | Fernanda Cristina Rocha | MAT008 | Administrativo | Analista Administrativo |
+| `gustavo.ramos` | `123456` | Colaborador | Gustavo Henrique Ramos | MAT009 | Financeiro | Analista Administrativo |
+
+Observações:
+
+- São dados de teste: todas as senhas estão em texto puro no banco. Em produção devem ser trocadas e gravadas com hash.
+- Todos os 9 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
+  `UPDATE tbl_colaborador SET status = 'Inativo', data_desligamento = CURDATE() WHERE id = 9;` (Gustavo). A tentativa de login passa a responder "Esta conta está inativa. Procure o RH."
+- 5 senhas erradas seguidas para o mesmo login em até 15 minutos bloqueiam esse login por 30 minutos (TS03), mesmo com a senha correta. Reiniciar a API (`node app.js`) desfaz o bloqueio.
+
+**Demonstração** (sem API, `USE_MOCK_AUTH = true`):
+
+| Login | Senha | Resultado |
+|---|---|---|
+| `ana.lucia` | `123456` | Entra como Colaboradora "Ana Lucia" |
+| `inativo` | `123456` | Recusado com "Esta conta está inativa" |
 
 ---
 
@@ -754,3 +786,84 @@ Rodar: Android Studio → clique direito em `test` → **Run Tests**.
 | k-anonimato | Resultados só aparecem quando há pelo menos k respondentes |
 | Rota | Texto que identifica uma tela na navegação (`ferias`, `pesquisa/3`) |
 | Snackbar | Mensagem temporária na parte de baixo da tela |
+
+---
+
+## 15. Integração com o back-end
+
+A partir de 16/10/2026 o login do app usa a API real. As rotas foram implementadas no repositório AVALON-BACK_END (arquivos `routes/auth.routes.js`, `controller/auth/controller_auth.js` e `model/DAO/auth/auth.js`) seguindo o contrato `openapi.yaml`.
+
+| Rota | Usada pelo app em | Comportamento |
+|---|---|---|
+| `POST /auth/login` | `RemoteAuthRepository.login` | Confere login e senha; devolve `access_token` (15 min), `refresh_token`, usuário e menus do perfil |
+| `POST /auth/refresh` | `TokenRefresher.refresh` | Troca o refresh por um novo par de tokens; o refresh antigo deixa de valer (rotação) |
+| `POST /auth/logout` | `RemoteAuthRepository.logout` | Encerra a sessão no servidor; o token antigo passa a ser recusado |
+| `GET /auth/me` | (disponível; não usado pelas telas) | Devolve o usuário e os menus da sessão atual |
+
+Respostas que o app trata:
+
+| Situação | HTTP / `codigo` | Mensagem na tela |
+|---|---|---|
+| Login inexistente ou senha errada (mesma resposta e mesmo tempo nos dois casos) | 401 `CREDENCIAIS_INVALIDAS` | Login ou senha inválidos. |
+| Senha correta, colaborador inativo ou desligado | 403 `CONTA_INATIVA` | Esta conta está inativa. Procure o RH. |
+| 5 erros em 15 min no mesmo login (ou 20 na mesma origem) | 429 `MUITAS_TENTATIVAS` | Muitas tentativas. Aguarde alguns minutos e tente de novo. |
+| Sessão expirada, revogada ou token adulterado | 401 `TOKEN_INVALIDO` | Sua sessão expirou. Faça login novamente. |
+| API desligada ou inalcançável | sem resposta | Não foi possível conectar ao servidor. Verifique sua conexão. |
+
+Tempos de sessão: o access token vale 15 minutos e o app o renova sozinho. A sessão cai após **30 minutos sem uso** (validade do refresh), atendendo o TS05.
+
+Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
+
+As demais rotas das Sprints 2–4 ainda não existem na API; por isso essas telas seguem com dados de demonstração (`USE_MOCK_API = true`).
+
+---
+
+## 16. Histórico de atualizações
+
+### 16/10/2026
+
+**App mobile**
+
+| Mudança | Arquivos | Motivo |
+|---|---|---|
+| Login, renovação de token e logout passam a usar a API e o banco reais | `app/build.gradle.kts` (`USE_MOCK_AUTH = false`), `data/AppContainer.kt` | Sprint 1 (6.2.1): testar com os usuários cadastrados |
+| Nova chave `USE_MOCK_AUTH`, separada de `USE_MOCK_API` | `app/build.gradle.kts`, `data/AppContainer.kt` | Login real enquanto os módulos das Sprints 2–4 seguem em demonstração |
+| Gestor e RH podem entrar no app (antes só Colaborador) | `data/repository/RemoteRepositories.kt` | TS08 passo 3 exige o mesmo Gestor no mobile |
+| Perfil de demonstração mostra o id e o nome do usuário realmente logado | `data/repository/MockRepositories.kt` | Evitar "Ana Lucia" no perfil de quem entrou como outro usuário |
+| Interface `SessionStore` (o `SecureSessionStore` a implementa) | `data/local/SecureSessionStore.kt`, `data/local/SessionManager.kt` | Testar a camada de rede contra a API sem depender do Keystore do Android |
+| Saudação "Olá, Nome Completo" em uma linha, com o mesmo nome da tela Perfil; a fonte diminui para nomes longos | `ui/screens/home/HomeScreen.kt`, `viewmodel/HomeViewModels.kt` | Ajuste visual solicitado |
+| Documentação: usuários de teste, integração e este histórico | `docs/DOCUMENTACAO.md`, `README.md` | — |
+
+**Back-end (repositório AVALON-BACK_END)**
+
+| Mudança | Motivo |
+|---|---|
+| Rotas `/auth/login`, `/auth/refresh`, `/auth/logout` e `/auth/me` | Não havia nenhuma rota de autenticação; o app não conseguia entrar com os usuários do banco |
+| Consultas com parâmetros (`?`), sem montar SQL com o texto recebido | Evitar SQL injection |
+| Resposta e tempo iguais para login inexistente e senha errada | TS02 |
+| Conta inativa recusada só depois de a senha conferir, antes de criar a sessão | TS18 |
+| Bloqueio após tentativas erradas | TS03 |
+| Logout revoga a sessão no servidor; refresh de uso único com rotação | TS04 e RF 5.1.38 |
+| `openapi.yaml`: as 4 rotas marcadas como implementadas | Manter o contrato fiel ao código |
+| Nenhuma biblioteca nova (só o módulo `crypto` do Node) | O repositório versiona a pasta `node_modules` |
+
+**Validação**
+
+Executado com o banco carregado a partir do `script.sql` (MariaDB), a API e as classes de rede do app (`RemoteAuthRepository`, `AuthInterceptor`, `TokenAuthenticator`, `TokenRefresher`, `ApiCall`):
+
+| Teste | Resultado |
+|---|---|
+| TS01 passo 3 — Colaborador entra | Passou |
+| TS02 — mesma mensagem e mesmo tempo (~50 ms) para login inexistente e senha errada | Passou |
+| TS03 — 6ª tentativa bloqueada mesmo com a senha correta | Passou |
+| TS04 — token antigo recusado após logout | Passou |
+| TS05 — sessão perdida leva ao login com aviso | Passou |
+| TS08 passo 3 — Gestor entra no mobile | Passou |
+| TS18 — conta inativa recusada (com `gustavo.ramos` inativado manualmente, ver "Usuários para teste") | Passou |
+| Renovação automática do token com rotação | Passou |
+
+Pendentes do Módulo 1 (dependem do back-end): TS06 (alterar senha), TS07 (recuperar senha por e-mail), TS09 e TS10 (as rotas antigas da API ainda respondem sem exigir login).
+
+### 15/10/2026
+
+Primeira versão: telas das Sprints 1 a 4 seguindo o Figma e o contrato, modo demonstração, sessão cifrada, correções de ícones e de componentes experimentais que fechavam o app, e esta documentação.

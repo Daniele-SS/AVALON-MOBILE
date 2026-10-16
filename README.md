@@ -18,7 +18,7 @@ Documentação completa do código (pacotes, arquivos, classes, fluxos): [`docs/
 ### Executar
 
 1. Abrir no Android Studio e rodar o módulo `app` (minSdk 27).
-2. Subir o banco e a API (porta 8080). Login com usuários da carga inicial, por exemplo `rafael.martins` / `123456`.
+2. Subir o banco e a API (porta 8080). Login com usuários da carga inicial, por exemplo `rafael.martins` / `123456`. Lista completa de usuários e senhas: [Usuários para teste](docs/DOCUMENTACAO.md#usuários-para-teste).
 3. Emulador acessa a API em `10.0.2.2`; em celular físico, trocar `API_BASE_URL` pelo IP da máquina.
 4. Sem API: `USE_MOCK_AUTH = true` e login de demonstração `ana.lucia` / `123456`.
 
