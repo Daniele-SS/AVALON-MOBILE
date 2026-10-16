@@ -561,7 +561,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 | Membro | O que faz |
 |---|---|
-| `HomeViewModel.carregar` | Faz 4 consultas em paralelo (`async`): dashboard, feedbacks, notificações e comunicados. Monta `HomeUi` com primeiro nome, contadores e mural |
+| `HomeViewModel.carregar` | Faz 5 consultas em paralelo (`async`): dashboard, feedbacks, notificações, comunicados e perfil. Monta `HomeUi` com o nome completo (o mesmo da tela Perfil), contadores e mural |
 | `NotificacoesViewModel` | Ordena por mais recente (maior id, RF-504) e agrupa por "Hoje"/"Ontem"/"Recentes" |
 | `ComunicadosViewModel` | Lista o mural de avisos |
 
@@ -609,7 +609,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 | Arquivo | Conteúdo |
 |---|---|
-| `HomeScreen.kt` | Cabeçalho com logotipo e sino (ponto vermelho se há não lidas); saudação; 3 indicadores (`Indicador`); grade de atalhos (`Atalho`, `AtalhosGrid`); comunicados |
+| `HomeScreen.kt` | Cabeçalho com logotipo e sino (ponto vermelho se há não lidas); saudação `Saudacao` ("Olá, Nome Completo" em uma linha; a fonte diminui de 36sp até 20sp para o nome caber e só abrevia com reticências abaixo disso); 3 indicadores (`Indicador`); grade de atalhos (`Atalho`, `AtalhosGrid`); comunicados |
 | `NotificacoesScreen.kt` | Central de notificações agrupada; o toque leva ao módulo de origem (`iconeOrigem` escolhe o ícone). Também contém `ComunicadosScreen` (mural) |
 | `MaisScreen.kt` | Grade com os 10 módulos (`Modulo`), "Sair da Conta" e versão do app |
 | `InfoScreen.kt` | Textos de Privacidade/LGPD e Termos de Uso (`Informativo`) |

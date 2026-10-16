@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class HomeUi(
-    val primeiroNome: String,
+    val nomeCompleto: String,
     val pesquisasPendentes: Int,
     val feriasPendentes: Int,
     val feedbacksNovos: Int,
@@ -39,13 +39,16 @@ class HomeViewModel(
             val feedbacks = async { repository.feedbacks() }
             val notificacoes = async { repository.notificacoes() }
             val comunicados = async { repository.comunicados() }
+            val perfil = async { repository.perfil() }
             _state.value = when (val d = dashboard.await()) {
                 is AppResult.Failure -> LoadState.Error(d.error.mensagem)
                 is AppResult.Success -> {
                     val c = d.data.colaborador
                     LoadState.Content(
                         HomeUi(
-                            primeiroNome = auth.usuario.value?.nome?.substringBefore(" ") ?: "colaborador",
+                            nomeCompleto = (perfil.await() as? AppResult.Success)?.data?.nome
+                                ?: auth.usuario.value?.nome
+                                ?: "colaborador",
                             pesquisasPendentes = (c?.pesquisasPendentes ?: 0) + (c?.avaliacoesPendentes ?: 0),
                             feriasPendentes = c?.feriasEmAndamento ?: 0,
                             feedbacksNovos = (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,

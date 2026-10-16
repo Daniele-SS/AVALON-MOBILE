@@ -27,12 +27,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -95,7 +100,7 @@ fun HomeScreen(
         }
         LoadStateContent(state, onRetry = viewModel::carregar) { ui ->
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 28.dp)) {
-                Text("Olá,\n${ui.primeiroNome}", Modifier.padding(horizontal = 26.dp), fontFamily = Actor, fontSize = 36.sp, lineHeight = 42.sp, color = Navy)
+                Saudacao("Olá, ${ui.nomeCompleto}", Modifier.fillMaxWidth().padding(horizontal = 26.dp))
                 Spacer(Modifier.height(32.dp))
                 Row(
                     Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 26.dp),
@@ -129,6 +134,27 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun Saudacao(texto: String, modifier: Modifier = Modifier) {
+    var tamanho by remember(texto) { mutableStateOf(36.sp) }
+    var pronto by remember(texto) { mutableStateOf(false) }
+    Text(
+        texto,
+        modifier = modifier.drawWithContent { if (pronto) drawContent() },
+        fontFamily = Actor,
+        fontSize = tamanho,
+        lineHeight = (tamanho.value * 1.17f).sp,
+        color = Navy,
+        maxLines = 1,
+        softWrap = false,
+        overflow = if (tamanho.value > 20f) TextOverflow.Clip else TextOverflow.Ellipsis,
+        onTextLayout = { layout ->
+            if (layout.didOverflowWidth && tamanho.value > 20f) tamanho = (tamanho.value - 1f).sp
+            else pronto = true
+        }
+    )
 }
 
 @Composable
