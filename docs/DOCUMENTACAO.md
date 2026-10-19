@@ -52,7 +52,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 1. Abrir a pasta do projeto no Android Studio e rodar o módulo `app`.
 2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
 3. Login com qualquer usuário da carga inicial, por exemplo `rafael.martins` / `123456` (Colaborador), `carlos.oliveira` / `123456` (Gestor), `ana.souza` / `123456` (RH).
-4. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia` / `123456` (`inativo` / `123456` demonstra conta inativa).
+4. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia@empresa.com.br` / `123456` (`inativo@empresa.com.br` / `123456` demonstra conta inativa).
 
 ### Usuários para teste
 
@@ -72,6 +72,8 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 
 Observações:
 
+- **Login por e-mail corporativo (decisão de 19/10/2026).** O Colaborador entra com o e-mail corporativo e a senha. A coluna "Login" acima mostra o `login` da carga atual do banco; enquanto o Back-end e o Banco não passarem a aceitar o e-mail corporativo nesse campo, o login real continua pelo usuário. O app já envia o valor digitado no campo `login`, mas valida localmente o formato de e-mail, então uma conta da carga atual só entra depois dessa troca.
+- **Recuperação de senha por código.** Código de 4 dígitos enviado ao e-mail corporativo, com validade de 30 minutos e reenvio bloqueado por 2 minutos (RF 5.1.84). O 4º erro bloqueia a conta, e só o RH redefine a senha (RF 5.1.85 e 5.1.86). O app mostra a mensagem devolvida pelo servidor; os códigos de erro `CONTA_BLOQUEADA` e `TENTATIVAS_EXCEDIDAS` são suposição a confirmar com o Back-end.
 - São dados de teste: todas as senhas estão em texto puro no banco. Em produção devem ser trocadas e gravadas com hash.
 - Todos os 9 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
   `UPDATE tbl_colaborador SET status = 'Inativo', data_desligamento = CURDATE() WHERE id = 9;` (Gustavo). A tentativa de login passa a responder "Esta conta está inativa. Procure o RH."
@@ -81,8 +83,8 @@ Observações:
 
 | Login | Senha | Resultado |
 |---|---|---|
-| `ana.lucia` | `123456` | Entra como Colaboradora "Ana Lucia" |
-| `inativo` | `123456` | Recusado com "Esta conta está inativa" |
+| `ana.lucia@empresa.com.br` | `123456` | Entra como Colaboradora "Ana Lucia" |
+| `inativo@empresa.com.br` | `123456` | Recusado com "Esta conta está inativa" |
 
 ---
 
@@ -509,7 +511,7 @@ Implementação de demonstração, com as mesmas regras do contrato e os textos 
 |---|---|
 | `MockAuthRepository.login` | `ana.lucia/123456` entra; `inativo/123456` → `CONTA_INATIVA`; qualquer outro → `CREDENCIAIS_INVALIDAS`. A senha é conferida antes do status, como no contrato. Grava a sessão pelo mesmo armazenamento cifrado da versão real |
 | `esqueciSenha` | Sempre sucesso (o contrato nunca revela se o login existe) |
-| `redefinirSenha` | Aceita qualquer código de 8 caracteres |
+| `redefinirSenha` | Aceita qualquer código de 4 dígitos |
 | `LATENCIA` | Atraso artificial (500 ms) para simular a rede e exibir os indicadores de carregamento |
 | `MockAvalonRepository` | Guarda estado em memória: pedidos de férias criados, respostas de feedback, pesquisas respondidas |
 | `perfil()` | Cadastro de demonstração com o id e o nome do usuário realmente logado (quando o login é real) |
@@ -635,7 +637,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | `InicioScreen.kt` | Tela de abertura: esfera, nome AVALON e botão "Entrar" |
 | `AuthLayout.kt` | Estrutura das telas de acesso: logotipo no topo e folha branca arredondada que rola com o teclado |
 | `LoginScreen.kt` | Campos login/senha, banner de erro (`Banner`), "Esqueci minha senha". Escuta `LoginEvent` para navegar. O campo é rotulado "Login" porque o contrato autentica por login, não por e-mail |
-| `RecuperarSenhaScreens.kt` | `CodigoRecuperacaoScreen`: campo de 8 caracteres (só letras e números, maiúsculas). `RedefinirSenhaScreen`: nova senha + confirmação |
+| `RecuperarSenhaScreens.kt` | `CodigoRecuperacaoScreen`: campo de 4 dígitos, com botão de reenvio bloqueado por 2 minutos (contagem regressiva). `RedefinirSenhaScreen`: nova senha + confirmação |
 
 ### `ui/screens/home` — Sprint 4
 

@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,30 +34,36 @@ import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
+import com.example.avalon_mobile.viewmodel.CodigoRecuperacaoViewModel
 import com.example.avalon_mobile.viewmodel.RedefinirSenhaViewModel
+import com.example.avalon_mobile.viewmodel.TAMANHO_CODIGO
 import com.example.avalon_mobile.viewmodel.avalonViewModel
 
-private const val TAMANHO_CODIGO = 8
-
 /**
- * Recuperação de senha, etapa 1 (Sprint 2 — 6.2.2): código de uso único enviado ao e-mail cadastrado.
+ * Recuperação de senha, etapa 1 (Sprint 2 — 6.2.2): código de 4 dígitos, de uso único e com validade de
+ * 30 minutos, enviado ao e-mail corporativo. O reenvio fica bloqueado por 2 minutos (RF 5.1.84).
  * O código é o `token` de `/auth/senha/redefinir`; a validação acontece no servidor na etapa 2.
  */
 @Composable
-fun CodigoRecuperacaoScreen(onConfirmar: (codigo: String) -> Unit, onVoltar: () -> Unit) {
-    var codigo by rememberSaveable { mutableStateOf("") }
+fun CodigoRecuperacaoScreen(
+    onConfirmar: (codigo: String) -> Unit,
+    onVoltar: () -> Unit,
+    viewModel: CodigoRecuperacaoViewModel = avalonViewModel { c, h -> CodigoRecuperacaoViewModel(c.authRepository, h) }
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val codigo = state.codigo
     AuthLayout(title = "Código enviado para seu e-mail", showTagline = false) {
         Text(
-            "Se a conta existir, você receberá um código de $TAMANHO_CODIGO caracteres no e-mail cadastrado.",
+            "Se a conta existir, você receberá um código de $TAMANHO_CODIGO dígitos no e-mail corporativo. Ele vale por 30 minutos.",
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             fontFamily = Inter, fontSize = 13.sp, color = TextSecondary
         )
         BasicTextField(
             value = codigo,
-            onValueChange = { v -> codigo = v.filter(Char::isLetterOrDigit).take(TAMANHO_CODIGO).uppercase() },
+            onValueChange = viewModel::onCodigo,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
             textStyle = TextStyle(fontFamily = Inter, fontSize = 20.sp, color = TextPrimary, letterSpacing = 10.sp, textAlign = TextAlign.Center),
             decorationBox = { inner ->
                 Box(
@@ -71,7 +77,7 @@ fun CodigoRecuperacaoScreen(onConfirmar: (codigo: String) -> Unit, onVoltar: () 
                 ) {
                     if (codigo.isEmpty()) {
                         Text(
-                            "X ".repeat(TAMANHO_CODIGO).trim(),
+                            "0 ".repeat(TAMANHO_CODIGO).trim(),
                             fontFamily = Inter, fontSize = 15.sp, color = TextSecondary, letterSpacing = 6.sp
                         )
                     }
@@ -79,8 +85,25 @@ fun CodigoRecuperacaoScreen(onConfirmar: (codigo: String) -> Unit, onVoltar: () 
                 }
             }
         )
+        state.mensagem?.let { Banner(it, destaque = false, erro = false) }
+        state.erro?.let { Banner(it, destaque = state.contaBloqueada) }
         Spacer(Modifier.height(8.dp))
-        AvalonPrimaryButton("Confirmar", onClick = { onConfirmar(codigo) }, enabled = codigo.length == TAMANHO_CODIGO)
+        AvalonPrimaryButton("Confirmar", onClick = { onConfirmar(codigo) }, enabled = codigo.length == TAMANHO_CODIGO && !state.contaBloqueada)
+        val aguardando = state.segundosParaReenviar > 0
+        TextButton(
+            onClick = viewModel::reenviar,
+            enabled = !aguardando && !state.reenviando && !state.contaBloqueada,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                when {
+                    state.reenviando -> "Enviando…"
+                    aguardando -> "Reenviar código em ${CodigoRecuperacaoViewModel.formatarTempo(state.segundosParaReenviar)}"
+                    else -> "Reenviar código"
+                },
+                fontFamily = Inter, color = Navy
+            )
+        }
         TextButton(onClick = onVoltar, modifier = Modifier.fillMaxWidth()) {
             Text("Voltar ao login", fontFamily = Inter, color = Navy)
         }
@@ -119,8 +142,10 @@ fun RedefinirSenhaScreen(
             onImeAction = viewModel::confirmar
         )
         state.error?.let {
-            Banner(it)
-            TextButton(onClick = onCodigoInvalido) { Text("Informar outro código", fontFamily = Inter, color = Navy) }
+            Banner(it, destaque = state.contaBloqueada)
+            if (!state.contaBloqueada) {
+                TextButton(onClick = onCodigoInvalido) { Text("Informar outro código", fontFamily = Inter, color = Navy) }
+            }
         }
         Spacer(Modifier.height(8.dp))
         AvalonPrimaryButton("Confirmar", onClick = viewModel::confirmar, loading = state.loading)

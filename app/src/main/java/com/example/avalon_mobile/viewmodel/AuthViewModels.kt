@@ -22,6 +22,8 @@ data class LoginUiState(
     val error: String? = null,
     /** 6.2.1: conta inativa tem tratamento próprio (orienta procurar o RH). */
     val contaInativa: Boolean = false,
+    /** Conta bloqueada após 4 erros do código de redefinição: só o RH redefine a senha (RF 5.1.85/5.1.86). */
+    val contaBloqueada: Boolean = false,
     val loading: Boolean = false,
     val enviandoRecuperacao: Boolean = false
 )
@@ -29,6 +31,19 @@ data class LoginUiState(
 sealed interface LoginEvent {
     data object Autenticado : LoginEvent
     data class CodigoEnviado(val login: String) : LoginEvent
+}
+
+/** Códigos de erro que indicam conta bloqueada por excesso de erros do código (nome a confirmar com o Back-end). */
+val CODIGOS_CONTA_BLOQUEADA = setOf("CONTA_BLOQUEADA", "TENTATIVAS_EXCEDIDAS")
+
+private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
+/** RF 5.1.34: o Colaborador entra com o e-mail corporativo. O servidor decide se a conta existe. */
+fun validarEmailCorporativo(valor: String, recuperacao: Boolean = false): String? = when {
+    valor.isBlank() ->
+        if (recuperacao) "Informe seu e-mail corporativo para recuperar a senha." else "Informe seu e-mail corporativo."
+    !EMAIL.matches(valor.trim()) -> "Informe um e-mail válido."
+    else -> null
 }
 
 class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
@@ -39,12 +54,12 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
     private val _events = Channel<LoginEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    fun onLoginChange(value: String) = _state.update { it.copy(login = value, loginError = null, error = null, contaInativa = false) }
-    fun onSenhaChange(value: String) = _state.update { it.copy(senha = value, senhaError = null, error = null, contaInativa = false) }
+    fun onLoginChange(value: String) = _state.update { it.copy(login = value, loginError = null, error = null, contaInativa = false, contaBloqueada = false) }
+    fun onSenhaChange(value: String) = _state.update { it.copy(senha = value, senhaError = null, error = null, contaInativa = false, contaBloqueada = false) }
 
     fun entrar() {
         val s = _state.value
-        val loginError = if (s.login.isBlank()) "Informe seu login." else null
+        val loginError = validarEmailCorporativo(s.login)
         val senhaError = if (s.senha.isEmpty()) "Informe sua senha." else null
         if (loginError != null || senhaError != null) {
             _state.update { it.copy(loginError = loginError, senhaError = senhaError) }
@@ -62,6 +77,7 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
                         loading = false,
                         senha = "",
                         contaInativa = result.error.codigo == "CONTA_INATIVA",
+                        contaBloqueada = result.error.codigo in CODIGOS_CONTA_BLOQUEADA,
                         error = result.error.mensagem
                     )
                 }
@@ -69,11 +85,12 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
         }
     }
 
-    /** Recuperação de senha (6.2.2): o contrato envia o código ao e-mail cadastrado do login informado. */
+    /** Recuperação de senha (6.2.2): o código de 4 dígitos é enviado ao e-mail corporativo informado. */
     fun esqueciSenha() {
         val login = _state.value.login.trim()
-        if (login.isEmpty()) {
-            _state.update { it.copy(loginError = "Informe seu login para recuperar a senha.") }
+        val loginError = validarEmailCorporativo(login, recuperacao = true)
+        if (loginError != null) {
+            _state.update { it.copy(loginError = loginError) }
             return
         }
         _state.update { it.copy(enviandoRecuperacao = true, error = null) }
@@ -94,6 +111,8 @@ data class RedefinirSenhaUiState(
     val novaSenhaError: String? = null,
     val confirmacaoError: String? = null,
     val error: String? = null,
+    /** 4º erro do código: conta bloqueada, só o RH redefine a senha. */
+    val contaBloqueada: Boolean = false,
     val loading: Boolean = false,
     val concluido: Boolean = false
 )
@@ -123,7 +142,13 @@ class RedefinirSenhaViewModel(
         viewModelScope.launch {
             when (val r = auth.redefinirSenha(token, s.novaSenha, s.confirmacao)) {
                 is AppResult.Success -> _state.update { it.copy(loading = false, concluido = true) }
-                is AppResult.Failure -> _state.update { it.copy(loading = false, error = r.error.mensagem) }
+                is AppResult.Failure -> _state.update {
+                    it.copy(
+                        loading = false,
+                        error = r.error.mensagem,
+                        contaBloqueada = r.error.codigo in CODIGOS_CONTA_BLOQUEADA
+                    )
+                }
             }
         }
     }
@@ -138,5 +163,74 @@ class RedefinirSenhaViewModel(
             !senha.any(Char::isLetter) || !senha.any(Char::isDigit) -> "Combine letras e números."
             else -> null
         }
+    }
+}
+
+data class CodigoRecuperacaoUiState(
+    val codigo: String = "",
+    /** Segundos até liberar o reenvio (2 minutos após cada envio, RF 5.1.84). */
+    val segundosParaReenviar: Int = SEGUNDOS_REENVIO,
+    val reenviando: Boolean = false,
+    val mensagem: String? = null,
+    val erro: String? = null,
+    val contaBloqueada: Boolean = false
+)
+
+const val TAMANHO_CODIGO = 4
+const val SEGUNDOS_REENVIO = 120
+
+/**
+ * Etapa 1 da recuperação (6.2.2): código de 4 dígitos enviado ao e-mail corporativo. O botão de reenvio
+ * fica bloqueado por 2 minutos; o bloqueio também é aplicado pelo servidor, que é quem faz valer a regra.
+ */
+class CodigoRecuperacaoViewModel(
+    private val auth: AuthRepository,
+    handle: SavedStateHandle
+) : ViewModel() {
+
+    private val login: String = checkNotNull(handle["login"])
+
+    private val _state = MutableStateFlow(CodigoRecuperacaoUiState())
+    val state: StateFlow<CodigoRecuperacaoUiState> = _state.asStateFlow()
+
+    init { iniciarContagem() }
+
+    private fun iniciarContagem(segundos: Int = SEGUNDOS_REENVIO) {
+        _state.update { it.copy(segundosParaReenviar = segundos) }
+        viewModelScope.launch {
+            while (_state.value.segundosParaReenviar > 0) {
+                kotlinx.coroutines.delay(1_000)
+                _state.update { it.copy(segundosParaReenviar = (it.segundosParaReenviar - 1).coerceAtLeast(0)) }
+            }
+        }
+    }
+
+    fun onCodigo(v: String) = _state.update {
+        it.copy(codigo = v.filter(Char::isDigit).take(TAMANHO_CODIGO), erro = null)
+    }
+
+    fun reenviar() {
+        val s = _state.value
+        if (s.segundosParaReenviar > 0 || s.reenviando || s.contaBloqueada) return
+        _state.update { it.copy(reenviando = true, erro = null, mensagem = null) }
+        viewModelScope.launch {
+            when (val r = auth.esqueciSenha(login)) {
+                is AppResult.Success -> {
+                    _state.update { it.copy(reenviando = false, codigo = "", mensagem = "Enviamos um novo código. O anterior deixou de valer.") }
+                    iniciarContagem()
+                }
+                is AppResult.Failure -> _state.update {
+                    it.copy(
+                        reenviando = false,
+                        contaBloqueada = r.error.codigo in CODIGOS_CONTA_BLOQUEADA,
+                        erro = r.error.mensagem
+                    )
+                }
+            }
+        }
+    }
+
+    companion object {
+        fun formatarTempo(segundos: Int): String = "%d:%02d".format(segundos / 60, segundos % 60)
     }
 }
