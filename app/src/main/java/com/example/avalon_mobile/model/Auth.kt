@@ -27,6 +27,12 @@ data class RedefinirSenhaRequest(
     @SerializedName("confirmacao_nova_senha") val confirmacaoNovaSenha: String
 )
 
+data class AlterarSenhaRequest(
+    @SerializedName("senha_atual") val senhaAtual: String,
+    @SerializedName("nova_senha") val novaSenha: String,
+    @SerializedName("confirmacao_nova_senha") val confirmacaoNovaSenha: String
+)
+
 data class TokenResponse(
     @SerializedName("access_token") val accessToken: String,
     @SerializedName("token_type") val tokenType: String,

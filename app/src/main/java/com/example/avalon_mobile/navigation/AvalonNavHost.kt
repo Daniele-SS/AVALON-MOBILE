@@ -8,6 +8,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.data.AppContainer
 import com.example.avalon_mobile.ui.components.AvalonBottomBar
 import com.example.avalon_mobile.ui.components.LocalSnackbarHostState
@@ -30,6 +32,7 @@ import com.example.avalon_mobile.ui.screens.auth.CodigoRecuperacaoScreen
 import com.example.avalon_mobile.ui.screens.auth.InicioScreen
 import com.example.avalon_mobile.ui.screens.auth.LoginScreen
 import com.example.avalon_mobile.ui.screens.auth.RedefinirSenhaScreen
+import com.example.avalon_mobile.ui.screens.auth.ServidorScreen
 import com.example.avalon_mobile.ui.screens.conteudo.BeneficiosScreen
 import com.example.avalon_mobile.ui.screens.conteudo.DocumentosScreen
 import com.example.avalon_mobile.ui.screens.conteudo.DownloadsScreen
@@ -44,6 +47,7 @@ import com.example.avalon_mobile.ui.screens.home.Informativo
 import com.example.avalon_mobile.ui.screens.home.MaisScreen
 import com.example.avalon_mobile.ui.screens.home.Modulo
 import com.example.avalon_mobile.ui.screens.home.NotificacoesScreen
+import com.example.avalon_mobile.ui.screens.perfil.AlterarSenhaScreen
 import com.example.avalon_mobile.ui.screens.perfil.JornadaScreen
 import com.example.avalon_mobile.ui.screens.perfil.PerfilScreen
 import com.example.avalon_mobile.ui.screens.pesquisa.AvaliacaoScreen
@@ -56,11 +60,13 @@ object Routes {
     const val LOGIN = "login"
     const val CODIGO = "recuperar/codigo/{login}"
     const val REDEFINIR = "recuperar/redefinir/{token}"
+    const val SERVIDOR = "servidor"
     const val HOME = "home"
     const val PESQUISAS = "pesquisas"
     const val DOCUMENTOS = "documentos"
     const val PERFIL = "perfil"
     const val JORNADA = "jornada"
+    const val ALTERAR_SENHA = "perfil/senha"
     const val FERIAS = "ferias"
     const val BENEFICIOS = "beneficios"
     const val DOWNLOADS = "downloads"
@@ -88,6 +94,7 @@ private val abaPorRota = mapOf(
     Routes.PERFIL to MainTab.PERFIL,
     Routes.DOWNLOADS to MainTab.DOCUMENTOS,
     Routes.JORNADA to MainTab.PERFIL,
+    Routes.ALTERAR_SENHA to MainTab.PERFIL,
     Routes.FERIAS to MainTab.HOME,
     Routes.BENEFICIOS to MainTab.HOME,
     Routes.FEEDBACKS to MainTab.HOME,
@@ -126,6 +133,7 @@ fun AvalonNavHost(container: AppContainer) {
     val backStack by navController.currentBackStackEntryAsState()
     val rotaAtual = backStack?.destination?.route
     var avisoLogin by rememberSaveable { mutableStateOf<String?>(null) }
+    val servidorAtual by container.apiConfig.baseUrl.collectAsState()
     val inicio = remember { if (container.sessionManager.current != null) Routes.HOME else Routes.INICIO }
 
     // 6.2.3: refresh negado ou conta inativada durante o uso → volta ao login.
@@ -162,10 +170,13 @@ fun AvalonNavHost(container: AppContainer) {
                 composable(Routes.LOGIN) {
                     LoginScreen(
                         aviso = avisoLogin,
+                        servidor = if (BuildConfig.DEBUG) "${servidorAtual.host}:${servidorAtual.port}" else null,
+                        onServidor = { abrir(Routes.SERVIDOR) },
                         onAutenticado = { avisoLogin = null; navController.reiniciarEm(Routes.HOME) },
                         onCodigoEnviado = { login -> abrir(Routes.codigo(login)) }
                     )
                 }
+                composable(Routes.SERVIDOR) { ServidorScreen(onVoltar = { navController.popBackStack() }) }
                 // Sprint 2 — 6.2.2
                 composable(Routes.CODIGO, arguments = listOf(navArgument("login") { type = NavType.StringType })) {
                     CodigoRecuperacaoScreen(
@@ -214,11 +225,21 @@ fun AvalonNavHost(container: AppContainer) {
                         onPrivacidade = { abrir(Routes.PRIVACIDADE) },
                         onNotificacoes = { abrir(Routes.NOTIFICACOES) },
                         onTermos = { abrir(Routes.TERMOS) },
+                        onAlterarSenha = { abrir(Routes.ALTERAR_SENHA) },
                         onSair = { avisoLogin = null; navController.reiniciarEm(Routes.LOGIN) }
                     )
                 }
 
                 // Sprint 2 — 6.5.3
+                composable(Routes.ALTERAR_SENHA) {
+                    AlterarSenhaScreen(
+                        onBack = { navController.popBackStack() },
+                        onConcluido = {
+                            navController.popBackStack()
+                            scope.launch { snackbar.showSnackbar("Senha alterada com sucesso.") }
+                        }
+                    )
+                }
                 composable(Routes.JORNADA) { JornadaScreen(onBack = { navController.popBackStack() }) }
                 // Sprint 3 — 6.4, 6.5.4, 6.7
                 composable(Routes.FERIAS) { FeriasScreen(onBack = { navController.popBackStack() }) }

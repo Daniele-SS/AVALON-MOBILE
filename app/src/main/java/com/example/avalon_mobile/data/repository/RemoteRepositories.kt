@@ -6,6 +6,7 @@ import com.example.avalon_mobile.data.local.SessionManager
 import com.example.avalon_mobile.data.map
 import com.example.avalon_mobile.data.remote.ApiCall
 import com.example.avalon_mobile.data.remote.AvalonApi
+import com.example.avalon_mobile.model.AlterarSenhaRequest
 import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.BeneficioItem
@@ -72,6 +73,9 @@ class RemoteAuthRepository(
 
     override suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
         call.execute { api.redefinirSenha(RedefinirSenhaRequest(token.trim(), novaSenha, confirmacao)) }
+
+    override suspend fun alterarSenha(senhaAtual: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
+        call.execute { api.alterarSenha(AlterarSenhaRequest(senhaAtual, novaSenha, confirmacao)) }
 }
 
 class RemoteAvalonRepository(

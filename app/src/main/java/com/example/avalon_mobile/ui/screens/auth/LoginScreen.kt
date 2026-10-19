@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
+import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.ui.theme.Actor
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.Navy
@@ -44,6 +45,8 @@ fun LoginScreen(
     onAutenticado: () -> Unit,
     onCodigoEnviado: (login: String) -> Unit,
     aviso: String? = null,
+    servidor: String? = null,
+    onServidor: () -> Unit = {},
     viewModel: LoginViewModel = avalonViewModel { c, _ -> LoginViewModel(c.authRepository) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -90,6 +93,11 @@ fun LoginScreen(
                     fontFamily = Actor, fontSize = 16.sp, color = Link,
                     textDecoration = TextDecoration.Underline
                 )
+            }
+        }
+        servidor?.let {
+            TextButton(onClick = onServidor, enabled = !state.loading, modifier = Modifier.fillMaxWidth()) {
+                Text("Servidor: $it", fontFamily = Actor, fontSize = 13.sp, color = TextSecondary)
             }
         }
     }

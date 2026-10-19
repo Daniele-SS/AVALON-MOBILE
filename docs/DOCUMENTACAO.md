@@ -52,7 +52,8 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 1. Abrir a pasta do projeto no Android Studio e rodar o módulo `app`.
 2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
 3. Login com qualquer usuário da carga inicial, por exemplo `rafael.martins` / `123456` (Colaborador), `carlos.oliveira` / `123456` (Gestor), `ana.souza` / `123456` (RH).
-4. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia@empresa.com.br` / `123456` (`inativo@empresa.com.br` / `123456` demonstra conta inativa).
+4. Celular físico ou API em outra máquina: na tela de Login, toque em **Servidor: 10.0.2.2:8080** (aparece só na versão de desenvolvimento), informe o IP da máquina que roda a API (ex.: `192.168.0.10:8080`), toque em **Testar conexão** e depois em **Salvar**. Não precisa recompilar.
+5. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia@empresa.com.br` / `123456` (`inativo@empresa.com.br` / `123456` demonstra conta inativa).
 
 ### Usuários para teste
 
@@ -179,11 +180,13 @@ flowchart TD
 | `login` | `LoginScreen` | — |
 | `recuperar/codigo` | `CodigoRecuperacaoScreen` | — |
 | `recuperar/redefinir/{token}` | `RedefinirSenhaScreen` | — |
+| `servidor` | `ServidorScreen` | — |
 | `home` | `HomeScreen` | Home |
 | `pesquisas` | `PesquisasScreen` | Pesquisas |
 | `documentos` | `DocumentosScreen` | Documentos |
 | `perfil` | `PerfilScreen` | Perfil |
 | `jornada` | `JornadaScreen` | Perfil |
+| `perfil/senha` | `AlterarSenhaScreen` | Perfil |
 | `ferias` | `FeriasScreen` | Home |
 | `beneficios` | `BeneficiosScreen` | Home |
 | `downloads` | `DownloadsScreen` | Documentos |
@@ -206,6 +209,8 @@ Telas sem barra inferior são fluxos que o usuário deve concluir ou cancelar (l
 | Esqueci minha senha | `POST /auth/senha/esqueci` |
 | Redefinir senha | `POST /auth/senha/redefinir` |
 | Sair | `POST /auth/logout` |
+| Alterar senha | `PUT /auth/senha` |
+| Servidor (Testar conexão) | `GET /auth/me` sem token: a API do AVALON responde 401 com o envelope de erro |
 | Home | `GET /dashboard`, `GET /feedback`, `GET /notificacao` |
 | Perfil | `GET /colaborador/{id}` |
 | Jornada | `GET /colaborador/{id}` → `GET /jornada_escala/{id}` → `GET /jornada_escala/{id}/dias` |
@@ -236,6 +241,8 @@ Catálogo central de versões de bibliotecas. Bibliotecas adicionadas para o app
 | `com.squareup.retrofit2:converter-gson` | Converte JSON ↔ classes Kotlin |
 | `com.squareup.okhttp3:okhttp` | Cliente HTTP usado pelo Retrofit (interceptadores, timeouts) |
 | `com.squareup.okhttp3:logging-interceptor` | Log das requisições em debug |
+
+Versões alinhadas entre si: Compose BOM `2024.09.00` (Compose 1.7), `activity-compose` `1.9.3`, `navigation-compose` `2.8.0` e `lifecycle` `2.8.7`. Até 16/10 o `activity-compose` estava em `1.13.0`, uma geração à frente do Compose; essa diferença é a causa provável do fechamento por `NoSuchMethodError` corrigido em 15/10. Ao trocar uma dessas versões, troque o conjunto.
 
 ### `app/build.gradle.kts`
 
@@ -419,8 +426,10 @@ Padroniza o retorno de qualquer operação de dados.
 | `sessionManager` | Sessão do usuário (ver `data/local`) |
 | `pdfFactory` | Gerador de PDF (ver `util`) |
 | `logging` | Log HTTP em debug: **só cabeçalhos**, porque o corpo do login contém a senha; e esconde o cabeçalho `Authorization` |
-| `baseClient` | Cliente HTTP com timeouts (15 s para conectar, 30 s para ler) |
-| `retrofit(client)` | Monta o Retrofit com a URL do `BuildConfig` e o conversor Gson |
+| `apiConfig` | Endereço da API em uso (ver `data/local/ApiConfig.kt`), gravado nas preferências do app |
+| `baseClient` | Cliente HTTP com timeouts (15 s para conectar, 30 s para ler). O primeiro interceptador é o `BaseUrlInterceptor`, que envia cada requisição ao endereço do `apiConfig` |
+| `servidorTester` | Testador de conexão da tela Servidor. Usa um cliente próprio, com 5 s de limite e sem o `BaseUrlInterceptor`, para testar o endereço digitado e não o salvo |
+| `retrofit(client)` | Monta o Retrofit com a URL do `BuildConfig` e o conversor Gson. Essa URL é só o ponto de partida: o `BaseUrlInterceptor` troca esquema, IP e porta pelos do `apiConfig` |
 | `refresher` | Renovador de token. Usa um cliente **sem** autenticador para não entrar em laço infinito |
 | `api` | A `AvalonApi` com o interceptador (anexa o token) e o autenticador (renova em 401) |
 | `apiCall` | Tradutor de respostas HTTP para `AppResult` |
@@ -456,6 +465,18 @@ Fonte única da sessão em memória, sincronizada com um `SessionStore` (em prod
 | `expire()` | Logout forçado: igual ao `end()`, mais o evento `expired` |
 | `needsRefresh()` | `true` se faltar menos de 60 s para o token expirar |
 
+### `data/local/ApiConfig.kt`
+
+Endereço da API escolhido pelo usuário, sem recompilar.
+
+| Membro | O que faz |
+|---|---|
+| `padrao` | Endereço do `BuildConfig.API_BASE_URL` (`http://10.0.2.2:8080/`) |
+| `baseUrl` / `atual` | Endereço em uso. Na abertura do app lê o arquivo de preferências `avalon_api`; se não houver nada salvo, usa o padrão |
+| `salvar(url)` | Grava e passa a usar o novo endereço na próxima requisição |
+| `restaurarPadrao()` | Apaga o endereço salvo e volta ao padrão |
+| `normalizar(texto)` | Converte o que foi digitado em endereço válido: tira espaços, acrescenta `http://` se faltar e mantém só esquema, IP e porta. Recusa texto vazio, caminho (`/v1`), esquema diferente de http/https e texto que não é endereço |
+
 ### `data/remote/AvalonApi.kt`
 
 Interface Retrofit: cada função é uma rota do contrato (ver tabela 2.6). `@GET`/`@POST` definem método e caminho; `@Path` preenche `{id}`; `@Query` vira `?nome=valor`; `@Body` vira o JSON enviado; `@Streaming` baixa o PDF sem carregar tudo de uma vez. `Response<T>` permite ler o código HTTP e o corpo de erro.
@@ -471,12 +492,25 @@ Interface Retrofit: cada função é uma rota do contrato (ver tabela 2.6). `@GE
 | `TokenAuthenticator.authenticate` | Executa quando a resposta é 401: tenta **uma** renovação e repete a requisição. Se já é uma repetição (`priorResponse != null`), desiste e encerra a sessão |
 | `Request.withBearer(token)` | Copia a requisição trocando o cabeçalho `Authorization` |
 
+### `data/remote/BaseUrlInterceptor.kt`
+
+Executa antes de toda requisição e troca esquema, IP e porta pelos do `ApiConfig`, mantendo o caminho e os parâmetros. Fica no cliente base, então vale também para a renovação de token.
+
+### `data/remote/ServidorTester.kt`
+
+| Membro | O que faz |
+|---|---|
+| `testar(base)` | Chama `GET /v1/senai/avalon/auth/me` sem token no endereço informado |
+| `ResultadoTeste.Avalon` | Respondeu 401 com o envelope `{codigo, mensagem}`: é a API do AVALON |
+| `ResultadoTeste.OutroServico(status)` | Algo respondeu, mas não no formato da API (outro programa na mesma porta) |
+| `ResultadoTeste.SemResposta` | Nada respondeu: IP errado, porta errada, API desligada ou rede diferente |
+
 ### `data/remote/ApiCall.kt`
 
 | Função | O que faz |
 |---|---|
 | `execute { api.algo() }` | Executa a chamada e devolve `AppResult`. Sucesso: `Success(corpo)`. HTTP de erro: lê o envelope `Erro`. Sem rede (`IOException`): `SEM_CONEXAO`. Resposta inesperada: `DESCONHECIDO` |
-| `parseError(response)` | Extrai `codigo` do JSON de erro; se não houver, usa `NAO_IMPLEMENTADO` (HTTP 501) ou `HTTP_<código>` |
+| `parseError(response)` | Extrai `codigo` do JSON de erro; se não houver, usa `NAO_IMPLEMENTADO` (HTTP 404 ou 501, ou seja, rota que a API ainda não tem) ou `HTTP_<código>` |
 | `mensagemPara(codigo, ...)` | Traduz o código do contrato para a frase mostrada na tela |
 
 ### `data/repository/AvalonRepository.kt`
@@ -549,6 +583,17 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | `esqueciSenha()` | Exige o login preenchido e pede o código ao servidor |
 | `RedefinirSenhaViewModel` | Lê o `token` da rota, valida e envia a nova senha |
 | `validarPolitica(senha)` | Pré-validação: mínimo 8 caracteres, com letras e números. A política oficial é do Back-end (RF 5.1.41) |
+| `AlterarSenhaViewModel` | Troca de senha com a sessão aberta (TS06). Antes de enviar confere: senha atual preenchida, nova senha dentro da política, nova diferente da atual e confirmação igual à nova |
+| `AlterarSenhaViewModel.confirmar()` | Envia `PUT /auth/senha`. Sucesso: limpa os três campos e marca `concluido`. `SENHA_ATUAL_INCORRETA`: limpa só a senha atual e mostra o erro nela. Outros erros: banner |
+
+### `ServidorViewModel.kt`
+
+| Membro | O que faz |
+|---|---|
+| `ServidorUiState` | Endereço digitado, endereço em uso, padrão, erro do campo, mensagem de resultado e se está testando |
+| `testar()` | Valida o texto e chama o `ServidorTester`; a mensagem diz se é a API do AVALON, outro serviço ou se não houve resposta |
+| `salvar()` | Valida e grava no `ApiConfig`. Se o endereço mudou, encerra a sessão guardada, porque os tokens de um servidor não valem em outro |
+| `restaurarPadrao()` | Volta ao endereço do `BuildConfig`, com a mesma regra de sessão |
 
 ### `PerfilViewModels.kt`
 
@@ -636,7 +681,8 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 |---|---|
 | `InicioScreen.kt` | Tela de abertura: esfera, nome AVALON e botão "Entrar" |
 | `AuthLayout.kt` | Estrutura das telas de acesso: logotipo no topo e folha branca arredondada que rola com o teclado |
-| `LoginScreen.kt` | Campos login/senha, banner de erro (`Banner`), "Esqueci minha senha". Escuta `LoginEvent` para navegar. O campo é rotulado "Login" porque o contrato autentica por login, não por e-mail |
+| `LoginScreen.kt` | Campo "E-mail corporativo" (enviado no campo `login` do contrato) e senha, banner de erro (`Banner`), "Esqueci minha senha". Escuta `LoginEvent` para navegar. Na versão de desenvolvimento mostra "Servidor: IP:porta", que abre a tela Servidor |
+| `ServidorScreen.kt` | Endereço em uso, campo para o novo endereço, "Testar conexão", "Salvar", "Restaurar padrão" e "Voltar ao login" |
 | `RecuperarSenhaScreens.kt` | `CodigoRecuperacaoScreen`: campo de 4 dígitos, com botão de reenvio bloqueado por 2 minutos (contagem regressiva). `RedefinirSenhaScreen`: nova senha + confirmação |
 
 ### `ui/screens/home` — Sprint 4
@@ -652,7 +698,8 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 | Arquivo | Conteúdo |
 |---|---|
-| `PerfilScreen.kt` | `Cabecalho` (avatar com iniciais), `InformacoesRegistro` (cada `Campo` com cadeado se só leitura), "Solicitar correção" (`CorrecaoDialog`), ajustes (`ItemAjuste`) e confirmação de saída |
+| `PerfilScreen.kt` | `Cabecalho` (avatar com iniciais), `InformacoesRegistro` (cada `Campo` com cadeado se só leitura), "Solicitar correção" (`CorrecaoDialog`), ajustes (`ItemAjuste`: Alterar Senha, Privacidade, Notificações, Termos, Sair) e confirmação de saída |
+| `AlterarSenhaScreen.kt` | Senha atual, nova senha e confirmação, com a regra da política abaixo dos campos. Ao concluir volta ao Perfil e mostra "Senha alterada com sucesso." |
 | `JornadaScreen.kt` | Semana em chips (`DiaChip`), legenda (`Legenda`) e um cartão por dia com horário ou "Folga" |
 
 ### `ui/screens/ferias` — Sprint 3
@@ -721,7 +768,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 ### Ligar a API real
 
 1. Banco carregado e API rodando (`node app.js`, porta 8080).
-2. `app/build.gradle.kts`: `API_BASE_URL` → `"http://<IP-da-máquina>:8080/"` (emulador: `10.0.2.2`). O login já usa a API (`USE_MOCK_AUTH = false`).
+2. Emulador: nada a fazer (`10.0.2.2` é o padrão). Celular ou outra máquina: tela de Login → "Servidor" → IP da máquina da API. Para mudar o padrão de fábrica, altere `API_BASE_URL` em `app/build.gradle.kts`. O login já usa a API (`USE_MOCK_AUTH = false`).
 3. Quando o Back-end publicar as rotas das Sprints 2–4: `USE_MOCK_API` → `"false"`.
 4. Sincronizar o Gradle e rodar.
 
@@ -769,7 +816,8 @@ Rodar: Android Studio → clique direito em `test` → **Run Tests**.
 | GHE, foto, remetente do feedback, lido/não lido, data das notificações, data do pedido de férias | Ausentes no contrato | Campos opcionais, exibidos só se vierem |
 | Saldo de férias | Ausente no contrato | Calculado no app (`SaldoFerias`), provisório |
 | Escala da pesquisa | Figma mostra 4 opções; contrato pede 1–5 | Incluído "Neutro" como 3 |
-| Versões das bibliotecas | Compose (BOM 2024.09) desalinhado com `activity-compose` 1.13 | Pendente: alinhar com teste no Android Studio |
+| Versões das bibliotecas | Compose (BOM 2024.09) estava desalinhado com `activity-compose` 1.13 | Resolvido em 16/10: `activity-compose` 1.9.3 |
+| Alterar senha | Contrato tem `PUT /auth/senha`; a API ainda não | Tela pronta; até a rota existir mostra "Funcionalidade ainda não disponível no servidor." |
 
 ---
 
@@ -800,7 +848,8 @@ A partir de 16/10/2026 o login do app usa a API real. As rotas foram implementad
 | `POST /auth/login` | `RemoteAuthRepository.login` | Confere login e senha; devolve `access_token` (15 min), `refresh_token`, usuário e menus do perfil |
 | `POST /auth/refresh` | `TokenRefresher.refresh` | Troca o refresh por um novo par de tokens; o refresh antigo deixa de valer (rotação) |
 | `POST /auth/logout` | `RemoteAuthRepository.logout` | Encerra a sessão no servidor; o token antigo passa a ser recusado |
-| `GET /auth/me` | (disponível; não usado pelas telas) | Devolve o usuário e os menus da sessão atual |
+| `GET /auth/me` | `ServidorTester.testar` (sem token, só para reconhecer a API) | Devolve o usuário e os menus da sessão atual |
+| `PUT /auth/senha` | `RemoteAuthRepository.alterarSenha` | **Ainda não existe na API.** O app já envia `senha_atual`, `nova_senha` e `confirmacao_nova_senha` e trata 204 e 422 `SENHA_ATUAL_INCORRETA` |
 
 Respostas que o app trata:
 
@@ -808,6 +857,8 @@ Respostas que o app trata:
 |---|---|---|
 | Login inexistente ou senha errada (mesma resposta e mesmo tempo nos dois casos) | 401 `CREDENCIAIS_INVALIDAS` | Login ou senha inválidos. |
 | Senha correta, colaborador inativo ou desligado | 403 `CONTA_INATIVA` | Esta conta está inativa. Procure o RH. |
+| Alterar senha com a senha atual errada | 422 `SENHA_ATUAL_INCORRETA` | A senha atual está incorreta. (no campo "Senha atual") |
+| Rota que a API ainda não tem | 404 ou 501 sem envelope | Funcionalidade ainda não disponível no servidor. |
 | 5 erros em 15 min no mesmo login (ou 20 na mesma origem) | 429 `MUITAS_TENTATIVAS` | Muitas tentativas. Aguarde alguns minutos e tente de novo. |
 | Sessão expirada, revogada ou token adulterado | 401 `TOKEN_INVALIDO` | Sua sessão expirou. Faça login novamente. |
 | API desligada ou inalcançável | sem resposta | Não foi possível conectar ao servidor. Verifique sua conexão. |
@@ -822,7 +873,33 @@ As demais rotas das Sprints 2–4 ainda não existem na API; por isso essas tela
 
 ## 16. Histórico de atualizações
 
-### 16/10/2026
+### 16/10/2026 (segunda entrega)
+
+**App mobile**
+
+| Mudança | Arquivos | Motivo |
+|---|---|---|
+| `activity-compose` de 1.13.0 para 1.9.3, alinhado ao Compose BOM 2024.09 | `gradle/libs.versions.toml` | NC-09: versões desalinhadas, causa provável do fechamento de 15/10 |
+| Tela "Alterar senha", acessada pelo Perfil, contra `PUT /auth/senha` | `ui/screens/perfil/AlterarSenhaScreen.kt`, `viewmodel/AuthViewModels.kt`, `model/Auth.kt`, `data/remote/AvalonApi.kt`, `data/repository/*`, `navigation/AvalonNavHost.kt`, `ui/screens/perfil/PerfilScreen.kt` | TS06 e NC-11. A tela fica pronta; o teste passa quando o back-end publicar a rota |
+| Rota inexistente na API (404 sem envelope) passa a mostrar "Funcionalidade ainda não disponível no servidor." | `data/remote/ApiCall.kt` | Antes aparecia "Não foi possível concluir a operação.", que sugere erro do usuário |
+| Endereço da API configurável no próprio app, com teste de conexão | `data/local/ApiConfig.kt`, `data/remote/BaseUrlInterceptor.kt`, `data/remote/ServidorTester.kt`, `viewmodel/ServidorViewModel.kt`, `ui/screens/auth/ServidorScreen.kt`, `ui/screens/auth/LoginScreen.kt`, `data/AppContainer.kt` | Testar em celular físico ou com a API em outra máquina sem recompilar |
+
+**Validação (sem Android Studio, com o banco e a API locais)**
+
+| Teste | Resultado |
+|---|---|
+| Endereço salvo em `localhost:8080` com o Retrofit apontando para `10.0.2.2:8080`: login de `rafael.martins` chega à API certa | Passou |
+| Testar conexão: API do AVALON reconhecida; outro serviço na porta 8099 identificado como "não parece ser a API"; porta sem nada → sem resposta | Passou |
+| Normalização: `192.168.0.10:8080` vira `http://192.168.0.10:8080/`; `http://x:8080/v1`, texto vazio e `ftp://` são recusados | Passou |
+| Endereço salvo continua após reabrir o app; "Restaurar padrão" volta a `10.0.2.2:8080`; trocar de endereço encerra a sessão guardada | Passou |
+| Alterar senha: campos vazios, nova igual à atual e confirmação diferente são barrados antes de enviar | Passou |
+| Alterar senha no modo demonstração: senha atual errada marca o campo; correta conclui e limpa os campos | Passou |
+| Alterar senha contra a API real: rota ausente → "Funcionalidade ainda não disponível no servidor." | Passou |
+| Desenho das telas Alterar senha, Servidor e Perfil (com o novo item) e das 19 telas já existentes | Passou |
+
+Falta confirmar no Android Studio: sincronizar o Gradle com o `activity-compose` 1.9.3 e abrir o app no emulador.
+
+### 16/10/2026 (primeira entrega)
 
 **App mobile**
 

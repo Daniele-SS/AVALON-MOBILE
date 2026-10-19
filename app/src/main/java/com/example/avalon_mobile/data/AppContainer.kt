@@ -2,12 +2,15 @@ package com.example.avalon_mobile.data
 
 import android.content.Context
 import com.example.avalon_mobile.BuildConfig
+import com.example.avalon_mobile.data.local.ApiConfig
 import com.example.avalon_mobile.data.local.SecureSessionStore
 import com.example.avalon_mobile.data.local.SessionManager
 import com.example.avalon_mobile.data.remote.ApiCall
 import com.example.avalon_mobile.data.remote.AuthInterceptor
 import com.example.avalon_mobile.data.remote.AuthRefreshApi
 import com.example.avalon_mobile.data.remote.AvalonApi
+import com.example.avalon_mobile.data.remote.BaseUrlInterceptor
+import com.example.avalon_mobile.data.remote.ServidorTester
 import com.example.avalon_mobile.data.remote.TokenAuthenticator
 import com.example.avalon_mobile.data.remote.TokenRefresher
 import com.example.avalon_mobile.data.repository.AuthRepository
@@ -36,6 +39,11 @@ class AppContainer(context: Context) {
     val sessionManager = SessionManager(SecureSessionStore(context.applicationContext, gson))
     val pdfFactory = PdfFactory()
 
+    val apiConfig = ApiConfig(
+        context.applicationContext.getSharedPreferences(ApiConfig.ARQUIVO, Context.MODE_PRIVATE),
+        BuildConfig.API_BASE_URL
+    )
+
     private val logging = HttpLoggingInterceptor().apply {
         // Só cabeçalhos e sem o token: o corpo do login carrega a senha.
         level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.HEADERS else HttpLoggingInterceptor.Level.NONE
@@ -45,8 +53,14 @@ class AppContainer(context: Context) {
     private val baseClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(BaseUrlInterceptor(apiConfig))
         .addInterceptor(logging)
         .build()
+
+    val servidorTester = ServidorTester(
+        OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS).build(),
+        gson
+    )
 
     private fun retrofit(client: OkHttpClient) = Retrofit.Builder()
         .baseUrl(BuildConfig.API_BASE_URL)

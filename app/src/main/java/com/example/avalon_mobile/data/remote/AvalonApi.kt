@@ -1,5 +1,6 @@
 package com.example.avalon_mobile.data.remote
 
+import com.example.avalon_mobile.model.AlterarSenhaRequest
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.BeneficioColaborador
@@ -31,6 +32,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
@@ -47,6 +49,9 @@ interface AvalonApi {
 
     @GET("v1/senai/avalon/auth/me")
     suspend fun me(): Response<MeResponse>
+
+    @PUT("v1/senai/avalon/auth/senha")
+    suspend fun alterarSenha(@Body body: AlterarSenhaRequest): Response<Unit>
 
     @POST("v1/senai/avalon/auth/senha/esqueci")
     suspend fun esqueciSenha(@Body body: EsqueciSenhaRequest): Response<Unit>

@@ -30,6 +30,7 @@ interface AuthRepository {
     suspend fun logout()
     suspend fun esqueciSenha(login: String): AppResult<Unit>
     suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit>
+    suspend fun alterarSenha(senhaAtual: String, novaSenha: String, confirmacao: String): AppResult<Unit>
 }
 
 /** Dados do Colaborador autenticado. O escopo (só os próprios dados) é garantido pelo servidor. */

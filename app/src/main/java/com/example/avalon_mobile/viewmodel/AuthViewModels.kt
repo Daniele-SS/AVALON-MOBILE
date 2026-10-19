@@ -234,3 +234,51 @@ class CodigoRecuperacaoViewModel(
         fun formatarTempo(segundos: Int): String = "%d:%02d".format(segundos / 60, segundos % 60)
     }
 }
+
+data class AlterarSenhaUiState(
+    val senhaAtual: String = "",
+    val novaSenha: String = "",
+    val confirmacao: String = "",
+    val senhaAtualError: String? = null,
+    val novaSenhaError: String? = null,
+    val confirmacaoError: String? = null,
+    val error: String? = null,
+    val loading: Boolean = false,
+    val concluido: Boolean = false
+)
+
+class AlterarSenhaViewModel(private val auth: AuthRepository) : ViewModel() {
+
+    private val _state = MutableStateFlow(AlterarSenhaUiState())
+    val state: StateFlow<AlterarSenhaUiState> = _state.asStateFlow()
+
+    fun onSenhaAtual(v: String) = _state.update { it.copy(senhaAtual = v, senhaAtualError = null, error = null) }
+    fun onNovaSenha(v: String) = _state.update { it.copy(novaSenha = v, novaSenhaError = null, error = null) }
+    fun onConfirmacao(v: String) = _state.update { it.copy(confirmacao = v, confirmacaoError = null, error = null) }
+
+    fun confirmar() {
+        val s = _state.value
+        if (s.loading) return
+        val atual = if (s.senhaAtual.isEmpty()) "Informe sua senha atual." else null
+        val nova = RedefinirSenhaViewModel.validarPolitica(s.novaSenha)
+            ?: if (s.novaSenha == s.senhaAtual) "A nova senha deve ser diferente da atual." else null
+        val confirmacao = if (s.confirmacao != s.novaSenha) "As senhas não conferem." else null
+        if (atual != null || nova != null || confirmacao != null) {
+            _state.update { it.copy(senhaAtualError = atual, novaSenhaError = nova, confirmacaoError = confirmacao) }
+            return
+        }
+        _state.update { it.copy(loading = true, error = null) }
+        viewModelScope.launch {
+            when (val r = auth.alterarSenha(s.senhaAtual, s.novaSenha, s.confirmacao)) {
+                is AppResult.Success -> _state.update { AlterarSenhaUiState(concluido = true) }
+                is AppResult.Failure -> _state.update {
+                    if (r.error.codigo == "SENHA_ATUAL_INCORRETA") {
+                        it.copy(loading = false, senhaAtual = "", senhaAtualError = r.error.mensagem)
+                    } else {
+                        it.copy(loading = false, error = r.error.mensagem)
+                    }
+                }
+            }
+        }
+    }
+}
