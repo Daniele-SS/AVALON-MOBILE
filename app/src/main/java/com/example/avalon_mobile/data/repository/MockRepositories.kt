@@ -40,8 +40,8 @@ import java.util.UUID
 
 /**
  * Autenticação de demonstração (BuildConfig.USE_MOCK_API = true), com as mesmas regras do contrato:
- * - ana.lucia / 123456 → sucesso
- * - inativo / 123456   → 403 CONTA_INATIVA (só depois de a senha conferir)
+ * - ana.lucia@empresa.com.br / 123456 → sucesso
+ * - inativo@empresa.com.br / 123456 → 403 CONTA_INATIVA (só depois de a senha conferir)
  * - qualquer outro     → 401 CREDENCIAIS_INVALIDAS (mesma resposta para login inexistente e senha errada)
  * A sessão passa pelo mesmo armazenamento cifrado da versão real.
  */
@@ -58,7 +58,7 @@ class MockAuthRepository(
         delay(LATENCIA)
         val user = login.trim().lowercase()
         if (senha != SENHA_DEMO || user !in setOf(LOGIN_DEMO, LOGIN_INATIVO)) {
-            return AppResult.Failure(AppError("CREDENCIAIS_INVALIDAS", "Login ou senha inválidos.", 401))
+            return AppResult.Failure(AppError("CREDENCIAIS_INVALIDAS", "E-mail ou senha inválidos.", 401))
         }
         if (user == LOGIN_INATIVO) {
             return AppResult.Failure(AppError("CONTA_INATIVA", "Esta conta está inativa. Procure o RH.", 403))
@@ -81,13 +81,13 @@ class MockAuthRepository(
 
     override suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit> {
         delay(LATENCIA)
-        return if (token.trim().length == 8) AppResult.Success(Unit)
+        return if (token.trim().length == 4) AppResult.Success(Unit)
         else AppResult.Failure(AppError("TOKEN_REDEFINICAO_INVALIDO", "O código expirou ou já foi utilizado.", 422))
     }
 
     companion object {
-        const val LOGIN_DEMO = "ana.lucia"
-        const val LOGIN_INATIVO = "inativo"
+        const val LOGIN_DEMO = "ana.lucia@empresa.com.br"
+        const val LOGIN_INATIVO = "inativo@empresa.com.br"
         const val SENHA_DEMO = "123456"
         const val LATENCIA = 500L
     }

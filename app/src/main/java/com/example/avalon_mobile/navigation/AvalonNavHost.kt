@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
 object Routes {
     const val INICIO = "inicio"
     const val LOGIN = "login"
-    const val CODIGO = "recuperar/codigo"
+    const val CODIGO = "recuperar/codigo/{login}"
     const val REDEFINIR = "recuperar/redefinir/{token}"
     const val HOME = "home"
     const val PESQUISAS = "pesquisas"
@@ -74,6 +74,7 @@ object Routes {
     const val PRIVACIDADE = "privacidade"
     const val TERMOS = "termos"
 
+    fun codigo(login: String) = "recuperar/codigo/${android.net.Uri.encode(login)}"
     fun redefinir(token: String) = "recuperar/redefinir/$token"
     fun feedback(id: Int) = "feedback/$id"
     fun pesquisa(id: Int) = "pesquisa/$id"
@@ -162,11 +163,11 @@ fun AvalonNavHost(container: AppContainer) {
                     LoginScreen(
                         aviso = avisoLogin,
                         onAutenticado = { avisoLogin = null; navController.reiniciarEm(Routes.HOME) },
-                        onCodigoEnviado = { abrir(Routes.CODIGO) }
+                        onCodigoEnviado = { login -> abrir(Routes.codigo(login)) }
                     )
                 }
                 // Sprint 2 — 6.2.2
-                composable(Routes.CODIGO) {
+                composable(Routes.CODIGO, arguments = listOf(navArgument("login") { type = NavType.StringType })) {
                     CodigoRecuperacaoScreen(
                         onConfirmar = { codigo -> abrir(Routes.redefinir(codigo)) },
                         onVoltar = { navController.popBackStack() }

@@ -59,14 +59,15 @@ fun LoginScreen(
 
     AuthLayout(title = "Acesse sua conta") {
         aviso?.let { Banner(it, destaque = false, erro = false) }
-        // O contrato autentica por `login` (tbl_usuario.login); o protótipo rotula o campo como e-mail.
+        // O Colaborador entra com o e-mail corporativo; o contrato o recebe no campo `login`.
         AvalonTextField(
-            label = "Login",
+            label = "E-mail corporativo",
             value = state.login,
             onValueChange = viewModel::onLoginChange,
-            placeholder = "maria.silva",
+            placeholder = "maria.silva@empresa.com.br",
             error = state.loginError,
-            enabled = !state.loading
+            enabled = !state.loading,
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
         )
         AvalonTextField(
             label = "Senha",
@@ -79,7 +80,7 @@ fun LoginScreen(
             imeAction = ImeAction.Done,
             onImeAction = viewModel::entrar
         )
-        state.error?.let { Banner(it, destaque = state.contaInativa) }
+        state.error?.let { Banner(it, destaque = state.contaInativa || state.contaBloqueada) }
         Spacer(Modifier.height(8.dp))
         AvalonPrimaryButton("Entrar", onClick = viewModel::entrar, loading = state.loading)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
