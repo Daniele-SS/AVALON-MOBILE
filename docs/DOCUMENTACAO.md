@@ -166,7 +166,7 @@ flowchart TD
 
 ### 2.4 Fluxo do token (Sprint 2 — 6.2.3)
 
-1. O login devolve `access_token` (vida curta, `expires_in` segundos) e `refresh_token` (uso único).
+1. O login devolve `access_token` (validade em `expires_in` segundos, definida pelo Back-end) e `refresh_token` (uso único).
 2. `SessionManager.start` calcula a hora de expiração e grava tudo cifrado (`SecureSessionStore`).
 3. Toda requisição passa pelo `AuthInterceptor`, que anexa `Authorization: Bearer <token>`. Se faltar menos de 60 s para expirar, renova **antes** de enviar.
 4. Se o servidor ainda assim responder 401, o `TokenAuthenticator` renova uma vez e repete a requisição.
@@ -877,7 +877,7 @@ A partir de 16/10/2026 o login do app usa a API real. As rotas foram implementad
 
 | Rota | Usada pelo app em | Comportamento |
 |---|---|---|
-| `POST /auth/login` | `RemoteAuthRepository.login` | Confere login e senha; devolve `access_token` (15 min), `refresh_token`, usuário e menus do perfil |
+| `POST /auth/login` | `RemoteAuthRepository.login` | Confere e-mail corporativo (ou login) e senha; devolve `access_token` (24 horas), `refresh_token`, usuário e menus do perfil |
 | `POST /auth/refresh` | `TokenRefresher.refresh` | Troca o refresh por um novo par de tokens; o refresh antigo deixa de valer (rotação) |
 | `POST /auth/logout` | `RemoteAuthRepository.logout` | Encerra a sessão no servidor; o token antigo passa a ser recusado |
 | `GET /auth/me` | `ServidorTester.testar` (sem token, só para reconhecer a API) | Devolve o usuário e os menus da sessão atual |
@@ -901,7 +901,19 @@ Respostas que o app trata:
 | Sessão expirada, revogada ou token adulterado | 401 `TOKEN_INVALIDO` | Sua sessão expirou. Faça login novamente. |
 | API desligada ou inalcançável | sem resposta | Não foi possível conectar ao servidor. Verifique sua conexão. |
 
-Tempos de sessão: o app renova o access token sozinho. Em 16/10 o access valia 15 minutos e o refresh 30 minutos, atendendo o TS05 (30 minutos sem uso). **Em 21/10 o Back-end mudou para 24 horas e 30 dias**, então o TS05 deixa de passar até os valores voltarem.
+Tempos de sessão (definidos pelo Back-end, decisão da equipe em 22/10/2026):
+
+| Item | Valor | Variável no Back-end |
+|---|---|---|
+| Validade do access token | 24 horas (`expires_in: 86400`) | `AUTH_ACCESS_TTL` (segundos) |
+| Sessão sem uso (validade do refresh) | 30 dias; cada renovação recomeça a contagem | `AUTH_REFRESH_TTL` (segundos) |
+
+O app não tem tempo fixo: lê o `expires_in` de cada resposta, renova o token 60 segundos antes de vencer e volta ao login com "Sua sessão expirou. Faça login novamente." quando o servidor recusa a renovação. Mudar esses valores no Back-end não exige mudança no app.
+
+Consequências que os testes precisam considerar:
+
+- **TS05 (expiração por inatividade):** para executar sem esperar 30 dias, subir a API de teste com `AUTH_REFRESH_TTL` e `AUTH_ACCESS_TTL` curtos (por exemplo, 120 e 60 segundos).
+- **TS23 (desativação com a sessão aberta):** o app só percebe a desativação na próxima renovação, que pode levar até 24 horas. Para o teste, usar o mesmo ajuste do TS05.
 
 Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
 
@@ -922,6 +934,13 @@ Perfil e Jornada usam a API real (`MODULOS_API = "perfil,jornada"`). As demais t
 
 ## 16. Histórico de atualizações
 
+### 22/10/2026
+
+| Mudança | Arquivos | Motivo |
+|---|---|---|
+| Tempos de sessão passam a ser os definidos pelo Back-end (access 24 horas, sessão de 30 dias sem uso); TS05 e TS23 executados com tempos reduzidos no ambiente de teste | `docs/DOCUMENTACAO.md` (seção 15) | Decisão da equipe; o app já seguia o `expires_in` do servidor, sem mudança de código |
+| Login por e-mail corporativo validado contra a API real (`carlos.oliveira@empresa.com`) | — | Correção no Back-end: a consulta do login aceita `tbl_colaborador.email` |
+
 ### 21/10/2026 (Sprint 2)
 
 **App mobile**
@@ -936,7 +955,7 @@ Perfil e Jornada usam a API real (`MODULOS_API = "perfil,jornada"`). As demais t
 
 **Validação:** 27 testes automatizados passando, incluindo a troca de senha (senha atual errada não envia código; reenvio bloqueado antes de 2 minutos; 3 erros de código com mensagem genérica; 4º erro bloqueia; código certo conclui) e Perfil/Jornada contra a API real (tabela da seção 15). Falta repetir no emulador.
 
-**Dependências do Back-end para fechar a Sprint 2 no app:** login aceitar o e-mail; Colaborador ler o próprio `GET /colaborador/{id}`; rotas `POST /auth/senha/codigo` e `PUT /auth/senha` com código; envio do e-mail com o código (pré-requisito da Sprint 2); voltar o tempo de sessão para 15 minutos/30 minutos (TS05).
+**Dependências do Back-end para fechar a Sprint 2 no app:** login aceitar o e-mail; Colaborador ler o próprio `GET /colaborador/{id}`; rotas `POST /auth/senha/codigo` e `PUT /auth/senha` com código; envio do e-mail com o código (pré-requisito da Sprint 2).
 
 ### 16/10/2026 (segunda entrega)
 
