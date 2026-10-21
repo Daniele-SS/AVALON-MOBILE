@@ -15,6 +15,7 @@ import com.example.avalon_mobile.data.remote.TokenAuthenticator
 import com.example.avalon_mobile.data.remote.TokenRefresher
 import com.example.avalon_mobile.data.repository.AuthRepository
 import com.example.avalon_mobile.data.repository.AvalonRepository
+import com.example.avalon_mobile.data.repository.AvalonRepositoryMisto
 import com.example.avalon_mobile.data.repository.MockAuthRepository
 import com.example.avalon_mobile.data.repository.MockAvalonRepository
 import com.example.avalon_mobile.data.repository.RemoteAuthRepository
@@ -84,6 +85,10 @@ class AppContainer(context: Context) {
         else RemoteAuthRepository(api, apiCall, sessionManager, appScope)
 
     val avalonRepository: AvalonRepository =
-        if (BuildConfig.USE_MOCK_API) MockAvalonRepository(pdfFactory) { sessionManager.current?.usuario }
+        if (BuildConfig.USE_MOCK_API) AvalonRepositoryMisto(
+            api = RemoteAvalonRepository(api, apiCall, sessionManager),
+            demonstracao = MockAvalonRepository(pdfFactory) { sessionManager.current?.usuario },
+            modulosApi = AvalonRepositoryMisto.modulos(BuildConfig.MODULOS_API)
+        )
         else RemoteAvalonRepository(api, apiCall, sessionManager)
 }

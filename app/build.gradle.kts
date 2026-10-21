@@ -28,6 +28,7 @@ android {
         // USE_MOCK_API = true: módulos das Sprints 2-4 em demonstração até a API publicar as rotas.
         buildConfigField("boolean", "USE_MOCK_AUTH", "false")
         buildConfigField("boolean", "USE_MOCK_API", "true")
+        buildConfigField("String", "MODULOS_API", "\"perfil,jornada\"")
     }
 
     buildTypes {

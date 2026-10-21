@@ -1,18 +1,17 @@
 package com.example.avalon_mobile.data.remote
 
 import com.example.avalon_mobile.model.AlterarSenhaRequest
+import com.example.avalon_mobile.model.SolicitarCodigoSenhaRequest
+import com.google.gson.JsonElement
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.BeneficioColaborador
-import com.example.avalon_mobile.model.Colaborador
 import com.example.avalon_mobile.model.Dashboard
-import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.EsqueciSenhaRequest
 import com.example.avalon_mobile.model.Feedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
-import com.example.avalon_mobile.model.JornadaEscala
 import com.example.avalon_mobile.model.LoginRequest
 import com.example.avalon_mobile.model.LogoutRequest
 import com.example.avalon_mobile.model.MeResponse
@@ -50,6 +49,9 @@ interface AvalonApi {
     @GET("v1/senai/avalon/auth/me")
     suspend fun me(): Response<MeResponse>
 
+    @POST("v1/senai/avalon/auth/senha/codigo")
+    suspend fun solicitarCodigoSenha(@Body body: SolicitarCodigoSenhaRequest): Response<Unit>
+
     @PUT("v1/senai/avalon/auth/senha")
     suspend fun alterarSenha(@Body body: AlterarSenhaRequest): Response<Unit>
 
@@ -65,13 +67,16 @@ interface AvalonApi {
 
     // Perfil e jornada (6.5.1, 6.5.3)
     @GET("v1/senai/avalon/colaborador/{id}")
-    suspend fun colaborador(@Path("id") id: Int): Response<Colaborador>
+    suspend fun colaborador(@Path("id") id: Int): Response<JsonElement>
 
     @GET("v1/senai/avalon/jornada_escala/{id}")
-    suspend fun jornada(@Path("id") id: Int): Response<JornadaEscala>
+    suspend fun jornada(@Path("id") id: Int): Response<JsonElement>
 
     @GET("v1/senai/avalon/jornada_escala/{id}/dias")
-    suspend fun diasJornada(@Path("id") id: Int): Response<List<DiaSemana>>
+    suspend fun diasJornada(@Path("id") id: Int): Response<JsonElement>
+
+    @GET("v1/senai/avalon/dia_semana")
+    suspend fun diasSemana(): Response<JsonElement>
 
     // Férias (6.4)
     @GET("v1/senai/avalon/ferias")

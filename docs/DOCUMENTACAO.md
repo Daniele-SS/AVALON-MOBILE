@@ -51,7 +51,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 
 1. Abrir a pasta do projeto no Android Studio e rodar o módulo `app`.
 2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
-3. Login com qualquer usuário da carga inicial, por exemplo `rafael.martins` / `123456` (Colaborador), `carlos.oliveira` / `123456` (Gestor), `ana.souza` / `123456` (RH).
+3. Login com o e-mail corporativo de qualquer usuário da carga inicial, por exemplo `rafael.martins@empresa.com` / `123456` (Colaborador). **Depende de o Back-end aceitar o e-mail no login** (ver seção 15); até lá a API recusa o e-mail com "E-mail ou senha inválidos.".
 4. Celular físico ou API em outra máquina: na tela de Login, toque em **Servidor: 10.0.2.2:8080** (aparece só na versão de desenvolvimento), informe o IP da máquina que roda a API (ex.: `192.168.0.10:8080`), toque em **Testar conexão** e depois em **Salvar**. Não precisa recompilar.
 5. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia@empresa.com.br` / `123456` (`inativo@empresa.com.br` / `123456` demonstra conta inativa).
 
@@ -59,21 +59,22 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 
 **Banco real** (carga inicial do `script.sql`, repositório AVALON-BANCO_DE_DADOS). Usados quando `USE_MOCK_AUTH = false` (padrão):
 
-| Login | Senha | Perfil | Nome completo | Matrícula | Setor | Cargo |
-|---|---|---|---|---|---|---|
-| `ana.souza` | `123456` | RH | Ana Carolina Souza | MAT001 | Recursos Humanos | Analista de Recursos Humanos |
-| `carlos.oliveira` | `123456` | Gestor | Carlos Eduardo Oliveira | MAT002 | Tecnologia da Informação | Gestor de Equipe |
-| `rafael.martins` | `123456` | Colaborador | Rafael Henrique Martins | MAT003 | Tecnologia da Informação | Desenvolvedor de Sistemas |
-| `juliana.santos` | `123456` | Colaborador | Juliana Alves Santos | MAT004 | Administrativo | Analista Administrativo |
-| `marcos.lima` | `123456` | Colaborador | Marcos Vinicius Lima | MAT005 | Financeiro | Analista Administrativo |
-| `beatriz.costa` | `123456` | Colaborador | Beatriz Fernanda Costa | MAT006 | Recursos Humanos | Analista de Recursos Humanos |
-| `lucas.ferreira` | `123456` | Colaborador | Lucas Gabriel Ferreira | MAT007 | Tecnologia da Informação | Desenvolvedor de Sistemas |
-| `fernanda.rocha` | `123456` | Colaborador | Fernanda Cristina Rocha | MAT008 | Administrativo | Analista Administrativo |
-| `gustavo.ramos` | `123456` | Colaborador | Gustavo Henrique Ramos | MAT009 | Financeiro | Analista Administrativo |
+| E-mail corporativo (app) | Login antigo | Senha | Perfil | Nome completo | Matrícula | Setor | Cargo |
+|---|---|---|---|---|---|---|---|
+| `ana.souza@empresa.com` | `ana.souza` | `123456` | RH | Ana Carolina Souza | MAT001 | Recursos Humanos | Analista de Recursos Humanos |
+| `carlos.oliveira@empresa.com` | `carlos.oliveira` | `123456` | Gestor | Carlos Eduardo Oliveira | MAT002 | Tecnologia da Informação | Gestor de Equipe |
+| `rafael.martins@empresa.com` | `rafael.martins` | `123456` | Colaborador | Rafael Henrique Martins | MAT003 | Tecnologia da Informação | Desenvolvedor de Sistemas |
+| `juliana.santos@empresa.com` | `juliana.santos` | `123456` | Colaborador | Juliana Alves Santos | MAT004 | Administrativo | Analista Administrativo |
+| `marcos.lima@empresa.com` | `marcos.lima` | `123456` | Colaborador | Marcos Vinicius Lima | MAT005 | Financeiro | Analista Administrativo |
+| `beatriz.costa@empresa.com` | `beatriz.costa` | `123456` | Colaborador | Beatriz Fernanda Costa | MAT006 | Recursos Humanos | Analista de Recursos Humanos |
+| `lucas.ferreira@empresa.com` | `lucas.ferreira` | `123456` | Colaborador | Lucas Gabriel Ferreira | MAT007 | Tecnologia da Informação | Desenvolvedor de Sistemas |
+| `fernanda.rocha@empresa.com` | `fernanda.rocha` | `123456` | Colaborador | Fernanda Cristina Rocha | MAT008 | Administrativo | Analista Administrativo |
+| `gustavo.ramos@empresa.com` | `gustavo.ramos` | `123456` | Colaborador | Gustavo Henrique Ramos | MAT009 | Financeiro | Analista Administrativo |
 
 Observações:
 
-- **Login por e-mail corporativo (decisão de 19/10/2026).** O Colaborador entra com o e-mail corporativo e a senha. A coluna "Login" acima mostra o `login` da carga atual do banco; enquanto o Back-end e o Banco não passarem a aceitar o e-mail corporativo nesse campo, o login real continua pelo usuário. O app já envia o valor digitado no campo `login`, mas valida localmente o formato de e-mail, então uma conta da carga atual só entra depois dessa troca.
+- **Login por e-mail corporativo (decisão de 19/10/2026).** O app envia o e-mail digitado no campo `login` do contrato. Em 21/10/2026 a API ainda procura só por `tbl_usuario.login`, então o e-mail é recusado. A correção no Back-end é uma linha na consulta do login (`where u.login = ? or c.email = ?`); com ela, os e-mails da tabela entram. O "Login antigo" serve só para testar a API por ferramenta (Postman, curl).
+- **Importar o banco com acentos corretos:** `mysql -u root -p --default-character-set=utf8mb4 < script.sql`. Sem essa opção, nomes como "Tecnologia da Informação" chegam ao app como "InformaÃ§Ã£o".
 - **Recuperação de senha por código.** Código de 4 dígitos enviado ao e-mail corporativo, com validade de 30 minutos e reenvio bloqueado por 2 minutos (RF 5.1.84). O 4º erro bloqueia a conta, e só o RH redefine a senha (RF 5.1.85 e 5.1.86). O app mostra a mensagem devolvida pelo servidor; os códigos de erro `CONTA_BLOQUEADA` e `TENTATIVAS_EXCEDIDAS` são suposição a confirmar com o Back-end.
 - São dados de teste: todas as senhas estão em texto puro no banco. Em produção devem ser trocadas e gravadas com hash.
 - Todos os 9 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
@@ -209,11 +210,12 @@ Telas sem barra inferior são fluxos que o usuário deve concluir ou cancelar (l
 | Esqueci minha senha | `POST /auth/senha/esqueci` |
 | Redefinir senha | `POST /auth/senha/redefinir` |
 | Sair | `POST /auth/logout` |
-| Alterar senha | `PUT /auth/senha` |
 | Servidor (Testar conexão) | `GET /auth/me` sem token: a API do AVALON responde 401 com o envelope de erro |
 | Home | `GET /dashboard`, `GET /feedback`, `GET /notificacao` |
+| Alterar senha (etapa 1) | `POST /auth/senha/codigo` com `senha_atual` (proposta; ainda fora do contrato) |
+| Alterar senha (etapa 2) | `PUT /auth/senha` com `senha_atual`, `codigo`, `nova_senha`, `confirmacao_nova_senha` |
 | Perfil | `GET /colaborador/{id}` |
-| Jornada | `GET /colaborador/{id}` → `GET /jornada_escala/{id}` → `GET /jornada_escala/{id}/dias` |
+| Jornada | `GET /colaborador/{id}` → `GET /jornada_escala/{id}` → `GET /jornada_escala/{id}/dias` (se a API não tiver essa rota, usa `GET /dia_semana` e filtra pela jornada) |
 | Férias | `GET /ferias?id_colaborador=`, `POST /ferias` |
 | Benefícios | `GET /colaborador/{id}/beneficio` |
 | Documentos / Downloads | `GET /documento?id_colaborador=`, `GET /documento/{id}/arquivo` |
@@ -250,7 +252,8 @@ Versões alinhadas entre si: Compose BOM `2024.09.00` (Compose 1.7), `activity-c
 |---|---|
 | `buildConfigField("String", "API_BASE_URL", ...)` | Endereço da API. `10.0.2.2` é o "localhost do computador" visto de dentro do emulador. Em celular físico, trocar pelo IP da máquina que roda a API |
 | `buildConfigField("boolean", "USE_MOCK_AUTH", "false")` | `false` = login, renovação e logout pela API real (`/auth`); `true` = login de demonstração |
-| `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = módulos das Sprints 2–4 com dados de demonstração; `false` = API real |
+| `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = módulos com dados de demonstração, exceto os listados em `MODULOS_API`; `false` = tudo pela API real |
+| `buildConfigField("String", "MODULOS_API", "\"perfil,jornada\"")` | Módulos que usam a API real mesmo com `USE_MOCK_API = true`. Valores aceitos hoje: `perfil`, `jornada`. Vazio (`"\"\""`) = tudo em demonstração |
 | `buildFeatures { buildConfig = true }` | Gera a classe `BuildConfig` com os dois campos acima |
 | `implementation(...)` | Declara as bibliotecas do catálogo |
 
@@ -510,14 +513,31 @@ Executa antes de toda requisição e troca esquema, IP e porta pelos do `ApiConf
 | Função | O que faz |
 |---|---|
 | `execute { api.algo() }` | Executa a chamada e devolve `AppResult`. Sucesso: `Success(corpo)`. HTTP de erro: lê o envelope `Erro`. Sem rede (`IOException`): `SEM_CONEXAO`. Resposta inesperada: `DESCONHECIDO` |
-| `parseError(response)` | Extrai `codigo` do JSON de erro; se não houver, usa `NAO_IMPLEMENTADO` (HTTP 404 ou 501, ou seja, rota que a API ainda não tem) ou `HTTP_<código>` |
+| `parseError(response)` | Extrai `codigo` do JSON de erro (aceita `mensagem` do contrato ou `message` do formato atual da API); se não houver código, usa `SEM_PERMISSAO` (HTTP 403), `NAO_IMPLEMENTADO` (HTTP 404 ou 501, rota que a API ainda não tem) ou `HTTP_<código>` |
 | `mensagemPara(codigo, ...)` | Traduz o código do contrato para a frase mostrada na tela |
+
+### `data/remote/LeituraApi.kt`
+
+Lê as respostas de Perfil e Jornada nos **dois formatos** que existem hoje, para o app funcionar antes de a equipe decidir a NC-10:
+
+| Formato | Exemplo |
+|---|---|
+| Contrato (`openapi.yaml`) | `{"id": 3, "nome": "...", "id_jornada_escala": 2, "cargo_nome": "..."}` |
+| API atual | `{"status": true, "response": {"colaborador": [{"id": 3, "cargo": {"classificacao": [{"nome": "..."}]}, "jornada_escala": [{"id": 2}]}]}}` |
+
+| Função | O que faz |
+|---|---|
+| `colaborador(json)` | Monta o `Colaborador`. Setor, cargo e jornada vêm do campo plano (`setor_nome`, `id_jornada_escala`) ou do objeto/lista aninhado. Datas com hora (`2024-01-15T00:00:00.000Z`) viram só a data |
+| `jornada(json)` | Monta a `JornadaEscala`; `status` aceita `true`/`false` ou `1`/`0` |
+| `dias(json, idJornada)` | Lê a lista de dias (`/jornada_escala/{id}/dias` ou `/dia_semana`) e mantém só os da jornada informada |
+
+Se a resposta não tiver o mínimo (id, nome, horários), a tela mostra "Resposta inesperada do servidor." em vez de dados errados.
 
 ### `data/repository/AvalonRepository.kt`
 
 Duas interfaces (contratos internos do app):
 
-- **`AuthRepository`**: `usuario` (quem está logado), `login`, `logout`, `esqueciSenha`, `redefinirSenha`.
+- **`AuthRepository`**: `usuario` (quem está logado), `login`, `logout`, `esqueciSenha`, `redefinirSenha`, `solicitarCodigoAlteracao` (etapa 1 da troca de senha) e `alterarSenha` (etapa 2, com o código).
 - **`AvalonRepository`**: uma função por necessidade de tela — `dashboard`, `comunicados`, `perfil`, `solicitarCorrecao`, `jornada`, `ferias`, `solicitarFerias`, `beneficios`, `solicitarBeneficio`, `documentos`, `baixarDocumento`, `feedbacks`, `respostasFeedback`, `responderFeedback`, `pesquisas`, `pesquisa`, `responderPesquisa`, `avaliacaoPendente`, `perguntasAvaliacao`, `responderAvaliacao`, `notificacoes`.
 
 O escopo (o titular só vê os próprios dados) é garantido pelo servidor.
@@ -532,10 +552,15 @@ Implementação que fala com a API real.
 | `RemoteAuthRepository.logout` | Revoga no servidor e apaga localmente mesmo se a rede falhar |
 | `idColaborador` | Pega o id do titular da sessão para montar as consultas |
 | `naoDisponivel(...)` | Resposta honesta para funções sem rota no contrato (correção cadastral, adesão a benefício): mensagem de "ainda não possui rota", nunca um falso sucesso |
-| `jornada()` | Encadeia três chamadas: colaborador → jornada → dias da jornada |
+| `perfil()` | `GET /colaborador/{id}` lido pelo `LeituraApi` |
+| `jornada()` | Encadeia colaborador → jornada → dias. Colaborador sem jornada vinculada devolve `null`, e a tela mostra o estado vazio (TS29, passo 3) |
 | `beneficios()` | Usa só as concessões do titular, porque o catálogo completo é exclusivo do RH |
 | `pesquisas()` | Busca todas e as pendentes; marca como respondida quem não está na lista de pendentes |
 | `perguntasAvaliacao()` | Descarta perguntas inativas e ordena por fator e ordem |
+
+### `data/repository/AvalonRepositoryMisto.kt`
+
+Usado quando `USE_MOCK_API = true`. Repassa cada função para a demonstração, exceto `perfil()` e `jornada()`, que vão para a API real se estiverem em `MODULOS_API`. Permite ligar um módulo por vez, à medida que o Back-end entrega as rotas.
 
 ### `data/repository/MockRepositories.kt`
 
@@ -546,6 +571,8 @@ Implementação de demonstração, com as mesmas regras do contrato e os textos 
 | `MockAuthRepository.login` | `ana.lucia/123456` entra; `inativo/123456` → `CONTA_INATIVA`; qualquer outro → `CREDENCIAIS_INVALIDAS`. A senha é conferida antes do status, como no contrato. Grava a sessão pelo mesmo armazenamento cifrado da versão real |
 | `esqueciSenha` | Sempre sucesso (o contrato nunca revela se o login existe) |
 | `redefinirSenha` | Aceita qualquer código de 4 dígitos |
+| `solicitarCodigoAlteracao` | Senha atual `123456` envia o código; outra senha → `SENHA_ATUAL_INCORRETA` e nenhum código |
+| `alterarSenha` | Código `1234` conclui. Código errado → `CODIGO_INVALIDO` (mensagem genérica); no 4º erro → `CONTA_BLOQUEADA` |
 | `LATENCIA` | Atraso artificial (500 ms) para simular a rede e exibir os indicadores de carregamento |
 | `MockAvalonRepository` | Guarda estado em memória: pedidos de férias criados, respostas de feedback, pesquisas respondidas |
 | `perfil()` | Cadastro de demonstração com o id e o nome do usuário realmente logado (quando o login é real) |
@@ -583,8 +610,11 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | `esqueciSenha()` | Exige o login preenchido e pede o código ao servidor |
 | `RedefinirSenhaViewModel` | Lê o `token` da rota, valida e envia a nova senha |
 | `validarPolitica(senha)` | Pré-validação: mínimo 8 caracteres, com letras e números. A política oficial é do Back-end (RF 5.1.41) |
-| `AlterarSenhaViewModel` | Troca de senha com a sessão aberta (TS06). Antes de enviar confere: senha atual preenchida, nova senha dentro da política, nova diferente da atual e confirmação igual à nova |
-| `AlterarSenhaViewModel.confirmar()` | Envia `PUT /auth/senha`. Sucesso: limpa os três campos e marca `concluido`. `SENHA_ATUAL_INCORRETA`: limpa só a senha atual e mostra o erro nela. Outros erros: banner |
+| `EtapaSenha` | `SENHA_ATUAL` (etapa 1) ou `CODIGO` (etapa 2) |
+| `AlterarSenhaViewModel.enviarCodigo()` | Etapa 1 (TS52, passos 1 e 2): exige a senha atual e pede o código. Senha atual errada → erro no campo e nenhuma mudança de etapa. Sucesso → etapa 2 e contagem de 2 minutos para reenviar |
+| `reenviar()` | Só age quando a contagem chega a zero (TS51, passo 1); o novo código invalida o anterior |
+| `confirmar()` | Etapa 2: confere código de 4 dígitos, política da nova senha, nova diferente da atual e confirmação. `CODIGO_INVALIDO` → mensagem genérica no campo do código. `CONTA_BLOQUEADA` → bloqueia a tela e oferece voltar ao login. `SENHA_ATUAL_INCORRETA` → volta à etapa 1 |
+| `voltar()` | Da etapa 2 para a 1, mantendo a senha atual digitada |
 
 ### `ServidorViewModel.kt`
 
@@ -699,8 +729,8 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | Arquivo | Conteúdo |
 |---|---|
 | `PerfilScreen.kt` | `Cabecalho` (avatar com iniciais), `InformacoesRegistro` (cada `Campo` com cadeado se só leitura), "Solicitar correção" (`CorrecaoDialog`), ajustes (`ItemAjuste`: Alterar Senha, Privacidade, Notificações, Termos, Sair) e confirmação de saída |
-| `AlterarSenhaScreen.kt` | Senha atual, nova senha e confirmação, com a regra da política abaixo dos campos. Ao concluir volta ao Perfil e mostra "Senha alterada com sucesso." |
-| `JornadaScreen.kt` | Semana em chips (`DiaChip`), legenda (`Legenda`) e um cartão por dia com horário ou "Folga" |
+| `AlterarSenhaScreen.kt` | Duas etapas (RF 5.1.40 e 5.1.41). Etapa 1: senha atual e "Enviar código". Etapa 2: código, nova senha, confirmação, "Salvar nova senha" e "Reenviar código em m:ss". O texto do topo deixa claro que só a senha do AVALON muda, não a do e-mail corporativo (TS50, passo 1). Conta bloqueada: encerra a sessão e volta ao login com o aviso |
+| `JornadaScreen.kt` | Semana em chips (`DiaChip`), legenda (`Legenda`) e um cartão por dia com horário ou "Folga". Sem jornada vinculada: "Nenhuma jornada vinculada ao seu cadastro. Procure o RH." |
 
 ### `ui/screens/ferias` — Sprint 3
 
@@ -809,15 +839,17 @@ Rodar: Android Studio → clique direito em `test` → **Run Tests**.
 
 | Tema | Situação | Decisão no app |
 |---|---|---|
-| Campo de login | Figma diz "E-mail"; contrato usa `login` | Rótulo "Login" |
-| Recuperação de senha | Figma não tem tela para informar o login | Usa o login digitado na tela de Login |
+| Campo de login | Decisão de 19/10: e-mail corporativo; a API ainda só aceita `tbl_usuario.login` | Rótulo "E-mail corporativo"; o valor vai no campo `login` |
+| Recuperação de senha | Figma não tem tela para informar o e-mail | Usa o e-mail digitado na tela de Login |
+| Formato das respostas (NC-10) | Contrato devolve o objeto; a API atual devolve `{status, response: {colaborador: [...]}}` | Perfil e Jornada leem os dois formatos (`LeituraApi`) |
+| Troca de senha com código | Sprint 2 exige senha atual + código; o contrato só tem `PUT /auth/senha` com senha atual | App usa `POST /auth/senha/codigo` (proposta) e envia `codigo` no `PUT /auth/senha` |
 | Correção cadastral, adesão a benefício, mural | Sem rota no contrato | Modo API real mostra "ainda não possui rota" |
 | Catálogo de benefícios | Restrito ao RH | Aba "Disponíveis" vazia no modo API real |
 | GHE, foto, remetente do feedback, lido/não lido, data das notificações, data do pedido de férias | Ausentes no contrato | Campos opcionais, exibidos só se vierem |
 | Saldo de férias | Ausente no contrato | Calculado no app (`SaldoFerias`), provisório |
 | Escala da pesquisa | Figma mostra 4 opções; contrato pede 1–5 | Incluído "Neutro" como 3 |
 | Versões das bibliotecas | Compose (BOM 2024.09) estava desalinhado com `activity-compose` 1.13 | Resolvido em 16/10: `activity-compose` 1.9.3 |
-| Alterar senha | Contrato tem `PUT /auth/senha`; a API ainda não | Tela pronta; até a rota existir mostra "Funcionalidade ainda não disponível no servidor." |
+| Alterar senha | Contrato tem `PUT /auth/senha`; a API ainda não | Tela pronta; até as rotas existirem mostra "Funcionalidade ainda não disponível no servidor." |
 
 ---
 
@@ -849,13 +881,19 @@ A partir de 16/10/2026 o login do app usa a API real. As rotas foram implementad
 | `POST /auth/refresh` | `TokenRefresher.refresh` | Troca o refresh por um novo par de tokens; o refresh antigo deixa de valer (rotação) |
 | `POST /auth/logout` | `RemoteAuthRepository.logout` | Encerra a sessão no servidor; o token antigo passa a ser recusado |
 | `GET /auth/me` | `ServidorTester.testar` (sem token, só para reconhecer a API) | Devolve o usuário e os menus da sessão atual |
-| `PUT /auth/senha` | `RemoteAuthRepository.alterarSenha` | **Ainda não existe na API.** O app já envia `senha_atual`, `nova_senha` e `confirmacao_nova_senha` e trata 204 e 422 `SENHA_ATUAL_INCORRETA` |
+| `POST /auth/senha/codigo` | `RemoteAuthRepository.solicitarCodigoAlteracao` | **Proposta, não existe na API nem no contrato.** Recebe `senha_atual`; 202 envia o código; 422 `SENHA_ATUAL_INCORRETA` sem enviar; 429 `REENVIO_BLOQUEADO` antes de 2 minutos |
+| `PUT /auth/senha` | `RemoteAuthRepository.alterarSenha` | **Ainda não existe na API.** O app envia `senha_atual`, `codigo`, `nova_senha` e `confirmacao_nova_senha`; trata 204, 422 `SENHA_ATUAL_INCORRETA`, 422 `CODIGO_INVALIDO` e `CONTA_BLOQUEADA` |
+| `GET /colaborador/{id}` | `RemoteAvalonRepository.perfil` e `jornada` | Existe, mas em 21/10 só o RH tem acesso: o Colaborador recebe 403 e o app mostra "Você não tem permissão para ver estes dados." Precisa liberar o GET do próprio id |
+| `GET /jornada_escala/{id}`, `GET /dia_semana` | `RemoteAvalonRepository.jornada` | Existem e aceitam qualquer usuário logado |
 
 Respostas que o app trata:
 
 | Situação | HTTP / `codigo` | Mensagem na tela |
 |---|---|---|
-| Login inexistente ou senha errada (mesma resposta e mesmo tempo nos dois casos) | 401 `CREDENCIAIS_INVALIDAS` | Login ou senha inválidos. |
+| E-mail inexistente ou senha errada (mesma resposta e mesmo tempo nos dois casos) | 401 `CREDENCIAIS_INVALIDAS` | E-mail ou senha inválidos. |
+| Código errado na troca de senha (1º ao 3º erro) | 422 `CODIGO_INVALIDO` | Código inválido ou expirado. |
+| 4º código errado | `CONTA_BLOQUEADA` | Conta bloqueada por excesso de tentativas. Procure o RH para redefinir sua senha. |
+| Perfil sem permissão | 403 sem `codigo` | Você não tem permissão para ver estes dados. |
 | Senha correta, colaborador inativo ou desligado | 403 `CONTA_INATIVA` | Esta conta está inativa. Procure o RH. |
 | Alterar senha com a senha atual errada | 422 `SENHA_ATUAL_INCORRETA` | A senha atual está incorreta. (no campo "Senha atual") |
 | Rota que a API ainda não tem | 404 ou 501 sem envelope | Funcionalidade ainda não disponível no servidor. |
@@ -863,15 +901,42 @@ Respostas que o app trata:
 | Sessão expirada, revogada ou token adulterado | 401 `TOKEN_INVALIDO` | Sua sessão expirou. Faça login novamente. |
 | API desligada ou inalcançável | sem resposta | Não foi possível conectar ao servidor. Verifique sua conexão. |
 
-Tempos de sessão: o access token vale 15 minutos e o app o renova sozinho. A sessão cai após **30 minutos sem uso** (validade do refresh), atendendo o TS05.
+Tempos de sessão: o app renova o access token sozinho. Em 16/10 o access valia 15 minutos e o refresh 30 minutos, atendendo o TS05 (30 minutos sem uso). **Em 21/10 o Back-end mudou para 24 horas e 30 dias**, então o TS05 deixa de passar até os valores voltarem.
 
 Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
 
-As demais rotas das Sprints 2–4 ainda não existem na API; por isso essas telas seguem com dados de demonstração (`USE_MOCK_API = true`).
+Perfil e Jornada usam a API real (`MODULOS_API = "perfil,jornada"`). As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
+
+**Validação de 21/10** (MariaDB com o `script.sql` atual e API da main, commit `ad496ac`):
+
+| Cenário | API da main | API com as duas correções pedidas ao Back-end* |
+|---|---|---|
+| Login com `rafael.martins@empresa.com` | Recusado (401) | Entra |
+| Perfil do Colaborador | 403 "Você não tem permissão" | Nome, matrícula, setor e cargo reais |
+| Perfil de outro colaborador (pelo id) | 403 | 403 |
+| Jornada do Colaborador | Bloqueada pelo 403 do perfil | "Jornada Flexível", 09:00–18:00, SEG/TER/QUI/SEX |
+
+\* Correções testadas numa cópia local da API, sem alterar o repositório: (1) login aceitar o e-mail; (2) `GET /colaborador/{id}` liberado quando o id é o do próprio usuário.
 
 ---
 
 ## 16. Histórico de atualizações
+
+### 21/10/2026 (Sprint 2)
+
+**App mobile**
+
+| Mudança | Arquivos | Motivo |
+|---|---|---|
+| Troca de senha em duas etapas: senha atual → código de 4 dígitos no e-mail corporativo → nova senha. Reenvio bloqueado por 2 minutos; 4º código errado bloqueia a conta e volta ao login | `ui/screens/perfil/AlterarSenhaScreen.kt`, `viewmodel/AuthViewModels.kt`, `model/Auth.kt`, `data/remote/AvalonApi.kt`, `data/repository/*`, `navigation/AvalonNavHost.kt` | RF 5.1.40 e 5.1.41; TS52, TS51 (passos 1, 3 e 4) e TS50 (passo 1) |
+| Perfil e Jornada com dados reais da API | `data/repository/AvalonRepositoryMisto.kt`, `data/repository/RemoteRepositories.kt`, `data/AppContainer.kt`, `app/build.gradle.kts` (`MODULOS_API`) | Sprint 2 (6.5.1 e 6.5.3) |
+| Leitura das respostas no formato do contrato e no formato atual da API | `data/remote/LeituraApi.kt` | NC-10 ainda sem decisão |
+| Jornada sem vínculo mostra estado vazio em vez de erro | `ui/screens/perfil/JornadaScreen.kt`, `viewmodel/PerfilViewModels.kt`, `model/Colaborador.kt` | TS29, passo 3 |
+| Mensagens: 403 sem código, `CODIGO_INVALIDO`, `REENVIO_BLOQUEADO`, `CONTA_BLOQUEADA`; "E-mail ou senha inválidos." | `data/remote/ApiCall.kt` | Login por e-mail e troca de senha com código |
+
+**Validação:** 27 testes automatizados passando, incluindo a troca de senha (senha atual errada não envia código; reenvio bloqueado antes de 2 minutos; 3 erros de código com mensagem genérica; 4º erro bloqueia; código certo conclui) e Perfil/Jornada contra a API real (tabela da seção 15). Falta repetir no emulador.
+
+**Dependências do Back-end para fechar a Sprint 2 no app:** login aceitar o e-mail; Colaborador ler o próprio `GET /colaborador/{id}`; rotas `POST /auth/senha/codigo` e `PUT /auth/senha` com código; envio do e-mail com o código (pré-requisito da Sprint 2); voltar o tempo de sessão para 15 minutos/30 minutos (TS05).
 
 ### 16/10/2026 (segunda entrega)
 

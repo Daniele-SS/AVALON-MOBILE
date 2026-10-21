@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.avalon_mobile.data.AppResult
 import com.example.avalon_mobile.data.repository.AuthRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -235,15 +237,24 @@ class CodigoRecuperacaoViewModel(
     }
 }
 
+enum class EtapaSenha { SENHA_ATUAL, CODIGO }
+
 data class AlterarSenhaUiState(
+    val etapa: EtapaSenha = EtapaSenha.SENHA_ATUAL,
     val senhaAtual: String = "",
+    val codigo: String = "",
     val novaSenha: String = "",
     val confirmacao: String = "",
     val senhaAtualError: String? = null,
+    val codigoError: String? = null,
     val novaSenhaError: String? = null,
     val confirmacaoError: String? = null,
     val error: String? = null,
+    val mensagem: String? = null,
+    val segundosParaReenviar: Int = 0,
+    val enviandoCodigo: Boolean = false,
     val loading: Boolean = false,
+    val contaBloqueada: Boolean = false,
     val concluido: Boolean = false
 )
 
@@ -252,32 +263,92 @@ class AlterarSenhaViewModel(private val auth: AuthRepository) : ViewModel() {
     private val _state = MutableStateFlow(AlterarSenhaUiState())
     val state: StateFlow<AlterarSenhaUiState> = _state.asStateFlow()
 
+    private var contagem: Job? = null
+
     fun onSenhaAtual(v: String) = _state.update { it.copy(senhaAtual = v, senhaAtualError = null, error = null) }
+    fun onCodigo(v: String) = _state.update { it.copy(codigo = v.filter(Char::isDigit).take(TAMANHO_CODIGO), codigoError = null, error = null) }
     fun onNovaSenha(v: String) = _state.update { it.copy(novaSenha = v, novaSenhaError = null, error = null) }
     fun onConfirmacao(v: String) = _state.update { it.copy(confirmacao = v, confirmacaoError = null, error = null) }
 
+    fun enviarCodigo() {
+        val s = _state.value
+        if (s.enviandoCodigo || s.contaBloqueada) return
+        if (s.senhaAtual.isEmpty()) {
+            _state.update { it.copy(senhaAtualError = "Informe sua senha atual.") }
+            return
+        }
+        _state.update { it.copy(enviandoCodigo = true, error = null, mensagem = null) }
+        viewModelScope.launch {
+            when (val r = auth.solicitarCodigoAlteracao(s.senhaAtual)) {
+                is AppResult.Success -> {
+                    _state.update {
+                        it.copy(
+                            enviandoCodigo = false,
+                            etapa = EtapaSenha.CODIGO,
+                            codigo = "",
+                            mensagem = if (s.etapa == EtapaSenha.CODIGO) "Enviamos um novo código. O anterior deixou de valer." else null
+                        )
+                    }
+                    iniciarContagem()
+                }
+                is AppResult.Failure -> tratarFalha(r.error.codigo, r.error.mensagem) { it.copy(enviandoCodigo = false) }
+            }
+        }
+    }
+
+    fun reenviar() {
+        if (_state.value.segundosParaReenviar > 0) return
+        enviarCodigo()
+    }
+
+    fun voltar() {
+        contagem?.cancel()
+        _state.update { AlterarSenhaUiState(senhaAtual = it.senhaAtual) }
+    }
+
     fun confirmar() {
         val s = _state.value
-        if (s.loading) return
-        val atual = if (s.senhaAtual.isEmpty()) "Informe sua senha atual." else null
+        if (s.loading || s.contaBloqueada || s.etapa != EtapaSenha.CODIGO) return
+        val codigo = if (s.codigo.length != TAMANHO_CODIGO) "Informe o código de $TAMANHO_CODIGO dígitos enviado ao seu e-mail." else null
         val nova = RedefinirSenhaViewModel.validarPolitica(s.novaSenha)
             ?: if (s.novaSenha == s.senhaAtual) "A nova senha deve ser diferente da atual." else null
         val confirmacao = if (s.confirmacao != s.novaSenha) "As senhas não conferem." else null
-        if (atual != null || nova != null || confirmacao != null) {
-            _state.update { it.copy(senhaAtualError = atual, novaSenhaError = nova, confirmacaoError = confirmacao) }
+        if (codigo != null || nova != null || confirmacao != null) {
+            _state.update { it.copy(codigoError = codigo, novaSenhaError = nova, confirmacaoError = confirmacao) }
             return
         }
-        _state.update { it.copy(loading = true, error = null) }
+        _state.update { it.copy(loading = true, error = null, mensagem = null) }
         viewModelScope.launch {
-            when (val r = auth.alterarSenha(s.senhaAtual, s.novaSenha, s.confirmacao)) {
-                is AppResult.Success -> _state.update { AlterarSenhaUiState(concluido = true) }
-                is AppResult.Failure -> _state.update {
-                    if (r.error.codigo == "SENHA_ATUAL_INCORRETA") {
-                        it.copy(loading = false, senhaAtual = "", senhaAtualError = r.error.mensagem)
-                    } else {
-                        it.copy(loading = false, error = r.error.mensagem)
-                    }
+            when (val r = auth.alterarSenha(s.senhaAtual, s.codigo, s.novaSenha, s.confirmacao)) {
+                is AppResult.Success -> {
+                    contagem?.cancel()
+                    _state.update { AlterarSenhaUiState(concluido = true) }
                 }
+                is AppResult.Failure -> tratarFalha(r.error.codigo, r.error.mensagem) { it.copy(loading = false) }
+            }
+        }
+    }
+
+    private fun tratarFalha(codigo: String, mensagem: String, base: (AlterarSenhaUiState) -> AlterarSenhaUiState) {
+        if (codigo in CODIGOS_CONTA_BLOQUEADA || codigo == "SENHA_ATUAL_INCORRETA") contagem?.cancel()
+        _state.update {
+            val s = base(it)
+            when {
+                codigo in CODIGOS_CONTA_BLOQUEADA -> s.copy(contaBloqueada = true, error = mensagem, segundosParaReenviar = 0)
+                codigo == "SENHA_ATUAL_INCORRETA" -> AlterarSenhaUiState(senhaAtualError = mensagem)
+                codigo == "CODIGO_INVALIDO" -> s.copy(codigo = "", codigoError = mensagem)
+                else -> s.copy(error = mensagem)
+            }
+        }
+    }
+
+    private fun iniciarContagem() {
+        contagem?.cancel()
+        _state.update { it.copy(segundosParaReenviar = SEGUNDOS_REENVIO) }
+        contagem = viewModelScope.launch {
+            while (_state.value.segundosParaReenviar > 0) {
+                delay(1_000)
+                _state.update { it.copy(segundosParaReenviar = (it.segundosParaReenviar - 1).coerceAtLeast(0)) }
             }
         }
     }

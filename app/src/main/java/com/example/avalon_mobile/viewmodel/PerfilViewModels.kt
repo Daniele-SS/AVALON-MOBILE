@@ -74,7 +74,7 @@ enum class TipoDia { TRABALHO, HOJE, FOLGA }
 
 data class DiaEscala(val data: LocalDate, val sigla: String, val tipo: TipoDia, val trabalha: Boolean)
 
-data class JornadaUi(val jornada: JornadaEscala, val semana: List<DiaEscala>)
+data class JornadaUi(val jornada: JornadaEscala?, val semana: List<DiaEscala>)
 
 class JornadaViewModel(private val repository: AvalonRepository) : ViewModel() {
 
@@ -87,7 +87,9 @@ class JornadaViewModel(private val repository: AvalonRepository) : ViewModel() {
         _state.value = LoadState.Loading
         viewModelScope.launch {
             _state.value = when (val r = repository.jornada()) {
-                is AppResult.Success -> LoadState.Content(JornadaUi(r.data.first, montarSemana(r.data.second)))
+                is AppResult.Success -> LoadState.Content(
+                    r.data?.let { (jornada, dias) -> JornadaUi(jornada, montarSemana(dias)) } ?: JornadaUi(null, emptyList())
+                )
                 is AppResult.Failure -> LoadState.Error(r.error.mensagem)
             }
         }

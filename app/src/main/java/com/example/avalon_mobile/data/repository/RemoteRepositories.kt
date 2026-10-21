@@ -6,7 +6,10 @@ import com.example.avalon_mobile.data.local.SessionManager
 import com.example.avalon_mobile.data.map
 import com.example.avalon_mobile.data.remote.ApiCall
 import com.example.avalon_mobile.data.remote.AvalonApi
+import com.example.avalon_mobile.data.remote.LeituraApi
 import com.example.avalon_mobile.model.AlterarSenhaRequest
+import com.example.avalon_mobile.model.SolicitarCodigoSenhaRequest
+import com.google.gson.JsonElement
 import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.BeneficioItem
@@ -74,8 +77,11 @@ class RemoteAuthRepository(
     override suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
         call.execute { api.redefinirSenha(RedefinirSenhaRequest(token.trim(), novaSenha, confirmacao)) }
 
-    override suspend fun alterarSenha(senhaAtual: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
-        call.execute { api.alterarSenha(AlterarSenhaRequest(senhaAtual, novaSenha, confirmacao)) }
+    override suspend fun solicitarCodigoAlteracao(senhaAtual: String): AppResult<Unit> =
+        call.execute { api.solicitarCodigoSenha(SolicitarCodigoSenhaRequest(senhaAtual)) }
+
+    override suspend fun alterarSenha(senhaAtual: String, codigo: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
+        call.execute { api.alterarSenha(AlterarSenhaRequest(senhaAtual, codigo.trim(), novaSenha, confirmacao)) }
 }
 
 class RemoteAvalonRepository(
@@ -93,21 +99,34 @@ class RemoteAvalonRepository(
 
     override suspend fun comunicados(): AppResult<List<Comunicado>> = AppResult.Success(emptyList())
 
-    override suspend fun perfil(): AppResult<Colaborador> = call.execute { api.colaborador(idColaborador) }
+    private fun <T> ler(resultado: AppResult<JsonElement>, leitor: (JsonElement) -> T?): AppResult<T> = when (resultado) {
+        is AppResult.Failure -> resultado
+        is AppResult.Success -> leitor(resultado.data)?.let { AppResult.Success(it) }
+            ?: AppResult.Failure(AppError(AppError.DESCONHECIDO, "Resposta inesperada do servidor."))
+    }
+
+    override suspend fun perfil(): AppResult<Colaborador> =
+        ler(call.execute { api.colaborador(idColaborador) }, LeituraApi::colaborador)
 
     override suspend fun solicitarCorrecao(solicitacao: SolicitacaoCorrecao): AppResult<Unit> =
         naoDisponivel("A solicitação de correção cadastral")
 
-    override suspend fun jornada(): AppResult<Pair<JornadaEscala, List<DiaSemana>>> {
+    override suspend fun jornada(): AppResult<Pair<JornadaEscala, List<DiaSemana>>?> {
         val colaborador = when (val r = perfil()) {
             is AppResult.Failure -> return r
             is AppResult.Success -> r.data
         }
-        val jornada = when (val r = call.execute { api.jornada(colaborador.idJornadaEscala) }) {
+        val idJornada = colaborador.idJornadaEscala ?: return AppResult.Success(null)
+        val jornada = when (val r = ler(call.execute { api.jornada(idJornada) }, LeituraApi::jornada)) {
             is AppResult.Failure -> return r
             is AppResult.Success -> r.data
         }
-        return call.execute { api.diasJornada(jornada.id) }.map { jornada to it }
+        val dias = when (val r = call.execute { api.diasJornada(jornada.id) }) {
+            is AppResult.Failure ->
+                if (r.error.codigo == AppError.NAO_IMPLEMENTADO) call.execute { api.diasSemana() } else return r
+            is AppResult.Success -> r
+        }
+        return ler(dias) { LeituraApi.dias(it, jornada.id) }.map { jornada to it }
     }
 
     override suspend fun ferias(): AppResult<List<Ferias>> = call.execute { api.ferias(idColaborador) }

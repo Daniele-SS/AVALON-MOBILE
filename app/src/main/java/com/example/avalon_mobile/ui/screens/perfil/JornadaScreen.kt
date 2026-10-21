@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.LoadStateContent
@@ -54,7 +55,12 @@ fun JornadaScreen(
     Column(Modifier.fillMaxSize().background(Background)) {
         AvalonTopBar("Jornada e escala", onBack = onBack)
         LoadStateContent(state, onRetry = viewModel::carregar) { ui ->
-            val horario = "${Datas.hora(ui.jornada.horaInicio)} — ${Datas.hora(ui.jornada.horaFim)}"
+            val jornada = ui.jornada
+            if (jornada == null) {
+                EmptyState("Nenhuma jornada vinculada ao seu cadastro. Procure o RH.")
+                return@LoadStateContent
+            }
+            val horario = "${Datas.hora(jornada.horaInicio)} — ${Datas.hora(jornada.horaFim)}"
             LazyColumn(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -78,7 +84,7 @@ fun JornadaScreen(
                         Row(verticalAlignment = Alignment.Top) {
                             Column(Modifier.weight(1f)) {
                                 Text("${Datas.nomeDia(dia.data.dayOfWeek)}, ${dia.data.dayOfMonth}", fontFamily = Inter, fontSize = 15.sp, color = TextPrimary)
-                                Text(ui.jornada.nome, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
+                                Text(jornada.nome, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
                             }
                             Text(if (dia.trabalha) horario else "Folga", fontFamily = Inter, fontSize = 13.sp, color = Navy)
                         }

@@ -27,8 +27,13 @@ data class RedefinirSenhaRequest(
     @SerializedName("confirmacao_nova_senha") val confirmacaoNovaSenha: String
 )
 
+data class SolicitarCodigoSenhaRequest(
+    @SerializedName("senha_atual") val senhaAtual: String
+)
+
 data class AlterarSenhaRequest(
     @SerializedName("senha_atual") val senhaAtual: String,
+    val codigo: String,
     @SerializedName("nova_senha") val novaSenha: String,
     @SerializedName("confirmacao_nova_senha") val confirmacaoNovaSenha: String
 )
@@ -80,6 +85,7 @@ data class MeResponse(
 data class ApiErro(
     val codigo: String? = null,
     val mensagem: String? = null,
+    val message: String? = null,
     val detalhes: List<ErroDetalhe>? = null
 )
 

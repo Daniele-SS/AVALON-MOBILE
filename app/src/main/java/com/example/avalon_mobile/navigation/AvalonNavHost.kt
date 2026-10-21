@@ -237,6 +237,13 @@ fun AvalonNavHost(container: AppContainer) {
                         onConcluido = {
                             navController.popBackStack()
                             scope.launch { snackbar.showSnackbar("Senha alterada com sucesso.") }
+                        },
+                        onContaBloqueada = {
+                            scope.launch {
+                                container.authRepository.logout()
+                                avisoLogin = "Conta bloqueada por excesso de tentativas. Procure o RH para redefinir sua senha."
+                                navController.reiniciarEm(Routes.LOGIN)
+                            }
                         }
                     )
                 }

@@ -85,16 +85,37 @@ class MockAuthRepository(
         else AppResult.Failure(AppError("TOKEN_REDEFINICAO_INVALIDO", "O código expirou ou já foi utilizado.", 422))
     }
 
-    override suspend fun alterarSenha(senhaAtual: String, novaSenha: String, confirmacao: String): AppResult<Unit> {
+    private var errosCodigo = 0
+
+    override suspend fun solicitarCodigoAlteracao(senhaAtual: String): AppResult<Unit> {
         delay(LATENCIA)
         return if (senhaAtual == SENHA_DEMO) AppResult.Success(Unit)
         else AppResult.Failure(AppError("SENHA_ATUAL_INCORRETA", "A senha atual está incorreta.", 422))
     }
 
+    override suspend fun alterarSenha(senhaAtual: String, codigo: String, novaSenha: String, confirmacao: String): AppResult<Unit> {
+        delay(LATENCIA)
+        if (senhaAtual != SENHA_DEMO) return AppResult.Failure(AppError("SENHA_ATUAL_INCORRETA", "A senha atual está incorreta.", 422))
+        if (errosCodigo >= LIMITE_ERROS_CODIGO) return contaBloqueada()
+        if (codigo.trim() != CODIGO_DEMO) {
+            errosCodigo++
+            return if (errosCodigo >= LIMITE_ERROS_CODIGO) contaBloqueada()
+            else AppResult.Failure(AppError("CODIGO_INVALIDO", "Código inválido ou expirado.", 422))
+        }
+        errosCodigo = 0
+        return AppResult.Success(Unit)
+    }
+
+    private fun contaBloqueada() = AppResult.Failure(
+        AppError("CONTA_BLOQUEADA", "Conta bloqueada por excesso de tentativas. Procure o RH para redefinir sua senha.", 423)
+    )
+
     companion object {
         const val LOGIN_DEMO = "ana.lucia@empresa.com.br"
         const val LOGIN_INATIVO = "inativo@empresa.com.br"
         const val SENHA_DEMO = "123456"
+        const val CODIGO_DEMO = "1234"
+        const val LIMITE_ERROS_CODIGO = 4
         const val LATENCIA = 500L
     }
 }

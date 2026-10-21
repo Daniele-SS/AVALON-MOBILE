@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName
 
 data class Colaborador(
     val id: Int,
-    @SerializedName("id_setor") val idSetor: Int,
-    @SerializedName("id_cargo") val idCargo: Int,
-    @SerializedName("id_jornada_escala") val idJornadaEscala: Int,
+    @SerializedName("id_setor") val idSetor: Int? = null,
+    @SerializedName("id_cargo") val idCargo: Int? = null,
+    @SerializedName("id_jornada_escala") val idJornadaEscala: Int? = null,
     val matricula: String,
     val nome: String,
     val cpf: String,
