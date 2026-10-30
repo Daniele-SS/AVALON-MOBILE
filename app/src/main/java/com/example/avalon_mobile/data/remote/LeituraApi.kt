@@ -68,7 +68,7 @@ object LeituraApi {
         val itens = lista(json, "ferias") ?: return null
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
-            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.let { it.inteiro("id") ?: it.inteiro("id_colaborador") }
             if (dono != idColaborador) return@mapNotNull null
             feriasDe(o).let { it?.copy(idColaborador = dono) }
         }
@@ -99,7 +99,7 @@ object LeituraApi {
         }.toMap()
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
-            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.let { it.inteiro("id") ?: it.inteiro("id_colaborador") }
             if (dono != idColaborador) return@mapNotNull null
             val beneficio = relacionado(o, "beneficio")?.let { beneficioDe(it) }
                 ?: o.inteiro("id_beneficio")?.let { catalogoPorId[it] }
@@ -122,7 +122,7 @@ object LeituraApi {
         val itens = lista(json, "documentos") ?: return null
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
-            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.let { it.inteiro("id") ?: it.inteiro("id_colaborador") }
             if (dono != idColaborador) return@mapNotNull null
             if (o.logico("ativo") == false) return@mapNotNull null
             Documento(

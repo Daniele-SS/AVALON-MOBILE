@@ -30,6 +30,7 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -82,6 +83,8 @@ interface AvalonApi {
     @GET("v1/senai/avalon/ferias")
     suspend fun ferias(): Response<JsonElement>
 
+    // O Back-end compara o Content-Type com "application/json" exato; sem isto o Retrofit acrescenta "; charset=UTF-8" e a API responde 415.
+    @Headers("Content-Type: application/json")
     @POST("v1/senai/avalon/ferias")
     suspend fun solicitarFerias(@Body body: FeriasRequest): Response<JsonElement>
 

@@ -934,6 +934,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 
 ## 16. Histórico de atualizações
 
+### 30/10/2026 (Solicitação de férias: Content-Type)
+
+O `POST /ferias` passou a ser aceito sem restrição de perfil, mas as rotas CRUD do Back-end comparam o `Content-Type` com `application/json` exato. O Retrofit envia `application/json; charset=UTF-8` e a API respondia 415 ("o formato de dados aceito pela API é somente JSON"). A chamada agora declara `@Headers("Content-Type: application/json")`. Também passou a reconhecer o titular pelo campo `id_colaborador` quando o objeto `colaborador` embutido não traz `id`. Arquivos: `AvalonApi.kt`, `LeituraApi.kt`.
+
 ### 30/10/2026 (Notificações)
 
 Com Férias pela API real, a Central de Notificações deixa de mostrar as notificações de demonstração (pesquisa, férias, feedback e documento fictícios) e exibe "Você não tem notificações." Elas só voltam com a rota `GET /notificacao` e a geração dos eventos no Back-end (Sprint 4, 6.3.4). Arquivo: `AvalonRepositoryMisto.kt`.
