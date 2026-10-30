@@ -66,8 +66,9 @@ object LeituraApi {
         val itens = lista(json, "ferias") ?: return null
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
-            if (o.inteiro("id_colaborador") != idColaborador) return@mapNotNull null
-            feriasDe(o)
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            if (dono != idColaborador) return@mapNotNull null
+            feriasDe(o).let { it?.copy(idColaborador = dono) }
         }
     }
 

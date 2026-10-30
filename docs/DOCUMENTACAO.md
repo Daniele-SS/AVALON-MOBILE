@@ -936,7 +936,7 @@ Perfil, Jornada e Férias usam a API real (`MODULOS_API = "perfil,jornada,ferias
 
 ### 30/10/2026
 
-Férias passam a usar a API real (`MODULOS_API = "perfil,jornada,ferias"`): `GET /ferias` (o servidor devolve todos os registros e o app filtra por `id_colaborador`) e `POST /ferias` com `id_colaborador` do titular. Pendência no Back-end: hoje só o RH grava (`autorizar.escrita(NIVEL.RH)`), então o Colaborador recebe 403 ao solicitar. Arquivos: `AvalonApi.kt`, `LeituraApi.kt`, `RemoteRepositories.kt`, `AvalonRepositoryMisto.kt`, `Ferias.kt`, `app/build.gradle.kts`.
+Férias passam a usar a API real (`MODULOS_API = "perfil,jornada,ferias"`): `GET /ferias` (o servidor devolve os registros de todos os colaboradores, com o titular em `colaborador` no lugar de `id_colaborador`, e responde 404 quando a lista está vazia; o app filtra pelo titular e trata o 404 como lista vazia) e `POST /ferias` com `id_colaborador` do titular. Pendência no Back-end: hoje só o RH grava (`autorizar.escrita(NIVEL.RH)`), então o Colaborador recebe 403 ao solicitar. Arquivos: `AvalonApi.kt`, `LeituraApi.kt`, `RemoteRepositories.kt`, `AvalonRepositoryMisto.kt`, `Ferias.kt`, `app/build.gradle.kts`.
 
 ### 22/10/2026
 
