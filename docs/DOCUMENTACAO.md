@@ -883,7 +883,7 @@ A partir de 16/10/2026 o login do app usa a API real. As rotas foram implementad
 | `GET /auth/me` | `ServidorTester.testar` (sem token, só para reconhecer a API) | Devolve o usuário e os menus da sessão atual |
 | `POST /auth/senha/codigo` | `RemoteAuthRepository.solicitarCodigoAlteracao` | **Proposta, não existe na API nem no contrato.** Recebe `senha_atual`; 202 envia o código; 422 `SENHA_ATUAL_INCORRETA` sem enviar; 429 `REENVIO_BLOQUEADO` antes de 2 minutos |
 | `PUT /auth/senha` | `RemoteAuthRepository.alterarSenha` | **Ainda não existe na API.** O app envia `senha_atual`, `codigo`, `nova_senha` e `confirmacao_nova_senha`; trata 204, 422 `SENHA_ATUAL_INCORRETA`, 422 `CODIGO_INVALIDO` e `CONTA_BLOQUEADA` |
-| `GET /colaborador/{id}` | `RemoteAvalonRepository.perfil` e `jornada` | Existe, mas em 21/10 só o RH tem acesso: o Colaborador recebe 403 e o app mostra "Você não tem permissão para ver estes dados." Precisa liberar o GET do próprio id |
+| `GET /colaborador/{id}` | `RemoteAvalonRepository.perfil` e `jornada` | Existe. Desde 30/10 o Colaborador lê o próprio cadastro (200) e recebe 403 ao pedir o de outro. Devolve `setor` como lista, `cargo` como objeto e `jornada_escala` como lista |
 | `GET /jornada_escala/{id}`, `GET /dia_semana` | `RemoteAvalonRepository.jornada` | Existem e aceitam qualquer usuário logado |
 
 Respostas que o app trata:
@@ -917,7 +917,7 @@ Consequências que os testes precisam considerar:
 
 Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
 
-Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API = "perfil,jornada,ferias,beneficio,documento"`). As rotas de férias do Back-end devolvem os registros de todos os colaboradores (o app filtra pelo titular) e só aceitam `POST` do RH (um Colaborador recebe 403). As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
+Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API = "perfil,jornada,ferias,beneficio,documento"`). Desde o merge `fix/seguranca-ferias-e-auth` do Back-end (30/10/2026, commit `7d1b748`): (1) as rotas CRUD aceitam `application/json; charset=UTF-8`; (2) `GET /ferias` e `POST /ferias` valem para qualquer perfil logado, `PUT` e `DELETE` só para o RH; (3) no `POST` de um Colaborador o servidor ignora o `id_colaborador` do corpo e usa o do token, grava o status `Pendente` e recalcula `quantidade_dias`; (4) um período que cruza outro pedido do mesmo colaborador responde 409 "Já existe um pedido de férias nesse período."; (5) `GET /ferias`, `GET /documento` e `GET /beneficio_colaborador` devolvem só os registros do titular (o Gestor vê a equipe do setor nas férias) e o `caminho_arquivo` do documento só vai para o RH; (6) lista sem registros responde 200 com lista vazia (antes 404). O app continua filtrando pelo titular, o que é inofensivo com o filtro do servidor. O download do documento (`GET /documento/{id}/arquivo`), a adesão a benefício e a aprovação de férias ainda não existem no Back-end. As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
 
 **Validação de 21/10** (MariaDB com o `script.sql` atual e API da main, commit `ad496ac`):
 
@@ -933,6 +933,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 ---
 
 ## 16. Histórico de atualizações
+
+### 30/10/2026 (Alinhamento com o Back-end após a correção de segurança)
+
+Conferido o formato real das respostas do Back-end (commit `62369eb`, banco BD01 a BD04) contra os leitores de `LeituraApi.kt`: férias, documentos e benefícios (com `beneficio.beneficios[]` aninhado) são lidos sem alteração de código. Um Colaborador passa a ver só os próprios registros, e a solicitação de férias é criada como `Pendente`. O erro 409 chega ao usuário com a mensagem do servidor. Seção 15 atualizada. Observação para o Back-end: `GET /v1/senai/vw-colaboradores` (rota nova, fora do prefixo `/v1/senai/avalon`) responde 200 a qualquer perfil logado com login, e-mail e nível de acesso de todos os colaboradores; o app não usa essa rota.
 
 ### 30/10/2026 (Perfil: formato do cadastro)
 
