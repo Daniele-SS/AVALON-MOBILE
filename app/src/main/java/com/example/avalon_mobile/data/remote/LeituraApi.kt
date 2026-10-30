@@ -1,7 +1,10 @@
 package com.example.avalon_mobile.data.remote
 
 import com.example.avalon_mobile.model.Colaborador
+import com.example.avalon_mobile.model.Beneficio
+import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.DiaSemana
+import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
 import com.google.gson.JsonArray
@@ -86,6 +89,49 @@ object LeituraApi {
         idColaborador = o.inteiro("id_colaborador"),
         status = o.texto("status")
     )
+
+    fun beneficios(concessoes: JsonElement, catalogo: JsonElement, idColaborador: Int): List<BeneficioItem>? {
+        val itens = lista(concessoes, "beneficioColaborador") ?: return null
+        val catalogoPorId = (lista(catalogo, "beneficios") ?: JsonArray()).mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            beneficioDe(o)?.let { it.id to it }
+        }.toMap()
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            if (dono != idColaborador) return@mapNotNull null
+            val beneficio = relacionado(o, "beneficio")?.let { beneficioDe(it) }
+                ?: o.inteiro("id_beneficio")?.let { catalogoPorId[it] }
+                ?: return@mapNotNull null
+            BeneficioItem(beneficio, aderido = o.logico("ativo") ?: true)
+        }
+    }
+
+    private fun beneficioDe(o: JsonObject): Beneficio? = Beneficio(
+        id = o.inteiro("id") ?: return null,
+        nome = o.texto("nome") ?: return null,
+        descricao = o.texto("descricao"),
+        status = o.logico("status") ?: true,
+        disponibilidade = o.texto("disponibilidade") ?: "TODOS"
+    )
+
+    fun documentos(json: JsonElement, idColaborador: Int): List<Documento>? {
+        val itens = lista(json, "documentos") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            if (dono != idColaborador) return@mapNotNull null
+            if (o.logico("ativo") == false) return@mapNotNull null
+            Documento(
+                id = o.inteiro("id") ?: return@mapNotNull null,
+                idColaborador = idColaborador,
+                nome = o.texto("nome") ?: return@mapNotNull null,
+                tipoDocumento = o.texto("tipo_documento").orEmpty(),
+                caminhoArquivo = o.texto("caminho_arquivo"),
+                ativo = true
+            )
+        }
+    }
 
     private fun conteudo(json: JsonElement): JsonElement {
         val o = json.objeto() ?: return json

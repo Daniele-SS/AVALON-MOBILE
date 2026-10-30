@@ -253,7 +253,7 @@ Versões alinhadas entre si: Compose BOM `2024.09.00` (Compose 1.7), `activity-c
 | `buildConfigField("String", "API_BASE_URL", ...)` | Endereço da API. `10.0.2.2` é o "localhost do computador" visto de dentro do emulador. Em celular físico, trocar pelo IP da máquina que roda a API |
 | `buildConfigField("boolean", "USE_MOCK_AUTH", "false")` | `false` = login, renovação e logout pela API real (`/auth`); `true` = login de demonstração |
 | `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = módulos com dados de demonstração, exceto os listados em `MODULOS_API`; `false` = tudo pela API real |
-| `buildConfigField("String", "MODULOS_API", "\"perfil,jornada,ferias\"")` | Módulos que usam a API real mesmo com `USE_MOCK_API = true`. Valores aceitos hoje: `perfil`, `jornada`, `ferias`. Vazio (`"\"\""`) = tudo em demonstração |
+| `buildConfigField("String", "MODULOS_API", "\"perfil,jornada,ferias,beneficio,documento\"")` | Módulos que usam a API real mesmo com `USE_MOCK_API = true`. Valores aceitos hoje: `perfil`, `jornada`, `ferias`, `beneficio`, `documento`. Vazio (`"\"\""`) = tudo em demonstração |
 | `buildFeatures { buildConfig = true }` | Gera a classe `BuildConfig` com os dois campos acima |
 | `implementation(...)` | Declara as bibliotecas do catálogo |
 
@@ -560,7 +560,7 @@ Implementação que fala com a API real.
 
 ### `data/repository/AvalonRepositoryMisto.kt`
 
-Usado quando `USE_MOCK_API = true`. Repassa cada função para a demonstração, exceto `perfil()`, `jornada()`, `ferias()` e `solicitarFerias()`, que vão para a API real se estiverem em `MODULOS_API`. Permite ligar um módulo por vez, à medida que o Back-end entrega as rotas.
+Usado quando `USE_MOCK_API = true`. Repassa cada função para a demonstração, exceto `perfil()`, `jornada()`, `ferias()`, `solicitarFerias()`, `beneficios()`, `documentos()` e `baixarDocumento()`, que vão para a API real se estiverem em `MODULOS_API`. Permite ligar um módulo por vez, à medida que o Back-end entrega as rotas.
 
 ### `data/repository/MockRepositories.kt`
 
@@ -917,7 +917,7 @@ Consequências que os testes precisam considerar:
 
 Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
 
-Perfil, Jornada e Férias usam a API real (`MODULOS_API = "perfil,jornada,ferias"`). As rotas de férias do Back-end devolvem os registros de todos os colaboradores (o app filtra pelo titular) e só aceitam `POST` do RH (um Colaborador recebe 403). As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
+Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API = "perfil,jornada,ferias,beneficio,documento"`). As rotas de férias do Back-end devolvem os registros de todos os colaboradores (o app filtra pelo titular) e só aceitam `POST` do RH (um Colaborador recebe 403). As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
 
 **Validação de 21/10** (MariaDB com o `script.sql` atual e API da main, commit `ad496ac`):
 
@@ -933,6 +933,10 @@ Perfil, Jornada e Férias usam a API real (`MODULOS_API = "perfil,jornada,ferias
 ---
 
 ## 16. Histórico de atualizações
+
+### 30/10/2026 (Benefícios e Documentos)
+
+Benefícios e Documentos passam a usar a API real. Benefícios: `GET /beneficio_colaborador` (concessões do titular, com `beneficio` aninhado) e `GET /beneficio` (apoio); só aparecem as concessões do titular. Documentos: `GET /documento` filtrado por titular e `ativo`; o download do arquivo continua indisponível porque o Back-end só guarda `caminho_arquivo` e não tem rota de arquivo (a tela mostra "ainda não possui rota"). Arquivos: `AvalonApi.kt`, `LeituraApi.kt`, `RemoteRepositories.kt`, `AvalonRepositoryMisto.kt`, `app/build.gradle.kts`.
 
 ### 30/10/2026
 
