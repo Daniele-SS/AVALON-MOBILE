@@ -336,7 +336,7 @@ Classes de dados com o mesmo formato dos JSONs do contrato. `@SerializedName("no
 
 | Membro | Uso |
 |---|---|
-| `Colaborador` | Cadastro do titular. `ghe` é **(fora do contrato)** |
+| `Colaborador` | Cadastro do titular |
 | `cpfMascarado` | Mostra só os dígitos do meio e do fim: `•••.482.•••-10` |
 | `iniciais` | Primeira letra do primeiro e do último nome, usadas no avatar |
 | `SolicitacaoCorrecao(campo, valorSugerido, justificativa)` | Pedido de correção cadastral (RF-006) |
@@ -845,7 +845,7 @@ Rodar: Android Studio → clique direito em `test` → **Run Tests**.
 | Troca de senha com código | Sprint 2 exige senha atual + código; o contrato só tem `PUT /auth/senha` com senha atual | App usa `POST /auth/senha/codigo` (proposta) e envia `codigo` no `PUT /auth/senha` |
 | Correção cadastral, adesão a benefício, mural | Sem rota no contrato | Modo API real mostra "ainda não possui rota" |
 | Catálogo de benefícios | Restrito ao RH | Aba "Disponíveis" vazia no modo API real |
-| GHE, foto, remetente do feedback, lido/não lido, data das notificações, data do pedido de férias | Ausentes no contrato | Campos opcionais, exibidos só se vierem |
+| Foto, remetente do feedback, lido/não lido, data das notificações, data do pedido de férias | Ausentes no contrato | Campos opcionais, exibidos só se vierem |
 | Saldo de férias | Ausente no contrato | Calculado no app (`SaldoFerias`), provisório |
 | Escala da pesquisa | Figma mostra 4 opções; contrato pede 1–5 | Incluído "Neutro" como 3 |
 | Versões das bibliotecas | Compose (BOM 2024.09) estava desalinhado com `activity-compose` 1.13 | Resolvido em 16/10: `activity-compose` 1.9.3 |
@@ -933,6 +933,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 ---
 
 ## 16. Histórico de atualizações
+
+### 30/10/2026 (GHE removido)
+
+O campo GHE foi descartado: a matrícula já cumpre essa função. Removido do modelo `Colaborador`, do Perfil (tela e lista de campos corrigíveis), do PDF de dados de registro, do texto do atalho de exportação em Documentos, da leitura da API e dos dados de demonstração.
 
 ### 30/10/2026 (Tela inicial)
 

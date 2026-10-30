@@ -152,7 +152,7 @@ fun DownloadsScreen(onBack: () -> Unit, viewModel: DocumentosViewModel = documen
                 item {
                     LinhaDownload(
                         titulo = "Baixar Perfil Completo",
-                        detalhe = "Exportar dados de registro e GHE • PDF",
+                        detalhe = "Exportar dados de registro • PDF",
                         icone = R.drawable.ic_file_text,
                         carregando = state.baixando == DocumentosViewModel.PERFIL_ID,
                         onClick = viewModel::exportarPerfil

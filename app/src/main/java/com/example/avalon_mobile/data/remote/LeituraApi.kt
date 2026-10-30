@@ -32,8 +32,7 @@ object LeituraApi {
             status = o.texto("status").orEmpty(),
             tipoVinculo = o.texto("tipo_vinculo"),
             setorNome = o.texto("setor_nome") ?: relacionado(o, "setor")?.texto("nome"),
-            cargoNome = o.texto("cargo_nome") ?: relacionado(o, "cargo")?.texto("nome"),
-            ghe = o.texto("ghe")
+            cargoNome = o.texto("cargo_nome") ?: relacionado(o, "cargo")?.texto("nome")
         )
     }
 

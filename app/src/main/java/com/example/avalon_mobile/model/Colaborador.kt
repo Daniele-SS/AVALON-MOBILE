@@ -18,9 +18,7 @@ data class Colaborador(
     val status: String,
     @SerializedName("tipo_vinculo") val tipoVinculo: String? = null,
     @SerializedName("setor_nome") val setorNome: String? = null,
-    @SerializedName("cargo_nome") val cargoNome: String? = null,
-    // GHE aparece no protótipo, mas não existe no contrato v2.1.0: fica nulo até o Back-end expor.
-    val ghe: String? = null
+    @SerializedName("cargo_nome") val cargoNome: String? = null
 ) {
     /** CPF mascarado no formato do protótipo (•••.482.•••-10), mesmo para o titular. */
     val cpfMascarado: String

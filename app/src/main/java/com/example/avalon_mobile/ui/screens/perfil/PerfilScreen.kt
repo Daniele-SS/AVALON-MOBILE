@@ -158,7 +158,6 @@ private fun InformacoesRegistro(c: Colaborador) {
             Campo("E-mail", c.email, bloqueado = false)
             Campo("Cargo", c.cargoNome ?: "—", bloqueado = true)
             Campo("Setor", c.setorNome ?: "—", bloqueado = true)
-            Campo("GHE", c.ghe ?: "—", bloqueado = true)
             Campo("Matrícula", c.matricula, bloqueado = true)
         }
     }
@@ -195,7 +194,7 @@ private fun ItemAjuste(icon: Int, texto: String, onClick: () -> Unit, perigo: Bo
     }
 }
 
-private val camposCorrigiveis = listOf("Nome", "CPF", "E-mail", "Cargo", "Setor", "GHE", "Matrícula")
+private val camposCorrigiveis = listOf("Nome", "CPF", "E-mail", "Cargo", "Setor", "Matrícula")
 
 @Composable
 private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, String) -> Unit, onFechar: () -> Unit) {

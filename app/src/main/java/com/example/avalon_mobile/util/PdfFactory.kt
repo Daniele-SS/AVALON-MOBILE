@@ -16,7 +16,6 @@ class PdfFactory {
         linha("E-mail", colaborador.email)
         linha("Cargo", colaborador.cargoNome ?: "—")
         linha("Setor", colaborador.setorNome ?: "—")
-        linha("GHE", colaborador.ghe ?: "—")
         linha("Admissão", Datas.dataCurta(colaborador.dataAdmissao))
         linha("Vínculo", colaborador.tipoVinculo ?: "—")
     }

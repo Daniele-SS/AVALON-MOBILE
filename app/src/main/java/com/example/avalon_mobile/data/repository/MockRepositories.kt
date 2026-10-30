@@ -242,8 +242,7 @@ private object MockData {
         id = 4, idSetor = 1, idCargo = 1, idJornadaEscala = 1,
         matricula = "AV-02841", nome = "Ana Lucia", cpf = "12348278910",
         email = "ana@empresa.com.br", dataAdmissao = "2025-03-10", status = "Ativo", tipoVinculo = "CLT",
-        setorNome = "Tecnologia da Informação (TI)", cargoNome = "Desenvolvedora Full Stack",
-        ghe = "Desenvolvimento de Software"
+        setorNome = "Tecnologia da Informação (TI)", cargoNome = "Desenvolvedora Full Stack"
     )
 
     val jornada = JornadaEscala(1, "Turno administrativo", "Segunda a sexta", "08:00:00", "17:00:00")
