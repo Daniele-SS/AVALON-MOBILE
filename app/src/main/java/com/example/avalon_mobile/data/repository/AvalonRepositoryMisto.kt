@@ -7,6 +7,7 @@ import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DashboardColaborador
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
+import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
@@ -20,6 +21,9 @@ class AvalonRepositoryMisto(
     private fun usaApi(modulo: String) = modulo in modulosApi
 
     override val homeSoDadosReais: Boolean get() = usaApi(FERIAS)
+
+    override suspend fun notificacoes(): AppResult<List<Notificacao>> =
+        if (homeSoDadosReais) AppResult.Success(emptyList()) else demonstracao.notificacoes()
 
     override suspend fun dashboard(): AppResult<Dashboard> {
         if (!usaApi(FERIAS)) return demonstracao.dashboard()

@@ -934,6 +934,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 
 ## 16. Histórico de atualizações
 
+### 30/10/2026 (Notificações)
+
+Com Férias pela API real, a Central de Notificações deixa de mostrar as notificações de demonstração (pesquisa, férias, feedback e documento fictícios) e exibe "Você não tem notificações." Elas só voltam com a rota `GET /notificacao` e a geração dos eventos no Back-end (Sprint 4, 6.3.4). Arquivo: `AvalonRepositoryMisto.kt`.
+
 ### 30/10/2026 (GHE removido)
 
 O campo GHE foi descartado: a matrícula já cumpre essa função. Removido do modelo `Colaborador`, do Perfil (tela e lista de campos corrigíveis), do PDF de dados de registro, do texto do atalho de exportação em Documentos, da leitura da API e dos dados de demonstração.
