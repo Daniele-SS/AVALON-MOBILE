@@ -80,10 +80,10 @@ interface AvalonApi {
 
     // Férias (6.4)
     @GET("v1/senai/avalon/ferias")
-    suspend fun ferias(@Query("id_colaborador") idColaborador: Int): Response<List<Ferias>>
+    suspend fun ferias(): Response<JsonElement>
 
     @POST("v1/senai/avalon/ferias")
-    suspend fun solicitarFerias(@Body body: FeriasRequest): Response<Ferias>
+    suspend fun solicitarFerias(@Body body: FeriasRequest): Response<JsonElement>
 
     // Benefícios
     @GET("v1/senai/avalon/colaborador/{id}/beneficio")

@@ -129,10 +129,19 @@ class RemoteAvalonRepository(
         return ler(dias) { LeituraApi.dias(it, jornada.id) }.map { jornada to it }
     }
 
-    override suspend fun ferias(): AppResult<List<Ferias>> = call.execute { api.ferias(idColaborador) }
+    // O servidor devolve as férias de todos os colaboradores e ignora filtros: o app filtra pelo titular.
+    override suspend fun ferias(): AppResult<List<Ferias>> {
+        val id = idColaborador
+        return ler(call.execute { api.ferias() }) { LeituraApi.ferias(it, id) }
+    }
 
-    override suspend fun solicitarFerias(request: FeriasRequest): AppResult<Ferias> =
-        call.execute { api.solicitarFerias(request) }
+    override suspend fun solicitarFerias(request: FeriasRequest): AppResult<Ferias> {
+        val resultado = ler(call.execute { api.solicitarFerias(request.copy(idColaborador = idColaborador)) }, LeituraApi::feriasCriada)
+        if (resultado is AppResult.Failure && resultado.error.codigo == ApiCall.SEM_PERMISSAO) {
+            return AppResult.Failure(AppError(ApiCall.SEM_PERMISSAO, "O servidor ainda não aceita a solicitação de férias para o seu perfil. Procure o RH.", resultado.error.httpStatus))
+        }
+        return resultado
+    }
 
     override suspend fun beneficios(): AppResult<List<BeneficioItem>> =
         call.execute { api.beneficiosDoColaborador(idColaborador) }.map { concessoes ->
