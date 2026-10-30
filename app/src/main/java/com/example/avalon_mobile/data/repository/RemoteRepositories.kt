@@ -9,6 +9,7 @@ import com.example.avalon_mobile.data.remote.AvalonApi
 import com.example.avalon_mobile.data.remote.LeituraApi
 import com.example.avalon_mobile.model.AlterarSenhaRequest
 import com.example.avalon_mobile.model.SolicitarCodigoSenhaRequest
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.AvaliacaoPergunta
@@ -105,6 +106,10 @@ class RemoteAvalonRepository(
             ?: AppResult.Failure(AppError(AppError.DESCONHECIDO, "Resposta inesperada do servidor."))
     }
 
+    // O servidor responde 404 quando a lista está vazia; para o app isso é "nenhum registro".
+    private fun listaOuVazia(resultado: AppResult<JsonElement>): AppResult<JsonElement> =
+        if (resultado is AppResult.Failure && resultado.error.httpStatus == 404) AppResult.Success(JsonArray()) else resultado
+
     override suspend fun perfil(): AppResult<Colaborador> =
         ler(call.execute { api.colaborador(idColaborador) }, LeituraApi::colaborador)
 
@@ -129,10 +134,19 @@ class RemoteAvalonRepository(
         return ler(dias) { LeituraApi.dias(it, jornada.id) }.map { jornada to it }
     }
 
-    override suspend fun ferias(): AppResult<List<Ferias>> = call.execute { api.ferias(idColaborador) }
+    // O servidor devolve as férias de todos os colaboradores e ignora filtros: o app filtra pelo titular.
+    override suspend fun ferias(): AppResult<List<Ferias>> {
+        val id = idColaborador
+        return ler(listaOuVazia(call.execute { api.ferias() })) { LeituraApi.ferias(it, id) }
+    }
 
-    override suspend fun solicitarFerias(request: FeriasRequest): AppResult<Ferias> =
-        call.execute { api.solicitarFerias(request) }
+    override suspend fun solicitarFerias(request: FeriasRequest): AppResult<Ferias> {
+        val resultado = ler(call.execute { api.solicitarFerias(request.copy(idColaborador = idColaborador)) }, LeituraApi::feriasCriada)
+        if (resultado is AppResult.Failure && resultado.error.codigo == ApiCall.SEM_PERMISSAO) {
+            return AppResult.Failure(AppError(ApiCall.SEM_PERMISSAO, "O servidor ainda não aceita a solicitação de férias para o seu perfil. Procure o RH.", resultado.error.httpStatus))
+        }
+        return resultado
+    }
 
     override suspend fun beneficios(): AppResult<List<BeneficioItem>> =
         call.execute { api.beneficiosDoColaborador(idColaborador) }.map { concessoes ->

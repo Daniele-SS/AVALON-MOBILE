@@ -2,6 +2,7 @@ package com.example.avalon_mobile.data.remote
 
 import com.example.avalon_mobile.model.Colaborador
 import com.example.avalon_mobile.model.DiaSemana
+import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -60,6 +61,31 @@ object LeituraApi {
             )
         }
     }
+
+    fun ferias(json: JsonElement, idColaborador: Int): List<Ferias>? {
+        val itens = lista(json, "ferias") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            if (dono != idColaborador) return@mapNotNull null
+            feriasDe(o).let { it?.copy(idColaborador = dono) }
+        }
+    }
+
+    fun feriasCriada(json: JsonElement): Ferias? {
+        val o = registro(json, "ferias") ?: return null
+        return feriasDe(o)
+    }
+
+    private fun feriasDe(o: JsonObject): Ferias? = Ferias(
+        id = o.inteiro("id") ?: return null,
+        dataInicio = o.data("data_inicio") ?: return null,
+        dataFim = o.data("data_fim") ?: return null,
+        quantidadeDias = o.inteiro("quantidade_dias"),
+        observacao = o.texto("observacao"),
+        idColaborador = o.inteiro("id_colaborador"),
+        status = o.texto("status")
+    )
 
     private fun conteudo(json: JsonElement): JsonElement {
         val o = json.objeto() ?: return json

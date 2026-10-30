@@ -20,7 +20,8 @@ data class FeriasRequest(
     @SerializedName("data_inicio") val dataInicio: String,
     @SerializedName("data_fim") val dataFim: String,
     @SerializedName("quantidade_dias") val quantidadeDias: Int,
-    val observacao: String? = null
+    val observacao: String? = null,
+    @SerializedName("id_colaborador") val idColaborador: Int? = null
 )
 
 /** Fluxo em duas etapas (Gestor → RH). O protótipo agrupa em três rótulos. */
