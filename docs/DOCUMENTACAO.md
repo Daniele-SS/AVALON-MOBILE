@@ -934,6 +934,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 
 ## 16. Histórico de atualizações
 
+### 30/10/2026 (Perfil: formato do cadastro)
+
+O Back-end passou a ler `GET /colaborador` e `GET /colaborador/{id}` da view `visao_colaboradores_com_nivel_acesso`, que devolve `id_colaborador`, `nome_colaborador`, `status_colaborador`, `cargo` e `setor` (texto) no lugar de `id`, `nome`, `status`, `id_cargo` e `id_setor`, e não traz CPF, jornada nem admissão. O app passou a aceitar os dois formatos para Nome, E-mail, Matrícula, Cargo e Setor. CPF e Jornada só voltam quando o Back-end restabelecer a leitura de `tbl_colaborador` nessas rotas. Arquivo: `LeituraApi.kt`.
+
 ### 30/10/2026 (Solicitação de férias: Content-Type)
 
 O `POST /ferias` passou a ser aceito sem restrição de perfil, mas as rotas CRUD do Back-end comparam o `Content-Type` com `application/json` exato. O Retrofit envia `application/json; charset=UTF-8` e a API respondia 415 ("o formato de dados aceito pela API é somente JSON"). A chamada agora declara `@Headers("Content-Type: application/json")`. Também passou a reconhecer o titular pelo campo `id_colaborador` quando o objeto `colaborador` embutido não traz `id`. Arquivos: `AvalonApi.kt`, `LeituraApi.kt`.
