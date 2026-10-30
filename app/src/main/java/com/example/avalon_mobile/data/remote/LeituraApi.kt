@@ -109,13 +109,15 @@ object LeituraApi {
         }
     }
 
-    private fun beneficioDe(o: JsonObject): Beneficio? = Beneficio(
-        id = o.inteiro("id") ?: return null,
-        nome = o.texto("nome") ?: return null,
-        descricao = o.texto("descricao"),
-        status = o.logico("status") ?: true,
-        disponibilidade = o.texto("disponibilidade") ?: "TODOS"
-    )
+    private fun beneficioDe(o: JsonObject): Beneficio? {
+        return Beneficio(
+            id = o.inteiro("id") ?: return null,
+            nome = o.texto("nome") ?: return null,
+            descricao = o.texto("descricao"),
+            status = o.logico("status") ?: true,
+            disponibilidade = o.texto("disponibilidade") ?: "TODOS"
+        )
+    }
 
     fun documentos(json: JsonElement, idColaborador: Int): List<Documento>? {
         val itens = lista(json, "documentos") ?: return null
