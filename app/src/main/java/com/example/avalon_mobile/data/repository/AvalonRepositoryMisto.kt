@@ -3,6 +3,8 @@ package com.example.avalon_mobile.data.repository
 import com.example.avalon_mobile.data.AppResult
 import com.example.avalon_mobile.model.Colaborador
 import com.example.avalon_mobile.model.BeneficioItem
+import com.example.avalon_mobile.model.Dashboard
+import com.example.avalon_mobile.model.DashboardColaborador
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.Ferias
@@ -16,6 +18,23 @@ class AvalonRepositoryMisto(
 ) : AvalonRepository by demonstracao {
 
     private fun usaApi(modulo: String) = modulo in modulosApi
+
+    override val homeSoDadosReais: Boolean get() = usaApi(FERIAS)
+
+    override suspend fun dashboard(): AppResult<Dashboard> {
+        if (!usaApi(FERIAS)) return demonstracao.dashboard()
+        return when (val r = api.ferias()) {
+            is AppResult.Failure -> r
+            is AppResult.Success -> AppResult.Success(
+                Dashboard(
+                    perfil = "Colaborador",
+                    colaborador = DashboardColaborador(
+                        feriasEmAndamento = r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" }
+                    )
+                )
+            )
+        }
+    }
 
     override suspend fun perfil(): AppResult<Colaborador> =
         if (usaApi(PERFIL)) api.perfil() else demonstracao.perfil()

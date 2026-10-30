@@ -934,6 +934,10 @@ Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API
 
 ## 16. Histórico de atualizações
 
+### 30/10/2026 (Tela inicial)
+
+A tela inicial é provisória até a Sprint 4 (Indicadores, Relatórios e Dashboards entram por último). Com Férias pela API real, a Home mostra só o indicador de **Férias pendentes**, calculado a partir das férias reais do titular (`Pendente` ou `Aprovado pelo Gestor`). Os indicadores de Pesquisas e Feedback, o ponto de notificação e os Comunicados deixam de aparecer, porque ainda não há rota no Back-end e vinham da demonstração. Arquivos: `AvalonRepository.kt` (`homeSoDadosReais`), `AvalonRepositoryMisto.kt` (`dashboard()`), `HomeViewModels.kt`, `HomeScreen.kt`.
+
 ### 30/10/2026 (Benefícios e Documentos)
 
 Benefícios e Documentos passam a usar a API real. Benefícios: `GET /beneficio_colaborador` (concessões do titular, com `beneficio` aninhado) e `GET /beneficio` (apoio); só aparecem as concessões do titular. Documentos: `GET /documento` filtrado por titular e `ativo`; o download do arquivo continua indisponível porque o Back-end só guarda `caminho_arquivo` e não tem rota de arquivo (a tela mostra "ainda não possui rota"). Arquivos: `AvalonApi.kt`, `LeituraApi.kt`, `RemoteRepositories.kt`, `AvalonRepositoryMisto.kt`, `app/build.gradle.kts`.

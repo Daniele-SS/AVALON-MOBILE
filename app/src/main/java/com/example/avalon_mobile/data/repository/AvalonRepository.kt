@@ -36,6 +36,9 @@ interface AuthRepository {
 
 /** Dados do Colaborador autenticado. O escopo (só os próprios dados) é garantido pelo servidor. */
 interface AvalonRepository {
+    /** `true` quando a tela inicial só pode exibir indicadores vindos da API (Dashboard completo é da Sprint 4). */
+    val homeSoDadosReais: Boolean get() = false
+
     suspend fun dashboard(): AppResult<Dashboard>
     suspend fun comunicados(): AppResult<List<Comunicado>>
 
