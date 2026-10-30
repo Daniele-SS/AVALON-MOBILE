@@ -80,15 +80,17 @@ object LeituraApi {
         return feriasDe(o)
     }
 
-    private fun feriasDe(o: JsonObject): Ferias? = Ferias(
-        id = o.inteiro("id") ?: return null,
-        dataInicio = o.data("data_inicio") ?: return null,
-        dataFim = o.data("data_fim") ?: return null,
-        quantidadeDias = o.inteiro("quantidade_dias"),
-        observacao = o.texto("observacao"),
-        idColaborador = o.inteiro("id_colaborador"),
-        status = o.texto("status")
-    )
+    private fun feriasDe(o: JsonObject): Ferias? {
+        return Ferias(
+            id = o.inteiro("id") ?: return null,
+            dataInicio = o.data("data_inicio") ?: return null,
+            dataFim = o.data("data_fim") ?: return null,
+            quantidadeDias = o.inteiro("quantidade_dias"),
+            observacao = o.texto("observacao"),
+            idColaborador = o.inteiro("id_colaborador"),
+            status = o.texto("status")
+        )
+    }
 
     fun beneficios(concessoes: JsonElement, catalogo: JsonElement, idColaborador: Int): List<BeneficioItem>? {
         val itens = lista(concessoes, "beneficioColaborador") ?: return null
