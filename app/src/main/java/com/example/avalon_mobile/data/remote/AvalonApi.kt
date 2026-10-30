@@ -86,12 +86,15 @@ interface AvalonApi {
     suspend fun solicitarFerias(@Body body: FeriasRequest): Response<JsonElement>
 
     // Benefícios
-    @GET("v1/senai/avalon/colaborador/{id}/beneficio")
-    suspend fun beneficiosDoColaborador(@Path("id") id: Int): Response<List<BeneficioColaborador>>
+    @GET("v1/senai/avalon/beneficio_colaborador")
+    suspend fun concessoesBeneficio(): Response<JsonElement>
+
+    @GET("v1/senai/avalon/beneficio")
+    suspend fun catalogoBeneficio(): Response<JsonElement>
 
     // Documentos (6.5.4)
     @GET("v1/senai/avalon/documento")
-    suspend fun documentos(@Query("id_colaborador") idColaborador: Int, @Query("ativo") ativo: Boolean = true): Response<List<Documento>>
+    suspend fun documentos(): Response<JsonElement>
 
     @Streaming
     @GET("v1/senai/avalon/documento/{id}/arquivo")

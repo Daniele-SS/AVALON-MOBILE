@@ -2,7 +2,9 @@ package com.example.avalon_mobile.data.repository
 
 import com.example.avalon_mobile.data.AppResult
 import com.example.avalon_mobile.model.Colaborador
+import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.DiaSemana
+import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
@@ -27,10 +29,21 @@ class AvalonRepositoryMisto(
     override suspend fun solicitarFerias(request: FeriasRequest): AppResult<Ferias> =
         if (usaApi(FERIAS)) api.solicitarFerias(request) else demonstracao.solicitarFerias(request)
 
+    override suspend fun beneficios(): AppResult<List<BeneficioItem>> =
+        if (usaApi(BENEFICIO)) api.beneficios() else demonstracao.beneficios()
+
+    override suspend fun documentos(): AppResult<List<Documento>> =
+        if (usaApi(DOCUMENTO)) api.documentos() else demonstracao.documentos()
+
+    override suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray> =
+        if (usaApi(DOCUMENTO)) api.baixarDocumento(documento) else demonstracao.baixarDocumento(documento)
+
     companion object {
         const val PERFIL = "perfil"
         const val JORNADA = "jornada"
         const val FERIAS = "ferias"
+        const val BENEFICIO = "beneficio"
+        const val DOCUMENTO = "documento"
 
         fun modulos(texto: String): Set<String> =
             texto.split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()

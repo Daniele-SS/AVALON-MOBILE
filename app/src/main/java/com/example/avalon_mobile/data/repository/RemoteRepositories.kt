@@ -148,19 +148,30 @@ class RemoteAvalonRepository(
         return resultado
     }
 
-    override suspend fun beneficios(): AppResult<List<BeneficioItem>> =
-        call.execute { api.beneficiosDoColaborador(idColaborador) }.map { concessoes ->
-            // O catálogo completo (/beneficio) é restrito ao RH: o Colaborador vê só as concessões.
-            concessoes.mapNotNull { c -> c.beneficio?.let { BeneficioItem(it, aderido = c.ativo) } }
+    // Mostra só as concessões do titular; o catálogo (/beneficio) serve de apoio quando a concessão não traz o benefício.
+    override suspend fun beneficios(): AppResult<List<BeneficioItem>> {
+        val id = idColaborador
+        val concessoes = when (val r = listaOuVazia(call.execute { api.concessoesBeneficio() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
         }
+        val catalogo = when (val r = listaOuVazia(call.execute { api.catalogoBeneficio() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
+        }
+        return ler(AppResult.Success(concessoes)) { LeituraApi.beneficios(it, catalogo, id) }
+    }
 
     override suspend fun solicitarBeneficio(item: BeneficioItem): AppResult<Unit> =
         naoDisponivel("A solicitação de adesão/cancelamento de benefício")
 
-    override suspend fun documentos(): AppResult<List<Documento>> = call.execute { api.documentos(idColaborador) }
+    override suspend fun documentos(): AppResult<List<Documento>> {
+        val id = idColaborador
+        return ler(listaOuVazia(call.execute { api.documentos() })) { LeituraApi.documentos(it, id) }
+    }
 
     override suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray> =
-        call.execute { api.baixarDocumento(documento.id) }.map { it.bytes() }
+        naoDisponivel("O download do arquivo do documento")
 
     override suspend fun feedbacks(): AppResult<List<Feedback>> = call.execute { api.feedbacks(idColaborador) }
 
