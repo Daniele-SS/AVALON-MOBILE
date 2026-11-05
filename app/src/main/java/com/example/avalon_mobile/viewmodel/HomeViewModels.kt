@@ -20,9 +20,7 @@ data class HomeUi(
     val feriasPendentes: Int,
     val feedbacksNovos: Int,
     val notificacoesNaoLidas: Int,
-    val comunicados: List<Comunicado>,
-    val exibirPesquisas: Boolean = true,
-    val exibirFeedbacks: Boolean = true
+    val comunicados: List<Comunicado>
 )
 
 /** Dashboard principal e atalhos (Sprint 4 — 6.3.1 e 6.3.3) + mural de avisos (6.3.2). */
@@ -54,11 +52,9 @@ class HomeViewModel(
                                 ?: "colaborador",
                             pesquisasPendentes = (c?.pesquisasPendentes ?: 0) + (c?.avaliacoesPendentes ?: 0),
                             feriasPendentes = c?.feriasEmAndamento ?: 0,
-                            feedbacksNovos = if (soReais) 0 else (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,
+                            feedbacksNovos = (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,
                             notificacoesNaoLidas = if (soReais) 0 else (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0,
-                            comunicados = if (soReais) emptyList() else (comunicados.await() as? AppResult.Success)?.data.orEmpty(),
-                            exibirPesquisas = !soReais,
-                            exibirFeedbacks = !soReais
+                            comunicados = if (soReais) emptyList() else (comunicados.await() as? AppResult.Success)?.data.orEmpty()
                         )
                     )
                 }
