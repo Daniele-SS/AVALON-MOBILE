@@ -6,8 +6,8 @@ Aplicativo mobile da plataforma **AVALON**, desenvolvido pela equipe **Nexus**, 
 
 Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o protótipo do Figma e o contrato OpenAPI do Back-end (`openapi.yaml`, v2.1.0).
 
-- **API e banco reais:** login e recuperação de senha, Perfil, Jornada e escala, Férias, Benefícios e Documentos (`MODULOS_API`).
-- **Dados de demonstração** (até o Back-end publicar as rotas): Feedbacks, Pesquisas, Notificações, Dashboard e Mural de avisos, correção cadastral e download de documentos.
+- **API e banco reais:** login, Perfil, Jornada e escala, Férias, Benefícios e Documentos (`MODULOS_API`).
+- **Dados de demonstração** (até o Back-end publicar as rotas): recuperação de senha, Feedbacks, Pesquisas, Notificações, Dashboard e Mural de avisos, correção cadastral e download de documentos.
 
 Telas por Sprint, fluxos, arquivos, usuários de teste e histórico de mudanças: [`docs/DOCUMENTACAO.md`](docs/DOCUMENTACAO.md).
 
