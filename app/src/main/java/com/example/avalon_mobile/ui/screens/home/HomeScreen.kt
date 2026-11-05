@@ -106,9 +106,9 @@ fun HomeScreen(
                     Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 26.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    if (ui.exibirPesquisas) Indicador(R.drawable.ic_clipboard_list, ui.pesquisasPendentes, "Pesquisas\nPendentes", TextPrimary, InfoContainer, InfoBorder) { onAtalho(Atalho.PESQUISAS) }
+                    Indicador(R.drawable.ic_clipboard_list, ui.pesquisasPendentes, "Pesquisas\nPendentes", TextPrimary, InfoContainer, InfoBorder) { onAtalho(Atalho.PESQUISAS) }
                     Indicador(R.drawable.ic_umbrella_off, ui.feriasPendentes, "Férias\nPendentes", Warning, WarningContainer, WarningBorder) { onAtalho(Atalho.FERIAS) }
-                    if (ui.exibirFeedbacks) Indicador(R.drawable.ic_message_circle, ui.feedbacksNovos, "Novo\nFeedback", Success, SuccessContainer, Success.copy(alpha = 0.19f)) { onAtalho(Atalho.FEEDBACKS) }
+                    Indicador(R.drawable.ic_message_circle, ui.feedbacksNovos, "Novo\nFeedback", Success, SuccessContainer, Success.copy(alpha = 0.19f)) { onAtalho(Atalho.FEEDBACKS) }
                 }
                 Spacer(Modifier.height(28.dp))
                 SectionTitle("Acessos rápidos", Modifier.padding(horizontal = 26.dp))

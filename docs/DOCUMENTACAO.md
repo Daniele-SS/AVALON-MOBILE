@@ -962,6 +962,10 @@ O campo GHE foi descartado: a matrícula já cumpre essa função. Removido do m
 
 A tela inicial é provisória até a Sprint 4 (Indicadores, Relatórios e Dashboards entram por último). Com Férias pela API real, a Home mostra só o indicador de **Férias pendentes**, calculado a partir das férias reais do titular (`Pendente` ou `Aprovado pelo Gestor`). Os indicadores de Pesquisas e Feedback, o ponto de notificação e os Comunicados deixam de aparecer, porque ainda não há rota no Back-end e vinham da demonstração. Arquivos: `AvalonRepository.kt` (`homeSoDadosReais`), `AvalonRepositoryMisto.kt` (`dashboard()`), `HomeViewModels.kt`, `HomeScreen.kt`.
 
+### 05/11/2026 (Tela inicial: três indicadores)
+
+Os indicadores **Pesquisas pendentes**, **Férias pendentes** e **Novo feedback** voltam a aparecer sempre na Home, inclusive com valor 0, como o de Férias. Causa do sumiço: o modo "só dados reais" de 30/10 (`homeSoDadosReais`, ativo porque Férias usa a API) escondia os dois cards. Enquanto o Back-end não publicar Pesquisas, Feedback e Dashboard, as contagens de Pesquisas e Feedback vêm dos dados de demonstração (mesma base das telas Pesquisas e Feedbacks); Férias segue real. Notificações e Comunicados continuam vazios nesse modo. Arquivos: `HomeViewModels.kt`, `HomeScreen.kt`, `AvalonRepositoryMisto.kt`.
+
 ### 05/11/2026 (Jornada e escala)
 
 A tela Jornada e escala mostrava "Resposta inesperada do servidor." para todos os usuários. Causa: desde 28/10 (commit `d998f7f`, padronização dos DAOs) o Back-end devolve a lista de `GET /dia_semana` na chave `diasSemana` (plural), e o app só lia `diaSemana` e `dias`. O app agora aceita as três chaves. Tabela de usuários de teste atualizada para os 13 usuários dos scripts `BD01` a `BD04` de 03/11/2026 (entraram Daniele, Geovane, Vitor e Matheus, do domínio `nexusrh.com.br`).

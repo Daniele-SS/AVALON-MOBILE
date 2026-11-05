@@ -27,13 +27,17 @@ class AvalonRepositoryMisto(
 
     override suspend fun dashboard(): AppResult<Dashboard> {
         if (!usaApi(FERIAS)) return demonstracao.dashboard()
+        // Pesquisas/avaliações ainda não têm rota no Back-end: contagem vem da demonstração (mesma base da tela Pesquisas).
+        val demo = (demonstracao.dashboard() as? AppResult.Success)?.data?.colaborador
         return when (val r = api.ferias()) {
             is AppResult.Failure -> r
             is AppResult.Success -> AppResult.Success(
                 Dashboard(
                     perfil = "Colaborador",
                     colaborador = DashboardColaborador(
-                        feriasEmAndamento = r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" }
+                        feriasEmAndamento = r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" },
+                        pesquisasPendentes = demo?.pesquisasPendentes ?: 0,
+                        avaliacoesPendentes = demo?.avaliacoesPendentes ?: 0
                     )
                 )
             )
