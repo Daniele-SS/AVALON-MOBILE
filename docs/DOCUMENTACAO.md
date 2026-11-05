@@ -36,7 +36,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | Pacote | `com.example.avalon_mobile` |
 | Público | Autoatendimento do colaborador. Qualquer perfil (Colaborador, Gestor, RH) pode entrar e vê os próprios dados (TS08: regras de perfil iguais na Web e no mobile) |
 | Rede | Retrofit + OkHttp + Gson, seguindo o contrato `openapi.yaml` v2.1.0 do repositório de Back-end |
-| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): módulos das Sprints 2–4 em demonstração até a API publicar as rotas |
+| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (Feedbacks, Pesquisas, Notificações, Dashboard, Mural, correção cadastral e download de documentos); Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API`) |
 
 ### O que o app faz
 
@@ -965,6 +965,9 @@ A tela inicial é provisória até a Sprint 4 (Indicadores, Relatórios e Dashbo
 ### 05/11/2026 (Tela inicial: três indicadores)
 
 Os indicadores **Pesquisas pendentes**, **Férias pendentes** e **Novo feedback** voltam a aparecer sempre na Home, inclusive com valor 0, como o de Férias. Causa do sumiço: o modo "só dados reais" de 30/10 (`homeSoDadosReais`, ativo porque Férias usa a API) escondia os dois cards. Enquanto o Back-end não publicar Pesquisas, Feedback e Dashboard, as contagens de Pesquisas e Feedback vêm dos dados de demonstração (mesma base das telas Pesquisas e Feedbacks); Férias segue real. Notificações e Comunicados continuam vazios nesse modo. Arquivos: `HomeViewModels.kt`, `HomeScreen.kt`, `AvalonRepositoryMisto.kt`.
+### 05/11/2026 (README enxuto)
+
+O README deixou de repetir a tabela de Sprints × telas, que estava desatualizada em relação aos módulos já ligados à API real e duplicava esta documentação. Ficou com descrição, status resumido (real x demonstração), execução, estrutura e links. A linha "Modos" da seção 1 foi corrigida pelo mesmo motivo.
 
 ### 05/11/2026 (Jornada e escala)
 

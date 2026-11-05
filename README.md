@@ -4,16 +4,12 @@ Aplicativo mobile da plataforma **AVALON**, desenvolvido pela equipe **Nexus**, 
 
 ## Status
 
-Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o protótipo do Figma e o contrato OpenAPI do Back-end (`openapi.yaml`, v2.1.0). O login usa a API e o banco reais (`USE_MOCK_AUTH = false`); os módulos das Sprints 2–4 seguem com dados de demonstração (`USE_MOCK_API = true`) até o Back-end publicar as rotas.
+Telas das Sprints 1 a 4 implementadas em Kotlin + Jetpack Compose, seguindo o protótipo do Figma e o contrato OpenAPI do Back-end (`openapi.yaml`, v2.1.0).
 
-| Sprint | Itens do planejamento | Telas / implementação |
-|---|---|---|
-| 1 | 6.1 ambiente; 6.2.1 login com validação de status da conta | Início, Login (`CREDENCIAIS_INVALIDAS` x `CONTA_INATIVA`) |
-| 2 | 6.2.2 recuperação de senha; 6.2.3 token seguro e renovação; 6.5.1 perfil; 6.5.3 jornada | Código por e-mail, Redefinir senha, sessão cifrada (Android Keystore AES-GCM) com refresh e rotação, Perfil, Jornada e escala |
-| 3 | 6.4 férias; 6.5.4 documentos/holerites; 6.5.2 correção cadastral; 6.7 feedback | Férias (saldo + solicitação), Documentos, Downloads, Benefícios, Solicitar correção, Feedbacks e resposta |
-| 4 | 6.6 pesquisas/avaliações com alerta de obrigatórias; 6.3.1–6.3.4 dashboard, mural, atalhos e notificações | Pesquisas, Responder/Revisar (anônima), Riscos psicossociais (NR-1), Home, Mural de avisos, Notificações, Mais |
+- **API e banco reais:** login, Perfil, Jornada e escala, Férias, Benefícios e Documentos (`MODULOS_API`).
+- **Dados de demonstração** (até o Back-end publicar as rotas): recuperação de senha, Feedbacks, Pesquisas, Notificações, Dashboard e Mural de avisos, correção cadastral e download de documentos.
 
-Documentação completa do código (pacotes, arquivos, classes, fluxos): [`docs/DOCUMENTACAO.md`](docs/DOCUMENTACAO.md).
+Telas por Sprint, fluxos, arquivos, usuários de teste e histórico de mudanças: [`docs/DOCUMENTACAO.md`](docs/DOCUMENTACAO.md).
 
 ### Executar
 
