@@ -214,14 +214,15 @@ fun AvalonNavHost(container: AppContainer) {
                 }
                 composable(Routes.PESQUISAS) {
                     PesquisasScreen(
-                        onBack = null,
+                        onBack = { navController.irParaAba(Routes.HOME) },
                         onAbrirPesquisa = { abrir(Routes.pesquisa(it)) },
                         onAbrirAvaliacao = { abrir(Routes.AVALIACAO) }
                     )
                 }
-                composable(Routes.DOCUMENTOS) { DocumentosScreen(onBack = null) }
+                composable(Routes.DOCUMENTOS) { DocumentosScreen(onBack = { navController.irParaAba(Routes.HOME) }) }
                 composable(Routes.PERFIL) {
                     PerfilScreen(
+                        onBack = { navController.irParaAba(Routes.HOME) },
                         onPrivacidade = { abrir(Routes.PRIVACIDADE) },
                         onNotificacoes = { abrir(Routes.NOTIFICACOES) },
                         onTermos = { abrir(Routes.TERMOS) },

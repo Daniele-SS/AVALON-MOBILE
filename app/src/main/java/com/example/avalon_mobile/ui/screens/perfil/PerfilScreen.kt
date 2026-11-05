@@ -25,6 +25,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -62,6 +63,7 @@ import com.example.avalon_mobile.viewmodel.avalonViewModel
 /** Perfil (Sprint 2 — 6.5.1) com solicitação de correção cadastral (Sprint 3 — 6.5.2). */
 @Composable
 fun PerfilScreen(
+    onBack: () -> Unit,
     onPrivacidade: () -> Unit,
     onNotificacoes: () -> Unit,
     onTermos: () -> Unit,
@@ -77,7 +79,7 @@ fun PerfilScreen(
     Column(Modifier.fillMaxSize().background(Background)) {
         LoadStateContent(state, onRetry = viewModel::carregar) { colaborador ->
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                Cabecalho(colaborador)
+                Cabecalho(colaborador, onBack)
                 Column(Modifier.padding(horizontal = 20.dp, vertical = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     InformacoesRegistro(colaborador)
                     TextButton(onClick = { mostrarCorrecao = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
@@ -117,15 +119,20 @@ fun PerfilScreen(
 }
 
 @Composable
-private fun Cabecalho(colaborador: Colaborador) {
+private fun Cabecalho(colaborador: Colaborador, onBack: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
             .background(Navy)
             .statusBarsPadding()
-            .padding(start = 26.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
+            .padding(start = 12.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Mesma setinha das demais telas (AvalonTopBar): volta para a Home.
+        IconButton(onClick = onBack) {
+            Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = "Voltar", tint = Color.White, modifier = Modifier.size(28.dp))
+        }
+        Spacer(Modifier.width(4.dp))
         Column(Modifier.weight(1f)) {
             Text("Meu Perfil", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = Color.White)
             Text("Ajustes e dados funcionais", fontFamily = Inter, fontSize = 13.sp, color = Color.White.copy(alpha = 0.6f))
