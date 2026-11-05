@@ -36,7 +36,6 @@ import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaFeedback
 import com.example.avalon_mobile.model.RespostaFeedbackRequest
 import com.example.avalon_mobile.model.RespostaPesquisaItem
-import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.SolicitacaoCorrecao
 import com.example.avalon_mobile.model.UsuarioResumo
 import kotlinx.coroutines.CoroutineScope
@@ -181,28 +180,41 @@ class RemoteAvalonRepository(
     override suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback> =
         call.execute { api.responderFeedback(idFeedback, RespostaFeedbackRequest(texto.trim())) }
 
+    // Leitura pela API real. O Back-end devolve as listagens de todos os colaboradores; o app filtra pelo titular.
     override suspend fun pesquisas(): AppResult<List<Pesquisa>> {
-        val todas = when (val r = call.execute { api.pesquisas() }) {
+        val id = idColaborador
+        val pesquisas = when (val r = listaOuVazia(call.execute { api.listaPesquisas() })) {
             is AppResult.Failure -> return r
             is AppResult.Success -> r.data
         }
-        val pendentes = when (val r = call.execute { api.pesquisas(somentePendentes = true) }) {
+        val perguntas = when (val r = listaOuVazia(call.execute { api.listaPerguntas() })) {
             is AppResult.Failure -> return r
-            is AppResult.Success -> r.data.map { it.id }.toSet()
+            is AppResult.Success -> r.data
         }
-        return AppResult.Success(todas.map { it.copy(respondida = it.respondida ?: (it.id !in pendentes)) })
+        val participacoes = when (val r = listaOuVazia(call.execute { api.participacoes() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
+        }
+        return ler(AppResult.Success(pesquisas)) { LeituraApi.pesquisas(it, perguntas, participacoes, id) }
     }
 
     override suspend fun pesquisa(id: Int): AppResult<Pair<Pesquisa, List<Pergunta>>> {
-        val pesquisa = when (val r = call.execute { api.pesquisa(id) }) {
+        val pesquisa = when (val r = pesquisas()) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data.firstOrNull { it.id == id }
+                ?: return AppResult.Failure(AppError(AppError.DESCONHECIDO, "Pesquisa não encontrada para o seu usuário."))
+        }
+        val perguntas = when (val r = ler(listaOuVazia(call.execute { api.listaPerguntas() })) { LeituraApi.perguntas(it, id) }) {
             is AppResult.Failure -> return r
             is AppResult.Success -> r.data
         }
-        return call.execute { api.perguntasPesquisa(id) }.map { perguntas -> pesquisa to perguntas.sortedBy { it.ordem } }
+        if (perguntas.isEmpty()) return AppResult.Failure(AppError(AppError.DESCONHECIDO, "Esta pesquisa ainda não possui perguntas."))
+        return AppResult.Success(pesquisa to perguntas)
     }
 
+    // POST /resposta e POST /participacao respondem 403 para o perfil Colaborador (só o RH grava).
     override suspend fun responderPesquisa(id: Int, respostas: List<RespostaPesquisaItem>): AppResult<RespostaConfirmacao> =
-        call.execute { api.responderPesquisa(id, RespostaPesquisaLote(respostas)) }
+        AppResult.Failure(AppError(AppError.NAO_IMPLEMENTADO, "O envio de respostas ainda não está liberado no servidor para o seu perfil. Tente novamente mais tarde."))
 
     override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> =
         call.execute { api.avaliacoes(somentePendentes = true) }.map { it.firstOrNull() }

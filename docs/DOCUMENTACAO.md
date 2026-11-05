@@ -224,7 +224,7 @@ Telas sem barra inferior são fluxos que o usuário deve concluir ou cancelar (l
 | Benefícios | `GET /colaborador/{id}/beneficio` |
 | Documentos / Downloads | `GET /documento?id_colaborador=`, `GET /documento/{id}/arquivo` |
 | Feedbacks | `GET /feedback?id_colaborador_destinatario=`, `GET/POST /feedback/{id}/resposta` |
-| Pesquisas | `GET /pesquisa`, `GET /pesquisa?somente_pendentes=true`, `GET /pesquisa/{id}`, `GET /pesquisa/{id}/pergunta`, `POST /pesquisa/{id}/resposta` |
+| Pesquisas | Em uso (leitura, 05/11/2026): `GET /pesquisa`, `GET /pergunta`, `GET /participacao` (listagens completas; o app filtra pelo titular). Envio: `POST /resposta` e `POST /participacao` respondem 403 para o Colaborador (só RH grava). Contrato original, sem rota no Back-end: `GET /pesquisa/{id}/pergunta`, `POST /pesquisa/{id}/resposta` |
 | Avaliação psicossocial | `GET /avaliacao?somente_pendentes=true`, `GET /avaliacao/{id}/pergunta`, `POST /avaliacao/{id}/resposta` |
 | Notificações | `GET /notificacao` |
 
@@ -257,7 +257,7 @@ Versões alinhadas entre si: Compose BOM `2024.09.00` (Compose 1.7), `activity-c
 | `buildConfigField("String", "API_BASE_URL", ...)` | Endereço da API. `10.0.2.2` é o "localhost do computador" visto de dentro do emulador. Em celular físico, trocar pelo IP da máquina que roda a API |
 | `buildConfigField("boolean", "USE_MOCK_AUTH", "false")` | `false` = login, renovação e logout pela API real (`/auth`); `true` = login de demonstração |
 | `buildConfigField("boolean", "USE_MOCK_API", "true")` | `true` = módulos com dados de demonstração, exceto os listados em `MODULOS_API`; `false` = tudo pela API real |
-| `buildConfigField("String", "MODULOS_API", "\"perfil,jornada,ferias,beneficio,documento\"")` | Módulos que usam a API real mesmo com `USE_MOCK_API = true`. Valores aceitos hoje: `perfil`, `jornada`, `ferias`, `beneficio`, `documento`. Vazio (`"\"\""`) = tudo em demonstração |
+| `buildConfigField("String", "MODULOS_API", "\"perfil,jornada,ferias,beneficio,documento,pesquisa\"")` | Módulos que usam a API real mesmo com `USE_MOCK_API = true`. Valores aceitos hoje: `perfil`, `jornada`, `ferias`, `beneficio`, `documento`, `pesquisa`. Vazio (`"\"\""`) = tudo em demonstração |
 | `buildFeatures { buildConfig = true }` | Gera a classe `BuildConfig` com os dois campos acima |
 | `implementation(...)` | Declara as bibliotecas do catálogo |
 
@@ -921,7 +921,7 @@ Consequências que os testes precisam considerar:
 
 Limitação: as sessões ficam na memória da API (o banco não tem tabela de sessão). Reiniciar a API desconecta todos os usuários, que precisam entrar de novo.
 
-Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API = "perfil,jornada,ferias,beneficio,documento"`). Desde o merge `fix/seguranca-ferias-e-auth` do Back-end (30/10/2026, commit `7d1b748`): (1) as rotas CRUD aceitam `application/json; charset=UTF-8`; (2) `GET /ferias` e `POST /ferias` valem para qualquer perfil logado, `PUT` e `DELETE` só para o RH; (3) no `POST` de um Colaborador o servidor ignora o `id_colaborador` do corpo e usa o do token, grava o status `Pendente` e recalcula `quantidade_dias`; (4) um período que cruza outro pedido do mesmo colaborador responde 409 "Já existe um pedido de férias nesse período."; (5) `GET /ferias`, `GET /documento` e `GET /beneficio_colaborador` devolvem só os registros do titular (o Gestor vê a equipe do setor nas férias) e o `caminho_arquivo` do documento só vai para o RH; (6) lista sem registros responde 200 com lista vazia (antes 404). O app continua filtrando pelo titular, o que é inofensivo com o filtro do servidor. O download do documento (`GET /documento/{id}/arquivo`), a adesão a benefício e a aprovação de férias ainda não existem no Back-end. As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
+Perfil, Jornada, Férias, Benefícios, Documentos e Pesquisas (leitura) usam a API real (`MODULOS_API = "perfil,jornada,ferias,beneficio,documento,pesquisa"`). Desde o merge `fix/seguranca-ferias-e-auth` do Back-end (30/10/2026, commit `7d1b748`): (1) as rotas CRUD aceitam `application/json; charset=UTF-8`; (2) `GET /ferias` e `POST /ferias` valem para qualquer perfil logado, `PUT` e `DELETE` só para o RH; (3) no `POST` de um Colaborador o servidor ignora o `id_colaborador` do corpo e usa o do token, grava o status `Pendente` e recalcula `quantidade_dias`; (4) um período que cruza outro pedido do mesmo colaborador responde 409 "Já existe um pedido de férias nesse período."; (5) `GET /ferias`, `GET /documento` e `GET /beneficio_colaborador` devolvem só os registros do titular (o Gestor vê a equipe do setor nas férias) e o `caminho_arquivo` do documento só vai para o RH; (6) lista sem registros responde 200 com lista vazia (antes 404). O app continua filtrando pelo titular, o que é inofensivo com o filtro do servidor. O download do documento (`GET /documento/{id}/arquivo`), a adesão a benefício e a aprovação de férias ainda não existem no Back-end. As demais telas seguem com dados de demonstração até a API publicar as rotas no formato combinado.
 
 **Validação de 21/10** (MariaDB com o `script.sql` atual e API da main, commit `ad496ac`):
 
@@ -968,6 +968,18 @@ Os indicadores **Pesquisas pendentes**, **Férias pendentes** e **Novo feedback*
 ### 05/11/2026 (README enxuto)
 
 O README deixou de repetir a tabela de Sprints × telas, que estava desatualizada em relação aos módulos já ligados à API real e duplicava esta documentação. Ficou com descrição, status resumido (real x demonstração), execução, estrutura e links. A linha "Modos" da seção 1 foi corrigida pelo mesmo motivo.
+
+### 05/11/2026 (Pesquisas pela API)
+
+O Back-end publicou os CRUDs de `pesquisa`, `pergunta`, `participacao` e `resposta`. O módulo `pesquisa` entra em `MODULOS_API` com **leitura real**:
+
+- **Quais pesquisas aparecem:** só as em que o titular tem participação (`GET /participacao`, filtrada por `colaborador`) e que já começaram. `participacao.status` 1 = respondida. O `status` da própria pesquisa **não é usado**: no banco ele não acompanha as datas (há pesquisa com status 1 já encerrada e com status 0 dentro do prazo). Pendente = não respondida e prazo não vencido (o último dia ainda vale). Pergunta aberta a decidir com o time: o que `pesquisa.status` significa.
+- **Perguntas:** `GET /pergunta` filtrada por pesquisa, em ordem. Tipos `ESCALA` (1 a 5), `TEXTO` e `SIM_NAO` (novo: botões Sim/Não, gravados como `SIM` e `NAO`).
+- **Home:** o indicador de Pesquisas Pendentes passa a contar as pendentes reais. A avaliação psicossocial (sem rota para o Colaborador) não aparece enquanto o módulo estiver ligado.
+- **Envio das respostas indisponível:** `POST /resposta` e `POST /participacao` respondem 403 para o Colaborador. O app mostra "O envio de respostas ainda não está liberado no servidor para o seu perfil" em vez de simular o envio. Depende de o Back-end liberar uma rota que grave só a resposta do titular (pelo token).
+- **Pendências do Back-end vistas nos testes:** `GET /participacao` devolve a todos os colaboradores os dados completos de todos (CPF, nascimento, telefone) e `GET /resposta` devolve todas as respostas com `id_participacao`, o que permite ligar resposta a pessoa e quebra o anonimato (RN de pesquisas anônimas).
+
+Arquivos: `LeituraApi.kt` (`pesquisas`, `perguntas`), `AvalonApi.kt`, `RemoteRepositories.kt`, `AvalonRepositoryMisto.kt`, `Pesquisa.kt` (`estaPendente`, `isSimNao`), `PesquisaViewModels.kt`, `PesquisaScreen.kt`, `PesquisasScreen.kt`, `app/build.gradle.kts`. Testes: `LeituraApiPesquisasTest.kt` (6).
 
 ### 05/11/2026 (Jornada e escala)
 

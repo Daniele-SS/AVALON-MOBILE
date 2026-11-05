@@ -16,15 +16,12 @@ import com.example.avalon_mobile.model.LoginRequest
 import com.example.avalon_mobile.model.LogoutRequest
 import com.example.avalon_mobile.model.MeResponse
 import com.example.avalon_mobile.model.Notificacao
-import com.example.avalon_mobile.model.Pergunta
-import com.example.avalon_mobile.model.Pesquisa
 import com.example.avalon_mobile.model.RedefinirSenhaRequest
 import com.example.avalon_mobile.model.RefreshRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaFeedback
 import com.example.avalon_mobile.model.RespostaFeedbackRequest
-import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.TokenResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -114,17 +111,15 @@ interface AvalonApi {
     suspend fun responderFeedback(@Path("id") id: Int, @Body body: RespostaFeedbackRequest): Response<RespostaFeedback>
 
     // Pesquisas (6.6)
+    // Rotas publicadas pelo Back-end (05/11/2026): listagens completas; o app filtra pelas participações do titular.
     @GET("v1/senai/avalon/pesquisa")
-    suspend fun pesquisas(@Query("somente_pendentes") somentePendentes: Boolean? = null): Response<List<Pesquisa>>
+    suspend fun listaPesquisas(): Response<JsonElement>
 
-    @GET("v1/senai/avalon/pesquisa/{id}")
-    suspend fun pesquisa(@Path("id") id: Int): Response<Pesquisa>
+    @GET("v1/senai/avalon/pergunta")
+    suspend fun listaPerguntas(): Response<JsonElement>
 
-    @GET("v1/senai/avalon/pesquisa/{id}/pergunta")
-    suspend fun perguntasPesquisa(@Path("id") id: Int): Response<List<Pergunta>>
-
-    @POST("v1/senai/avalon/pesquisa/{id}/resposta")
-    suspend fun responderPesquisa(@Path("id") id: Int, @Body body: RespostaPesquisaLote): Response<RespostaConfirmacao>
+    @GET("v1/senai/avalon/participacao")
+    suspend fun participacoes(): Response<JsonElement>
 
     // Avaliação de fatores psicossociais (6.6 / NR-1)
     @GET("v1/senai/avalon/avaliacao")

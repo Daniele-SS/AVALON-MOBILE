@@ -12,13 +12,11 @@ import com.example.avalon_mobile.model.Pesquisa
 import com.example.avalon_mobile.model.RespostaAvaliacaoItem
 import com.example.avalon_mobile.model.RespostaPesquisaItem
 import com.example.avalon_mobile.ui.components.LoadState
-import com.example.avalon_mobile.util.Datas
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 data class PesquisasUi(
     val pendentes: List<Pesquisa>,
@@ -41,10 +39,7 @@ class PesquisasViewModel(private val repository: AvalonRepository) : ViewModel()
             _state.value = when (pesquisas) {
                 is AppResult.Failure -> LoadState.Error(pesquisas.error.mensagem)
                 is AppResult.Success -> {
-                    val hoje = LocalDate.now()
-                    val (pendentes, outras) = pesquisas.data.partition { p ->
-                        p.respondida != true && p.status && Datas.parse(p.dataFim)?.isBefore(hoje) != true
-                    }
+                    val (pendentes, outras) = pesquisas.data.partition { it.estaPendente() }
                     LoadState.Content(PesquisasUi(pendentes.sortedBy { it.dataFim }, outras.sortedByDescending { it.dataFim }, avaliacao))
                 }
             }
@@ -140,6 +135,9 @@ class PesquisaViewModel(
     }
 
     companion object {
+        /** Perguntas `SIM_NAO`: o banco grava "SIM" e "NAO". */
+        val SIM_NAO = listOf("SIM" to "Sim", "NAO" to "Não")
+
         /** Escala Likert de concordância (perguntas `ESCALA`, valores "1"–"5"). */
         val ESCALA = listOf("1" to "Discordo totalmente", "2" to "Discordo", "3" to "Neutro", "4" to "Concordo", "5" to "Concordo totalmente")
     }

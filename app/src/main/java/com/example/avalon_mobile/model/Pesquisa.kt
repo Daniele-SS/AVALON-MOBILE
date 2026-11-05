@@ -1,6 +1,8 @@
 package com.example.avalon_mobile.model
 
+import com.example.avalon_mobile.util.Datas
 import com.google.gson.annotations.SerializedName
+import java.time.LocalDate
 
 data class Pesquisa(
     val id: Int,
@@ -15,7 +17,11 @@ data class Pesquisa(
     @SerializedName("total_perguntas") val totalPerguntas: Int? = null,
     val respondida: Boolean? = null,
     @SerializedName("data_resposta") val dataResposta: String? = null
-)
+) {
+    /** Pode ser respondida agora: o titular ainda não respondeu, a pesquisa está ativa e o prazo não acabou. */
+    fun estaPendente(hoje: LocalDate = LocalDate.now()): Boolean =
+        respondida != true && status && Datas.parse(dataFim)?.isBefore(hoje) != true
+}
 
 data class Pergunta(
     val id: Int,
@@ -26,6 +32,7 @@ data class Pergunta(
     @SerializedName("id_pesquisa") val idPesquisa: Int? = null
 ) {
     val isEscala: Boolean get() = tipo.equals("ESCALA", ignoreCase = true)
+    val isSimNao: Boolean get() = tipo.equals("SIM_NAO", ignoreCase = true)
 }
 
 data class RespostaPesquisaItem(
