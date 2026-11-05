@@ -50,14 +50,14 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 ### Executar
 
 1. Abrir a pasta do projeto no Android Studio e rodar o módulo `app`.
-2. Subir o banco (`script.sql` do repositório de Banco de Dados) e a API (`node app.js` no repositório de Back-end, porta 8080).
+2. Subir o banco (`BD01.sql` a `BD04.sql` do repositório de Banco de Dados, nessa ordem; do `BD02` em diante informe o banco `db_tcc_rh`, ver abaixo) e a API (`node app.js` no repositório de Back-end, porta 8080).
 3. Login com o e-mail corporativo de qualquer usuário da carga inicial, por exemplo `rafael.martins@empresa.com` / `123456` (Colaborador). **Depende de o Back-end aceitar o e-mail no login** (ver seção 15); até lá a API recusa o e-mail com "E-mail ou senha inválidos.".
 4. Celular físico ou API em outra máquina: na tela de Login, toque em **Servidor: 10.0.2.2:8080** (aparece só na versão de desenvolvimento), informe o IP da máquina que roda a API (ex.: `192.168.0.10:8080`), toque em **Testar conexão** e depois em **Salvar**. Não precisa recompilar.
 5. Sem API disponível: `USE_MOCK_AUTH = true` em `app/build.gradle.kts` e login de demonstração `ana.lucia@empresa.com.br` / `123456` (`inativo@empresa.com.br` / `123456` demonstra conta inativa).
 
 ### Usuários para teste
 
-**Banco real** (carga inicial do `script.sql`, repositório AVALON-BANCO_DE_DADOS). Usados quando `USE_MOCK_AUTH = false` (padrão):
+**Banco real** (carga inicial dos scripts `BD01` a `BD04`, de 03/11/2026, repositório AVALON-BANCO_DE_DADOS). Usados quando `USE_MOCK_AUTH = false` (padrão):
 
 | E-mail corporativo (app) | Login antigo | Senha | Perfil | Nome completo | Matrícula | Setor | Cargo |
 |---|---|---|---|---|---|---|---|
@@ -70,14 +70,18 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | `lucas.ferreira@empresa.com` | `lucas.ferreira` | `123456` | Colaborador | Lucas Gabriel Ferreira | MAT007 | Tecnologia da Informação | Desenvolvedor de Sistemas |
 | `fernanda.rocha@empresa.com` | `fernanda.rocha` | `123456` | Colaborador | Fernanda Cristina Rocha | MAT008 | Administrativo | Analista Administrativo |
 | `gustavo.ramos@empresa.com` | `gustavo.ramos` | `123456` | Colaborador | Gustavo Henrique Ramos | MAT009 | Financeiro | Analista Administrativo |
+| `daniele.silva@nexusrh.com.br` | `daniele.silva@nexusrh` | `123456` | RH | Daniele Silva | MAT011 | Recursos Humanos | Analista de Recursos Humanos |
+| `geovane.santos@nexusrh.com.br` | `geovane.santos@nexusrh` | `123456` | Gestor | Geovane Santos | MAT012 | Tecnologia da Informação | Gestor de Equipe |
+| `vitor.isidio@nexusrh.com.br` | `vitor.isidio@nexusrh` | `123456` | Colaborador | Vitor Isidio | MAT013 | Tecnologia da Informação | Desenvolvedor de Sistemas |
+| `matheus.aguiar@nexusrh.com.br` | `matheus.aguiar@nexusrh` | `123456` | Colaborador | Matheus Aguiar | MAT014 | Administrativo | Analista Administrativo |
 
 Observações:
 
 - **Login por e-mail corporativo (decisão de 19/10/2026).** O app envia o e-mail digitado no campo `login` do contrato. Em 21/10/2026 a API ainda procura só por `tbl_usuario.login`, então o e-mail é recusado. A correção no Back-end é uma linha na consulta do login (`where u.login = ? or c.email = ?`); com ela, os e-mails da tabela entram. O "Login antigo" serve só para testar a API por ferramenta (Postman, curl).
-- **Importar o banco com acentos corretos:** `mysql -u root -p --default-character-set=utf8mb4 < script.sql`. Sem essa opção, nomes como "Tecnologia da Informação" chegam ao app como "InformaÃ§Ã£o".
+- **Importar o banco com acentos corretos:** `mysql -u root -p --default-character-set=utf8mb4 < BD01.sql` e, em seguida, `mysql -u root -p --default-character-set=utf8mb4 db_tcc_rh < BD02.sql` (idem `BD03.sql` e `BD04.sql`). O `BD01` recria o banco do zero. Sem essa opção, nomes como "Tecnologia da Informação" chegam ao app como "InformaÃ§Ã£o".
 - **Recuperação de senha por código.** Código de 4 dígitos enviado ao e-mail corporativo, com validade de 30 minutos e reenvio bloqueado por 2 minutos (RF 5.1.84). O 4º erro bloqueia a conta, e só o RH redefine a senha (RF 5.1.85 e 5.1.86). O app mostra a mensagem devolvida pelo servidor; os códigos de erro `CONTA_BLOQUEADA` e `TENTATIVAS_EXCEDIDAS` são suposição a confirmar com o Back-end.
 - São dados de teste: todas as senhas estão em texto puro no banco. Em produção devem ser trocadas e gravadas com hash.
-- Todos os 9 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
+- Todos os 13 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes, MAT010) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
   `UPDATE tbl_colaborador SET status = 'Inativo', data_desligamento = CURDATE() WHERE id = 9;` (Gustavo). A tentativa de login passa a responder "Esta conta está inativa. Procure o RH."
 - 5 senhas erradas seguidas para o mesmo login em até 15 minutos bloqueiam esse login por 30 minutos (TS03), mesmo com a senha correta. Reiniciar a API (`node app.js`) desfaz o bloqueio.
 
@@ -529,7 +533,7 @@ Lê as respostas de Perfil e Jornada nos **dois formatos** que existem hoje, par
 |---|---|
 | `colaborador(json)` | Monta o `Colaborador`. Setor, cargo e jornada vêm do campo plano (`setor_nome`, `id_jornada_escala`) ou do objeto/lista aninhado. Datas com hora (`2024-01-15T00:00:00.000Z`) viram só a data |
 | `jornada(json)` | Monta a `JornadaEscala`; `status` aceita `true`/`false` ou `1`/`0` |
-| `dias(json, idJornada)` | Lê a lista de dias (`/jornada_escala/{id}/dias` ou `/dia_semana`) e mantém só os da jornada informada |
+| `dias(json, idJornada)` | Lê a lista de dias (`/jornada_escala/{id}/dias` ou `/dia_semana`, chaves `diasSemana`, `diaSemana` ou `dias`) e mantém só os da jornada informada |
 
 Se a resposta não tiver o mínimo (id, nome, horários), a tela mostra "Resposta inesperada do servidor." em vez de dados errados.
 
@@ -957,6 +961,16 @@ O campo GHE foi descartado: a matrícula já cumpre essa função. Removido do m
 ### 30/10/2026 (Tela inicial)
 
 A tela inicial é provisória até a Sprint 4 (Indicadores, Relatórios e Dashboards entram por último). Com Férias pela API real, a Home mostra só o indicador de **Férias pendentes**, calculado a partir das férias reais do titular (`Pendente` ou `Aprovado pelo Gestor`). Os indicadores de Pesquisas e Feedback, o ponto de notificação e os Comunicados deixam de aparecer, porque ainda não há rota no Back-end e vinham da demonstração. Arquivos: `AvalonRepository.kt` (`homeSoDadosReais`), `AvalonRepositoryMisto.kt` (`dashboard()`), `HomeViewModels.kt`, `HomeScreen.kt`.
+
+### 05/11/2026 (Jornada e escala)
+
+A tela Jornada e escala mostrava "Resposta inesperada do servidor." para todos os usuários. Causa: desde 28/10 (commit `d998f7f`, padronização dos DAOs) o Back-end devolve a lista de `GET /dia_semana` na chave `diasSemana` (plural), e o app só lia `diaSemana` e `dias`. O app agora aceita as três chaves. Tabela de usuários de teste atualizada para os 13 usuários dos scripts `BD01` a `BD04` de 03/11/2026 (entraram Daniele, Geovane, Vitor e Matheus, do domínio `nexusrh.com.br`).
+
+| Mudança | Arquivos | Motivo |
+|---|---|---|
+| `LeituraApi.dias` lê `diasSemana`, `diaSemana` e `dias` | `data/remote/LeituraApi.kt` | Jornada e escala sem dados reais |
+| Teste do leitor de dias (chave plural, singular, filtro por jornada) | `test/.../LeituraApiDiasTest.kt` | Evitar regressão |
+| Usuários de teste e passo a passo do banco (`BD01` a `BD04`) | `docs/DOCUMENTACAO.md`, `README.md` | Carga de 03/11/2026 |
 
 ### 30/10/2026 (Benefícios e Documentos)
 

@@ -49,7 +49,8 @@ object LeituraApi {
     }
 
     fun dias(json: JsonElement, idJornada: Int): List<DiaSemana>? {
-        val lista = lista(json, "diaSemana") ?: lista(json, "dias") ?: return null
+        // O Back-end devolve "diasSemana" na listagem e "diaSemana" na consulta por id (padronização dos DAOs, 28/10).
+        val lista = lista(json, "diasSemana") ?: lista(json, "diaSemana") ?: lista(json, "dias") ?: return null
         return lista.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
             val jornadaDoDia = o.inteiro("id_jornada_escala") ?: relacionado(o, "jornada_escala")?.inteiro("id")
