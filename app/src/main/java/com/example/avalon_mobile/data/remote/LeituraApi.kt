@@ -7,9 +7,13 @@ import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
+import com.example.avalon_mobile.model.Pergunta
+import com.example.avalon_mobile.model.Pesquisa
+import com.example.avalon_mobile.util.Datas
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import java.time.LocalDate
 
 object LeituraApi {
 
@@ -136,6 +140,69 @@ object LeituraApi {
             )
         }
     }
+
+    /**
+     * Pesquisas do titular. O Back-end devolve as listagens de todos os colaboradores; só entram as pesquisas em que o
+     * titular tem participação e que já começaram. `participacao.status` 1 = respondida. O `status` da pesquisa não é
+     * usado: no banco ele não acompanha as datas (há pesquisa "ativa" já encerrada), então o prazo decide.
+     */
+    fun pesquisas(
+        pesquisas: JsonElement,
+        perguntas: JsonElement,
+        participacoes: JsonElement,
+        idColaborador: Int,
+        hoje: LocalDate = LocalDate.now()
+    ): List<Pesquisa>? {
+        val itens = lista(pesquisas, "pesquisas") ?: return null
+        val totais = (lista(perguntas, "perguntas") ?: JsonArray())
+            .mapNotNull { it.objeto()?.let(::idPesquisa) }
+            .groupingBy { it }.eachCount()
+        val minhas = HashMap<Int, Boolean>()
+        (lista(participacoes, "participacoes") ?: JsonArray()).forEach { e ->
+            val o = e.objeto() ?: return@forEach
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            val pesquisa = idPesquisa(o)
+            if (dono == idColaborador && pesquisa != null) minhas[pesquisa] = o.logico("status") == true
+        }
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val id = o.inteiro("id") ?: return@mapNotNull null
+            val respondida = minhas[id] ?: return@mapNotNull null
+            val inicio = o.data("data_inicio") ?: return@mapNotNull null
+            val fim = o.data("data_fim") ?: return@mapNotNull null
+            if (Datas.parse(inicio)?.isAfter(hoje) == true) return@mapNotNull null
+            Pesquisa(
+                id = id,
+                titulo = o.texto("titulo") ?: return@mapNotNull null,
+                descricao = o.texto("descricao"),
+                dataInicio = inicio,
+                dataFim = fim,
+                anonimo = o.logico("anonimo") ?: false,
+                status = true,
+                publicoSelecionado = o.texto("publico_selecionado") ?: "TODOS",
+                totalPerguntas = totais[id],
+                respondida = respondida
+            )
+        }
+    }
+
+    fun perguntas(json: JsonElement, idPesquisa: Int): List<Pergunta>? {
+        val itens = lista(json, "perguntas") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            if (idPesquisa(o) != idPesquisa) return@mapNotNull null
+            Pergunta(
+                id = o.inteiro("id") ?: return@mapNotNull null,
+                enunciado = o.texto("enunciado") ?: return@mapNotNull null,
+                tipo = o.texto("tipo") ?: "TEXTO",
+                ordem = o.inteiro("ordem") ?: 0,
+                obrigatorio = o.logico("obrigatorio") ?: false,
+                idPesquisa = idPesquisa
+            )
+        }.sortedBy { it.ordem }
+    }
+
+    private fun idPesquisa(o: JsonObject): Int? = o.inteiro("id_pesquisa") ?: relacionado(o, "pesquisa")?.inteiro("id")
 
     private fun conteudo(json: JsonElement): JsonElement {
         val o = json.objeto() ?: return json

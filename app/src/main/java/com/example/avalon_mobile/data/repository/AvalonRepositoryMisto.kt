@@ -11,6 +11,11 @@ import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
+import com.example.avalon_mobile.model.Avaliacao
+import com.example.avalon_mobile.model.Pergunta
+import com.example.avalon_mobile.model.Pesquisa
+import com.example.avalon_mobile.model.RespostaConfirmacao
+import com.example.avalon_mobile.model.RespostaPesquisaItem
 
 class AvalonRepositoryMisto(
     private val api: AvalonRepository,
@@ -26,23 +31,44 @@ class AvalonRepositoryMisto(
         if (homeSoDadosReais) AppResult.Success(emptyList()) else demonstracao.notificacoes()
 
     override suspend fun dashboard(): AppResult<Dashboard> {
-        if (!usaApi(FERIAS)) return demonstracao.dashboard()
-        // Pesquisas/avaliações ainda não têm rota no Back-end: contagem vem da demonstração (mesma base da tela Pesquisas).
+        if (!usaApi(FERIAS) && !usaApi(PESQUISA)) return demonstracao.dashboard()
         val demo = (demonstracao.dashboard() as? AppResult.Success)?.data?.colaborador
-        return when (val r = api.ferias()) {
-            is AppResult.Failure -> r
-            is AppResult.Success -> AppResult.Success(
-                Dashboard(
-                    perfil = "Colaborador",
-                    colaborador = DashboardColaborador(
-                        feriasEmAndamento = r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" },
-                        pesquisasPendentes = demo?.pesquisasPendentes ?: 0,
-                        avaliacoesPendentes = demo?.avaliacoesPendentes ?: 0
-                    )
+        val ferias = if (usaApi(FERIAS)) {
+            when (val r = api.ferias()) {
+                is AppResult.Failure -> return r
+                is AppResult.Success -> r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" }
+            }
+        } else demo?.feriasEmAndamento ?: 0
+        // Com Pesquisas pela API, o contador vem das participações reais; a avaliação psicossocial (sem rota) não entra.
+        // Se a leitura falhar, a Home mostra 0 em vez de falhar inteira (a tela Pesquisas exibe o erro).
+        val pesquisas = if (usaApi(PESQUISA)) {
+            (api.pesquisas() as? AppResult.Success)?.data?.count { it.estaPendente() } ?: 0
+        } else demo?.pesquisasPendentes ?: 0
+        val avaliacoes = if (usaApi(PESQUISA)) 0 else demo?.avaliacoesPendentes ?: 0
+        return AppResult.Success(
+            Dashboard(
+                perfil = "Colaborador",
+                colaborador = DashboardColaborador(
+                    feriasEmAndamento = ferias,
+                    pesquisasPendentes = pesquisas,
+                    avaliacoesPendentes = avaliacoes
                 )
             )
-        }
+        )
     }
+
+    override suspend fun pesquisas(): AppResult<List<Pesquisa>> =
+        if (usaApi(PESQUISA)) api.pesquisas() else demonstracao.pesquisas()
+
+    override suspend fun pesquisa(id: Int): AppResult<Pair<Pesquisa, List<Pergunta>>> =
+        if (usaApi(PESQUISA)) api.pesquisa(id) else demonstracao.pesquisa(id)
+
+    override suspend fun responderPesquisa(id: Int, respostas: List<RespostaPesquisaItem>): AppResult<RespostaConfirmacao> =
+        if (usaApi(PESQUISA)) api.responderPesquisa(id, respostas) else demonstracao.responderPesquisa(id, respostas)
+
+    // A avaliação psicossocial (NR-1) ainda não tem rota para o Colaborador: com Pesquisas reais, a de demonstração não aparece.
+    override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> =
+        if (usaApi(PESQUISA)) AppResult.Success(null) else demonstracao.avaliacaoPendente()
 
     override suspend fun perfil(): AppResult<Colaborador> =
         if (usaApi(PERFIL)) api.perfil() else demonstracao.perfil()
@@ -71,6 +97,7 @@ class AvalonRepositoryMisto(
         const val FERIAS = "ferias"
         const val BENEFICIO = "beneficio"
         const val DOCUMENTO = "documento"
+        const val PESQUISA = "pesquisa"
 
         fun modulos(texto: String): Set<String> =
             texto.split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()

@@ -120,7 +120,7 @@ private fun CartaoRespondida(p: Pesquisa) {
             Column(Modifier.weight(1f)) {
                 Text(p.titulo, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = TextPrimary)
                 Text(
-                    if (respondida) "Respondida em ${Datas.diaMes(p.dataResposta)}" else "Encerrada em ${Datas.diaMes(p.dataFim)}",
+                    if (respondida) (p.dataResposta?.let { "Respondida em ${Datas.diaMes(it)}" } ?: "Respondida") else "Encerrada em ${Datas.diaMes(p.dataFim)}",
                     fontFamily = Inter, fontSize = 15.sp, color = TextSecondary
                 )
             }

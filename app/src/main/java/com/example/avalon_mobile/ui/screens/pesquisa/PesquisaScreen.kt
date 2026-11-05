@@ -139,6 +139,10 @@ private fun Pergunta(ui: PesquisaUi, viewModel: PesquisaViewModel) {
             PesquisaViewModel.ESCALA.forEach { (valor, rotulo) ->
                 OpcaoResposta(rotulo, ui.respostas[pergunta.id] == valor) { viewModel.responder(pergunta.id, valor) }
             }
+        } else if (pergunta.isSimNao) {
+            PesquisaViewModel.SIM_NAO.forEach { (valor, rotulo) ->
+                OpcaoResposta(rotulo, ui.respostas[pergunta.id] == valor) { viewModel.responder(pergunta.id, valor) }
+            }
         } else {
             AvalonTextField(
                 label = "",
@@ -194,6 +198,7 @@ private fun ItemRevisao(pergunta: Pergunta, resposta: String?, onEditar: () -> U
     val texto = when {
         resposta.isNullOrBlank() -> if (pergunta.obrigatorio) "Obrigatória — sem resposta" else "Sem resposta"
         pergunta.isEscala -> PesquisaViewModel.ESCALA.firstOrNull { it.first == resposta }?.second ?: resposta
+        pergunta.isSimNao -> PesquisaViewModel.SIM_NAO.firstOrNull { it.first == resposta }?.second ?: resposta
         else -> resposta
     }
     Column(Modifier.fillMaxWidth().clickable(onClick = onEditar)) {
