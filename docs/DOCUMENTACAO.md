@@ -36,7 +36,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | Pacote | `com.example.avalon_mobile` |
 | Público | Autoatendimento do colaborador. Qualquer perfil (Colaborador, Gestor, RH) pode entrar e vê os próprios dados (TS08: regras de perfil iguais na Web e no mobile) |
 | Rede | Retrofit + OkHttp + Gson, seguindo o contrato `openapi.yaml` v2.1.0 do repositório de Back-end |
-| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (Feedbacks, Pesquisas, Notificações, Dashboard, Mural, correção cadastral e download de documentos); Perfil, Jornada, Férias, Benefícios e Documentos usam a API real (`MODULOS_API`) |
+| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (recuperação de senha, envio de respostas de pesquisa, Feedbacks, Notificações, Dashboard, Mural, correção cadastral e download de documentos); Perfil, Jornada, Férias, Benefícios, Documentos e a leitura de Pesquisas usam a API real (`MODULOS_API`) |
 
 ### O que o app faz
 
