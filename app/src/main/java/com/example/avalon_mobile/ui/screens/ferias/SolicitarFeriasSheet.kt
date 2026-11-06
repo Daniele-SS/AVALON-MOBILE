@@ -41,6 +41,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun SolicitarFeriasSheet(
     state: SolicitacaoState,
+    saldoDias: Int?,
     onEnviar: (LocalDate, LocalDate, String) -> Unit,
     onFechar: () -> Unit
 ) {
@@ -90,7 +91,10 @@ fun SolicitarFeriasSheet(
                         }
                     }
                     if (inicio != null && fim != null) {
-                        Text("${ChronoUnit.DAYS.between(inicio, fim) + 1} dias selecionados", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = Navy)
+                        val dias = ChronoUnit.DAYS.between(inicio, fim) + 1
+                        // Vermelho quando o período pedido passa do saldo disponível (o envio também é barrado no ViewModel).
+                        val acimaDoSaldo = saldoDias != null && dias > saldoDias
+                        Text("$dias dias selecionados", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = if (acimaDoSaldo) Danger else Navy)
                     }
                     AvalonTextField("Observação (opcional)", observacao, { observacao = it.take(255) }, singleLine = false)
                     if (state is SolicitacaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
