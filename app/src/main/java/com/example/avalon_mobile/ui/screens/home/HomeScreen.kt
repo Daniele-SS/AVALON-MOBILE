@@ -55,10 +55,11 @@ import com.example.avalon_mobile.ui.theme.InfoContainer
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.Success
+import com.example.avalon_mobile.ui.theme.SuccessText
 import com.example.avalon_mobile.ui.theme.SuccessContainer
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
-import com.example.avalon_mobile.ui.theme.Warning
+import com.example.avalon_mobile.ui.theme.WarningText
 import com.example.avalon_mobile.ui.theme.WarningBorder
 import com.example.avalon_mobile.ui.theme.WarningContainer
 import com.example.avalon_mobile.viewmodel.HomeViewModel
@@ -107,8 +108,8 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     Indicador(R.drawable.ic_clipboard_list, ui.pesquisasPendentes, "Pesquisas\nPendentes", TextPrimary, InfoContainer, InfoBorder) { onAtalho(Atalho.PESQUISAS) }
-                    Indicador(R.drawable.ic_umbrella_off, ui.feriasPendentes, "Férias\nPendentes", Warning, WarningContainer, WarningBorder) { onAtalho(Atalho.FERIAS) }
-                    Indicador(R.drawable.ic_message_circle, ui.feedbacksNovos, "Novo\nFeedback", Success, SuccessContainer, Success.copy(alpha = 0.19f)) { onAtalho(Atalho.FEEDBACKS) }
+                    Indicador(R.drawable.ic_umbrella_off, ui.feriasPendentes, "Férias\nPendentes", WarningText, WarningContainer, WarningBorder) { onAtalho(Atalho.FERIAS) }
+                    Indicador(R.drawable.ic_message_circle, ui.feedbacksNovos, "Novo\nFeedback", SuccessText, SuccessContainer, Success.copy(alpha = 0.19f)) { onAtalho(Atalho.FEEDBACKS) }
                 }
                 Spacer(Modifier.height(28.dp))
                 SectionTitle("Acessos rápidos", Modifier.padding(horizontal = 26.dp))

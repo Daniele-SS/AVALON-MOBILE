@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Actor
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.InputBorder
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
@@ -94,7 +95,7 @@ fun AvalonTextField(
             } else null,
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Border,
+                unfocusedBorderColor = InputBorder,
                 focusedBorderColor = Navy,
                 errorBorderColor = Danger,
                 unfocusedContainerColor = Color.White,
