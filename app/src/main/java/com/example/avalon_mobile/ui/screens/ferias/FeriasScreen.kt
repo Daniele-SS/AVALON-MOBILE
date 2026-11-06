@@ -34,6 +34,7 @@ import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.EmptyState
+import com.example.avalon_mobile.ui.components.LoadState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Accent
@@ -90,6 +91,7 @@ fun FeriasScreen(
     if (mostrarFormulario) {
         SolicitarFeriasSheet(
             state = solicitacao,
+            saldoDias = (state as? LoadState.Content)?.data?.saldo?.diasDisponiveis,
             onEnviar = viewModel::solicitar,
             onFechar = { mostrarFormulario = false; viewModel.resetSolicitacao() }
         )

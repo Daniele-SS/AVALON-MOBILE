@@ -969,6 +969,10 @@ Ajuste de cores para atender ao contraste mínimo da WCAG 2.1 nível AA (4,5:1 p
 ### 05/11/2026 (Tela inicial: três indicadores)
 
 Os indicadores **Pesquisas pendentes**, **Férias pendentes** e **Novo feedback** voltam a aparecer sempre na Home, inclusive com valor 0, como o de Férias. Causa do sumiço: o modo "só dados reais" de 30/10 (`homeSoDadosReais`, ativo porque Férias usa a API) escondia os dois cards. Enquanto o Back-end não publicar Pesquisas, Feedback e Dashboard, as contagens de Pesquisas e Feedback vêm dos dados de demonstração (mesma base das telas Pesquisas e Feedbacks); Férias segue real. Notificações e Comunicados continuam vazios nesse modo. Arquivos: `HomeViewModels.kt`, `HomeScreen.kt`, `AvalonRepositoryMisto.kt`.
+### 06/11/2026 (Férias: aviso de dias acima do saldo)
+
+Na janela "Solicitar férias", a linha "N dias selecionados" fica em vermelho (`Danger`) quando o período escolhido passa do saldo disponível. O saldo vem do cartão de Saldo da própria tela (`SaldoFerias.diasDisponiveis`); sem saldo calculado, a linha continua na cor padrão. O envio já era barrado em `FeriasViewModel.solicitar` ("Saldo insuficiente: você tem N dias disponíveis."), e isso não mudou.
+
 ### 05/11/2026 (README enxuto)
 
 O README deixou de repetir a tabela de Sprints × telas, que estava desatualizada em relação aos módulos já ligados à API real e duplicava esta documentação. Ficou com descrição, status resumido (real x demonstração), execução, estrutura e links. A linha "Modos" da seção 1 foi corrigida pelo mesmo motivo.
