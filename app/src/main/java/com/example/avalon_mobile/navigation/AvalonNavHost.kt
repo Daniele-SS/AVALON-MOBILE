@@ -59,7 +59,7 @@ object Routes {
     const val INICIO = "inicio"
     const val LOGIN = "login"
     const val CODIGO = "recuperar/codigo/{login}"
-    const val REDEFINIR = "recuperar/redefinir/{token}"
+    const val REDEFINIR = "recuperar/redefinir/{login}/{token}"
     const val SERVIDOR = "servidor"
     const val HOME = "home"
     const val PESQUISAS = "pesquisas"
@@ -81,7 +81,7 @@ object Routes {
     const val TERMOS = "termos"
 
     fun codigo(login: String) = "recuperar/codigo/${android.net.Uri.encode(login)}"
-    fun redefinir(token: String) = "recuperar/redefinir/$token"
+    fun redefinir(login: String, token: String) = "recuperar/redefinir/${android.net.Uri.encode(login)}/$token"
     fun feedback(id: Int) = "feedback/$id"
     fun pesquisa(id: Int) = "pesquisa/$id"
 }
@@ -178,13 +178,17 @@ fun AvalonNavHost(container: AppContainer) {
                 }
                 composable(Routes.SERVIDOR) { ServidorScreen(onVoltar = { navController.popBackStack() }) }
                 // Sprint 2 — 6.2.2
-                composable(Routes.CODIGO, arguments = listOf(navArgument("login") { type = NavType.StringType })) {
+                composable(Routes.CODIGO, arguments = listOf(navArgument("login") { type = NavType.StringType })) { entry ->
+                    val login = entry.arguments?.getString("login").orEmpty()
                     CodigoRecuperacaoScreen(
-                        onConfirmar = { codigo -> abrir(Routes.redefinir(codigo)) },
+                        onConfirmar = { codigo -> abrir(Routes.redefinir(login, codigo)) },
                         onVoltar = { navController.popBackStack() }
                     )
                 }
-                composable(Routes.REDEFINIR, arguments = listOf(navArgument("token") { type = NavType.StringType })) {
+                composable(
+                    Routes.REDEFINIR,
+                    arguments = listOf(navArgument("login") { type = NavType.StringType }, navArgument("token") { type = NavType.StringType })
+                ) {
                     RedefinirSenhaScreen(
                         onConcluido = {
                             avisoLogin = "Senha redefinida. Entre com a nova senha."

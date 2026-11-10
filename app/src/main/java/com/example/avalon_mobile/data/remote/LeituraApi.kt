@@ -5,8 +5,10 @@ import com.example.avalon_mobile.model.Beneficio
 import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
+import com.example.avalon_mobile.model.Feedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
+import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.model.Pesquisa
 import com.example.avalon_mobile.util.Datas
@@ -200,6 +202,58 @@ object LeituraApi {
                 idPesquisa = idPesquisa
             )
         }.sortedBy { it.ordem }
+    }
+
+    /**
+     * Feedbacks recebidos pelo titular. O Back-end devolve os de todos os colaboradores (sem escopo por perfil), então só
+     * entram os do destinatário. O banco não tem o campo "lido": [vistos] são os ids já abertos neste aparelho.
+     * Feedback com `ativo` = 0 foi desativado pelo RH e não aparece. Mais recentes primeiro.
+     */
+    fun feedbacks(json: JsonElement, idColaborador: Int, vistos: Set<Int>): List<Feedback>? {
+        val itens = lista(json, "feedbacks") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val destinatario = o.inteiro("id_colaborador_destinatario") ?: relacionado(o, "colaborador_destinatario")?.inteiro("id")
+            if (destinatario != idColaborador) return@mapNotNull null
+            if (o.logico("ativo") == false) return@mapNotNull null
+            val id = o.inteiro("id") ?: return@mapNotNull null
+            val remetente = relacionado(o, "colaborador_remetente")
+            Feedback(
+                id = id,
+                idDestinatario = idColaborador,
+                tipo = o.texto("tipo")?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Formal",
+                descricao = o.texto("descricao"),
+                dataFeedback = o.data("data_feedback"),
+                ativo = true,
+                idRemetente = o.inteiro("id_colaborador_remetente") ?: remetente?.inteiro("id"),
+                remetenteNome = remetente?.texto("nome"),
+                remetenteCargo = relacionado(remetente ?: JsonObject(), "cargo")?.texto("nome"),
+                lido = id in vistos
+            )
+        }.sortedWith(compareByDescending<Feedback> { it.dataFeedback.orEmpty() }.thenByDescending { it.id })
+    }
+
+    /**
+     * Notificações do titular (o Back-end devolve as de todos). O banco não guarda data/hora nem "lida": a leitura vem
+     * de [lidas] (ids abertos neste aparelho) e a ordem é por id decrescente.
+     */
+    fun notificacoes(json: JsonElement, idColaborador: Int, lidas: Set<Int>): List<Notificacao>? {
+        val itens = lista(json, "notificacoes") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val dono = o.inteiro("id_colaborador") ?: relacionado(o, "colaborador")?.inteiro("id")
+            if (dono != idColaborador) return@mapNotNull null
+            val id = o.inteiro("id") ?: return@mapNotNull null
+            Notificacao(
+                id = id,
+                idColaborador = idColaborador,
+                tipoOrigem = o.texto("tipo_origem"),
+                titulo = o.texto("titulo") ?: return@mapNotNull null,
+                mensagem = o.texto("mensagem"),
+                lida = id in lidas,
+                dataHora = null
+            )
+        }.sortedByDescending { it.id }
     }
 
     private fun idPesquisa(o: JsonObject): Int? = o.inteiro("id_pesquisa") ?: relacionado(o, "pesquisa")?.inteiro("id")

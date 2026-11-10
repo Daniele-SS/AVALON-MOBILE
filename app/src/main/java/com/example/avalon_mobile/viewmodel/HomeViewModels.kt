@@ -53,7 +53,7 @@ class HomeViewModel(
                             pesquisasPendentes = (c?.pesquisasPendentes ?: 0) + (c?.avaliacoesPendentes ?: 0),
                             feriasPendentes = c?.feriasEmAndamento ?: 0,
                             feedbacksNovos = (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,
-                            notificacoesNaoLidas = if (soReais) 0 else (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0,
+                            notificacoesNaoLidas = (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0,
                             comunicados = if (soReais) emptyList() else (comunicados.await() as? AppResult.Success)?.data.orEmpty()
                         )
                     )
@@ -75,11 +75,15 @@ class NotificacoesViewModel(private val repository: AvalonRepository) : ViewMode
         viewModelScope.launch {
             _state.value = when (val r = repository.notificacoes()) {
                 // Mais recentes primeiro (RF-504); sem data no DDL, o servidor ordena por id decrescente.
-                is AppResult.Success -> LoadState.Content(
-                    r.data.sortedByDescending { it.id }
-                        .groupBy { it.dataHora?.substringBefore(",")?.trim() ?: "Recentes" }
-                        .toList()
-                )
+                is AppResult.Success -> {
+                    // Abrir a central conta como leitura: o estado fica no aparelho (o banco não tem "lida").
+                    repository.marcarNotificacoesLidas(r.data.filter { it.lida == false }.map { it.id })
+                    LoadState.Content(
+                        r.data.sortedByDescending { it.id }
+                            .groupBy { it.dataHora?.substringBefore(",")?.trim() ?: "Recentes" }
+                            .toList()
+                    )
+                }
                 is AppResult.Failure -> LoadState.Error(r.error.mensagem)
             }
         }

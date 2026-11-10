@@ -2,6 +2,7 @@ package com.example.avalon_mobile.data.repository
 
 import com.example.avalon_mobile.data.AppError
 import com.example.avalon_mobile.data.AppResult
+import com.example.avalon_mobile.data.local.LeituraLocal
 import com.example.avalon_mobile.data.local.SessionManager
 import com.example.avalon_mobile.data.map
 import com.example.avalon_mobile.data.remote.ApiCall
@@ -19,7 +20,6 @@ import com.example.avalon_mobile.model.Comunicado
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
-import com.example.avalon_mobile.model.EsqueciSenhaRequest
 import com.example.avalon_mobile.model.Feedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
@@ -29,16 +29,19 @@ import com.example.avalon_mobile.model.LogoutRequest
 import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.model.Pesquisa
-import com.example.avalon_mobile.model.RedefinirSenhaRequest
+import com.example.avalon_mobile.model.RedefinirRecuperacaoRequest
+import com.example.avalon_mobile.model.SolicitarRecuperacaoRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoItem
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaFeedback
-import com.example.avalon_mobile.model.RespostaFeedbackRequest
 import com.example.avalon_mobile.model.RespostaPesquisaItem
 import com.example.avalon_mobile.model.SolicitacaoCorrecao
 import com.example.avalon_mobile.model.UsuarioResumo
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -71,11 +74,11 @@ class RemoteAuthRepository(
         sessionManager.end()
     }
 
-    override suspend fun esqueciSenha(login: String): AppResult<Unit> =
-        call.execute { api.esqueciSenha(EsqueciSenhaRequest(login.trim())) }
+    override suspend fun esqueciSenha(email: String): AppResult<Unit> =
+        call.execute { api.solicitarRecuperacao(SolicitarRecuperacaoRequest(email.trim())) }
 
-    override suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit> =
-        call.execute { api.redefinirSenha(RedefinirSenhaRequest(token.trim(), novaSenha, confirmacao)) }
+    override suspend fun redefinirSenha(email: String, codigo: String, novaSenha: String): AppResult<Unit> =
+        call.execute { api.redefinirRecuperacao(RedefinirRecuperacaoRequest(email.trim(), codigo.trim(), novaSenha)) }
 
     override suspend fun solicitarCodigoAlteracao(senhaAtual: String): AppResult<Unit> =
         call.execute { api.solicitarCodigoSenha(SolicitarCodigoSenhaRequest(senhaAtual)) }
@@ -87,7 +90,8 @@ class RemoteAuthRepository(
 class RemoteAvalonRepository(
     private val api: AvalonApi,
     private val call: ApiCall,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val leitura: LeituraLocal? = null
 ) : AvalonRepository {
 
     private val idColaborador: Int get() = sessionManager.current?.usuario?.idColaborador ?: -1
@@ -169,16 +173,36 @@ class RemoteAvalonRepository(
         return ler(listaOuVazia(call.execute { api.documentos() })) { LeituraApi.documentos(it, id) }
     }
 
-    override suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray> =
-        naoDisponivel("O download do arquivo do documento")
+    // GET /documento/download/{id} devolve o arquivo; lê o corpo fora da thread principal.
+    override suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray> {
+        val resposta = call.execute { api.baixarDocumento(documento.id) }
+        return when (resposta) {
+            is AppResult.Failure -> resposta
+            is AppResult.Success -> try {
+                val bytes = withContext(Dispatchers.IO) { resposta.data.bytes() }
+                if (bytes.isEmpty()) AppResult.Failure(AppError(AppError.DESCONHECIDO, "O arquivo do documento está vazio. Procure o RH."))
+                else AppResult.Success(bytes)
+            } catch (e: IOException) {
+                AppResult.Failure(AppError(AppError.SEM_CONEXAO, "Não foi possível baixar o arquivo. Verifique sua conexão."))
+            }
+        }
+    }
 
-    override suspend fun feedbacks(): AppResult<List<Feedback>> = call.execute { api.feedbacks(idColaborador) }
+    override suspend fun feedbacks(): AppResult<List<Feedback>> {
+        val id = idColaborador
+        val vistos = leitura?.ids(LeituraLocal.FEEDBACK, id).orEmpty()
+        return ler(listaOuVazia(call.execute { api.feedbacks() })) { LeituraApi.feedbacks(it, id, vistos) }
+    }
 
-    override suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>> =
-        call.execute { api.respostasFeedback(idFeedback) }
+    override suspend fun marcarFeedbackLido(idFeedback: Int) {
+        leitura?.marcar(LeituraLocal.FEEDBACK, idColaborador, listOf(idFeedback))
+    }
+
+    // Não existe rota para respostas de feedback (tbl_resposta_feedback não foi exposta pelo Back-end).
+    override suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>> = AppResult.Success(emptyList())
 
     override suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback> =
-        call.execute { api.responderFeedback(idFeedback, RespostaFeedbackRequest(texto.trim())) }
+        naoDisponivel("A resposta ao feedback")
 
     // Leitura pela API real. O Back-end devolve as listagens de todos os colaboradores; o app filtra pelo titular.
     override suspend fun pesquisas(): AppResult<List<Pesquisa>> {
@@ -225,5 +249,13 @@ class RemoteAvalonRepository(
     override suspend fun responderAvaliacao(id: Int, respostas: List<RespostaAvaliacaoItem>): AppResult<RespostaConfirmacao> =
         call.execute { api.responderAvaliacao(id, RespostaAvaliacaoLote(respostas)) }
 
-    override suspend fun notificacoes(): AppResult<List<Notificacao>> = call.execute { api.notificacoes() }
+    override suspend fun notificacoes(): AppResult<List<Notificacao>> {
+        val id = idColaborador
+        val lidas = leitura?.ids(LeituraLocal.NOTIFICACAO, id).orEmpty()
+        return ler(listaOuVazia(call.execute { api.notificacoes() })) { LeituraApi.notificacoes(it, id, lidas) }
+    }
+
+    override suspend fun marcarNotificacoesLidas(ids: List<Int>) {
+        leitura?.marcar(LeituraLocal.NOTIFICACAO, idColaborador, ids)
+    }
 }

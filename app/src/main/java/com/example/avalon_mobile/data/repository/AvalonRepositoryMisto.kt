@@ -7,7 +7,9 @@ import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DashboardColaborador
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
+import com.example.avalon_mobile.model.Feedback
 import com.example.avalon_mobile.model.Notificacao
+import com.example.avalon_mobile.model.RespostaFeedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
@@ -27,8 +29,28 @@ class AvalonRepositoryMisto(
 
     override val homeSoDadosReais: Boolean get() = usaApi(FERIAS)
 
-    override suspend fun notificacoes(): AppResult<List<Notificacao>> =
-        if (homeSoDadosReais) AppResult.Success(emptyList()) else demonstracao.notificacoes()
+    override suspend fun notificacoes(): AppResult<List<Notificacao>> = when {
+        usaApi(NOTIFICACAO) -> api.notificacoes()
+        homeSoDadosReais -> AppResult.Success(emptyList())
+        else -> demonstracao.notificacoes()
+    }
+
+    override suspend fun marcarNotificacoesLidas(ids: List<Int>) {
+        if (usaApi(NOTIFICACAO)) api.marcarNotificacoesLidas(ids) else demonstracao.marcarNotificacoesLidas(ids)
+    }
+
+    override suspend fun feedbacks(): AppResult<List<Feedback>> =
+        if (usaApi(FEEDBACK)) api.feedbacks() else demonstracao.feedbacks()
+
+    override suspend fun marcarFeedbackLido(idFeedback: Int) {
+        if (usaApi(FEEDBACK)) api.marcarFeedbackLido(idFeedback) else demonstracao.marcarFeedbackLido(idFeedback)
+    }
+
+    override suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>> =
+        if (usaApi(FEEDBACK)) api.respostasFeedback(idFeedback) else demonstracao.respostasFeedback(idFeedback)
+
+    override suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback> =
+        if (usaApi(FEEDBACK)) api.responderFeedback(idFeedback, texto) else demonstracao.responderFeedback(idFeedback, texto)
 
     override suspend fun dashboard(): AppResult<Dashboard> {
         if (!usaApi(FERIAS) && !usaApi(PESQUISA)) return demonstracao.dashboard()
@@ -98,6 +120,8 @@ class AvalonRepositoryMisto(
         const val BENEFICIO = "beneficio"
         const val DOCUMENTO = "documento"
         const val PESQUISA = "pesquisa"
+        const val FEEDBACK = "feedback"
+        const val NOTIFICACAO = "notificacao"
 
         fun modulos(texto: String): Set<String> =
             texto.split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()

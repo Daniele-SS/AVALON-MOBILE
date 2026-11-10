@@ -42,7 +42,7 @@ import com.example.avalon_mobile.viewmodel.avalonViewModel
 /**
  * Recuperação de senha, etapa 1 (Sprint 2 — 6.2.2): código de 4 dígitos, de uso único e com validade de
  * 30 minutos, enviado ao e-mail corporativo. O reenvio fica bloqueado por 2 minutos (RF 5.1.84).
- * O código é o `token` de `/auth/senha/redefinir`; a validação acontece no servidor na etapa 2.
+ * O código segue com o e-mail para `/recuperacao_senha/redefinir`; a validação acontece no servidor na etapa 2.
  */
 @Composable
 fun CodigoRecuperacaoScreen(

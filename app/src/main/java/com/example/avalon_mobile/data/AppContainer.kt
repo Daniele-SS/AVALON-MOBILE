@@ -3,6 +3,8 @@ package com.example.avalon_mobile.data
 import android.content.Context
 import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.data.local.ApiConfig
+import com.example.avalon_mobile.data.local.LeituraLocal
+import com.example.avalon_mobile.data.local.LeituraLocalPrefs
 import com.example.avalon_mobile.data.local.SecureSessionStore
 import com.example.avalon_mobile.data.local.SessionManager
 import com.example.avalon_mobile.data.remote.ApiCall
@@ -84,11 +86,14 @@ class AppContainer(context: Context) {
         if (BuildConfig.USE_MOCK_AUTH) MockAuthRepository(sessionManager, appScope)
         else RemoteAuthRepository(api, apiCall, sessionManager, appScope)
 
+    private val leituraLocal: LeituraLocal =
+        LeituraLocalPrefs(context.getSharedPreferences(LeituraLocal.ARQUIVO, Context.MODE_PRIVATE))
+
     val avalonRepository: AvalonRepository =
         if (BuildConfig.USE_MOCK_API) AvalonRepositoryMisto(
-            api = RemoteAvalonRepository(api, apiCall, sessionManager),
+            api = RemoteAvalonRepository(api, apiCall, sessionManager, leituraLocal),
             demonstracao = MockAvalonRepository(pdfFactory) { sessionManager.current?.usuario },
             modulosApi = AvalonRepositoryMisto.modulos(BuildConfig.MODULOS_API)
         )
-        else RemoteAvalonRepository(api, apiCall, sessionManager)
+        else RemoteAvalonRepository(api, apiCall, sessionManager, leituraLocal)
 }

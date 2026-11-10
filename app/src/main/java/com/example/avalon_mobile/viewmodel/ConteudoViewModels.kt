@@ -166,6 +166,7 @@ class FeedbackDetalheViewModel(
         viewModelScope.launch {
             val feedback = when (val r = repository.feedbacks()) {
                 is AppResult.Success -> r.data.firstOrNull { it.id == id }
+                    ?.also { repository.marcarFeedbackLido(id) }
                     ?.let { LoadState.Content(it) } ?: LoadState.Error("Feedback não encontrado.")
                 is AppResult.Failure -> LoadState.Error(r.error.mensagem)
             }
