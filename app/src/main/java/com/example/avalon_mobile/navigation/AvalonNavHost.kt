@@ -48,6 +48,7 @@ import com.example.avalon_mobile.ui.screens.home.MaisScreen
 import com.example.avalon_mobile.ui.screens.home.Modulo
 import com.example.avalon_mobile.ui.screens.home.NotificacoesScreen
 import com.example.avalon_mobile.ui.screens.perfil.AlterarSenhaScreen
+import com.example.avalon_mobile.ui.screens.perfil.AparenciaScreen
 import com.example.avalon_mobile.ui.screens.perfil.JornadaScreen
 import com.example.avalon_mobile.ui.screens.perfil.PerfilScreen
 import com.example.avalon_mobile.ui.screens.pesquisa.AvaliacaoScreen
@@ -67,6 +68,7 @@ object Routes {
     const val PERFIL = "perfil"
     const val JORNADA = "jornada"
     const val ALTERAR_SENHA = "perfil/senha"
+    const val APARENCIA = "perfil/aparencia"
     const val FERIAS = "ferias"
     const val BENEFICIOS = "beneficios"
     const val DOWNLOADS = "downloads"
@@ -95,6 +97,7 @@ private val abaPorRota = mapOf(
     Routes.DOWNLOADS to MainTab.DOCUMENTOS,
     Routes.JORNADA to MainTab.PERFIL,
     Routes.ALTERAR_SENHA to MainTab.PERFIL,
+    Routes.APARENCIA to MainTab.PERFIL,
     Routes.FERIAS to MainTab.HOME,
     Routes.BENEFICIOS to MainTab.HOME,
     Routes.FEEDBACKS to MainTab.HOME,
@@ -231,6 +234,7 @@ fun AvalonNavHost(container: AppContainer) {
                         onNotificacoes = { abrir(Routes.NOTIFICACOES) },
                         onTermos = { abrir(Routes.TERMOS) },
                         onAlterarSenha = { abrir(Routes.ALTERAR_SENHA) },
+                        onAparencia = { abrir(Routes.APARENCIA) },
                         onSair = { avisoLogin = null; navController.reiniciarEm(Routes.LOGIN) }
                     )
                 }
@@ -251,6 +255,9 @@ fun AvalonNavHost(container: AppContainer) {
                             }
                         }
                     )
+                }
+                composable(Routes.APARENCIA) {
+                    AparenciaScreen(aparencia = container.aparencia, onBack = { navController.popBackStack() })
                 }
                 composable(Routes.JORNADA) { JornadaScreen(onBack = { navController.popBackStack() }) }
                 // Sprint 3 — 6.4, 6.5.4, 6.7

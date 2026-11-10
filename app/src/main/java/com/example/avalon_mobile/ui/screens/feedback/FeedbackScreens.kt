@@ -41,7 +41,9 @@ import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.components.StatusPill
+import com.example.avalon_mobile.ui.theme.SurfaceInfo
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -57,6 +59,9 @@ import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
+import com.example.avalon_mobile.ui.theme.TextStrong
+import com.example.avalon_mobile.ui.theme.WarningContainer
+import com.example.avalon_mobile.ui.theme.WarningText
 import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.viewmodel.FeedbackDetalheViewModel
 import com.example.avalon_mobile.viewmodel.FeedbacksViewModel
@@ -120,7 +125,7 @@ fun FeedbackDetalheScreen(
                     Text(fb.descricao.orEmpty(), fontFamily = Inter, fontSize = 15.sp, color = TextPrimary)
                 }
                 state.respostas.forEach { r ->
-                    AvalonCard(radius = 16.dp, border = BorderSoft, container = Color(0xFFF0F6FF)) {
+                    AvalonCard(radius = 16.dp, border = BorderSoft, container = SurfaceInfo) {
                         Text("Sua resposta • ${Datas.dataCurta(r.dataResposta)}", fontFamily = Inter, fontSize = 12.sp, color = TextSecondary)
                         Spacer(Modifier.height(4.dp))
                         Text(r.descricao, fontFamily = Inter, fontSize = 14.sp, color = TextPrimary)
@@ -161,13 +166,14 @@ private fun Remetente(fb: Feedback, data: String) {
 
 @Composable
 private fun TipoPill(tipo: String) {
+    // Positivo verde, Reconhecimento azul, Desenvolvimento amarelo, Formal (e qualquer outro) preto/neutro.
     val (bg, fg) = when (tipo.lowercase()) {
-        "reconhecimento" -> BadgeGreenBg to BadgeGreenText
-        "desenvolvimento" -> BadgeOrangeBg to BadgeOrangeText
-        "formal" -> BadgeBlueBg to BadgeBlueText
-        else -> BadgeBlueBg to Danger
+        "positivo" -> BadgeGreenBg to BadgeGreenText
+        "reconhecimento" -> BadgeBlueBg to BadgeBlueText
+        "desenvolvimento" -> WarningContainer to WarningText
+        else -> Background to TextStrong
     }
-    if (tipo.lowercase() != "formal") StatusPill(tipo, bg, fg, fontSize = 12)
+    StatusPill(tipo, bg, fg, fontSize = 12)
 }
 
 private fun iniciais(nome: String): String =

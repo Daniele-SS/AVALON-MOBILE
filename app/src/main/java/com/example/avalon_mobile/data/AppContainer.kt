@@ -2,7 +2,11 @@ package com.example.avalon_mobile.data
 
 import android.content.Context
 import com.example.avalon_mobile.BuildConfig
+import com.example.avalon_mobile.data.local.AparenciaLocal
+import com.example.avalon_mobile.data.local.AparenciaLocalPrefs
 import com.example.avalon_mobile.data.local.ApiConfig
+import com.example.avalon_mobile.data.local.CorrecaoLocal
+import com.example.avalon_mobile.data.local.CorrecaoLocalPrefs
 import com.example.avalon_mobile.data.local.LeituraLocal
 import com.example.avalon_mobile.data.local.LeituraLocalPrefs
 import com.example.avalon_mobile.data.local.SecureSessionStore
@@ -22,6 +26,7 @@ import com.example.avalon_mobile.data.repository.MockAuthRepository
 import com.example.avalon_mobile.data.repository.MockAvalonRepository
 import com.example.avalon_mobile.data.repository.RemoteAuthRepository
 import com.example.avalon_mobile.data.repository.RemoteAvalonRepository
+import com.example.avalon_mobile.ui.theme.AparenciaState
 import com.example.avalon_mobile.util.PdfFactory
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +50,15 @@ class AppContainer(context: Context) {
     val apiConfig = ApiConfig(
         context.applicationContext.getSharedPreferences(ApiConfig.ARQUIVO, Context.MODE_PRIVATE),
         BuildConfig.API_BASE_URL
+    )
+
+    /** Tema, alto contraste e escala de fonte (acessibilidade). Persistidos no aparelho. */
+    val aparencia = AparenciaState(
+        AparenciaLocalPrefs(context.applicationContext.getSharedPreferences(AparenciaLocal.ARQUIVO, Context.MODE_PRIVATE))
+    )
+
+    val correcaoLocal: CorrecaoLocal = CorrecaoLocalPrefs(
+        context.applicationContext.getSharedPreferences(CorrecaoLocal.ARQUIVO, Context.MODE_PRIVATE), gson
     )
 
     private val logging = HttpLoggingInterceptor().apply {

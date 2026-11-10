@@ -29,6 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.InputBorder
 import com.example.avalon_mobile.ui.theme.Danger
@@ -65,11 +70,14 @@ fun AvalonTextField(
 ) {
     var visible by rememberSaveable { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        if (label.isNotEmpty()) Text(label, fontFamily = Actor, fontSize = 13.sp, color = TextPrimary)
+        // O rótulo visual é lido junto do campo (contentDescription abaixo); evita o TalkBack ler duas vezes.
+        if (label.isNotEmpty()) Text(label, Modifier.clearAndSetSemantics { }, fontFamily = Actor, fontSize = 13.sp, color = TextPrimary)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth().heightIn(min = minHeight.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = minHeight.dp).semantics {
+                if (label.isNotEmpty()) contentDescription = label
+            },
             enabled = enabled,
             singleLine = singleLine,
             isError = error != null,
@@ -98,8 +106,8 @@ fun AvalonTextField(
                 unfocusedBorderColor = InputBorder,
                 focusedBorderColor = Navy,
                 errorBorderColor = Danger,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
+                unfocusedContainerColor = Surface,
+                focusedContainerColor = Surface
             ),
             supportingText = error?.let { { Text(it, color = Danger, fontFamily = Inter, fontSize = 12.sp) } }
         )
@@ -114,7 +122,7 @@ fun AvalonPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
-    container: Color = Navy,
+    container: Color = NavyFundo,
     leadingIcon: Int? = null
 ) {
     Button(
@@ -143,7 +151,7 @@ fun AvalonSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier 
         modifier = modifier.height(48.dp),
         shape = RoundedCornerShape(14.dp),
         border = BorderStroke(1.dp, Border),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Navy)
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = Surface, contentColor = Navy)
     ) {
         Text(text, fontFamily = Inter, fontSize = 15.sp)
     }

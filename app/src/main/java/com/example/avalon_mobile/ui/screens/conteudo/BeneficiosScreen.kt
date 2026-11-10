@@ -40,6 +40,7 @@ import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.LocalSnackbarHostState
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -74,7 +75,7 @@ fun BeneficiosScreen(
                     label = { Text(f.rotulo, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp) },
                     shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = Color.White,
+                        containerColor = Surface,
                         labelColor = TextSecondary,
                         selectedContainerColor = Color(0xFF0B4F8A),
                         selectedLabelColor = Color.White

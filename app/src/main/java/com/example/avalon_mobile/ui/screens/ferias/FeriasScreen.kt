@@ -38,6 +38,8 @@ import com.example.avalon_mobile.ui.components.LoadState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Accent
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.TextStrong
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.BorderStrong
 import com.example.avalon_mobile.ui.theme.Inter
@@ -103,7 +105,7 @@ private fun CartaoSaldo(saldo: SaldoFerias?) {
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Navy, RoundedCornerShape(20.dp))
+            .background(NavyFundo, RoundedCornerShape(20.dp))
             .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
         Text("Saldo disponível", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Accent)
@@ -142,7 +144,7 @@ private fun PedidoCard(pedido: Ferias) {
             Column(Modifier.weight(1f)) {
                 Text(
                     "${pedido.quantidadeDias ?: "—"} dias - ${Datas.intervalo(pedido.dataInicio, pedido.dataFim)}",
-                    fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.Black
+                    fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = TextStrong
                 )
                 pedido.dataSolicitacao?.let {
                     Text("Solicitado em ${Datas.diaMes(it)}", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = TextMutedAlpha)

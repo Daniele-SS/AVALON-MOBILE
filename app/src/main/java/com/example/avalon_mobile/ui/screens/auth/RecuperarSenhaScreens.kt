@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextPrimary
@@ -70,7 +71,7 @@ fun CodigoRecuperacaoScreen(
                     Modifier
                         .fillMaxWidth()
                         .height(52.dp)
-                        .background(androidx.compose.ui.graphics.Color.White, RoundedCornerShape(8.dp))
+                        .background(Surface, RoundedCornerShape(8.dp))
                         .border(1.dp, Border, RoundedCornerShape(8.dp))
                         .padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center

@@ -44,6 +44,7 @@ import com.example.avalon_mobile.ui.components.LocalSnackbarHostState
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -96,7 +97,7 @@ private fun BuscaDocumentos(valor: String, onChange: (String) -> Unit, placehold
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = Border, focusedBorderColor = Navy,
-            unfocusedContainerColor = Color.White, focusedContainerColor = Color.White
+            unfocusedContainerColor = Surface, focusedContainerColor = Surface
         )
     )
 }

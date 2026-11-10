@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextPrimary
@@ -47,7 +48,7 @@ fun AvalonCard(
     modifier: Modifier = Modifier,
     radius: Dp = 14.dp,
     border: Color = Border,
-    container: Color = Color.White,
+    container: Color = Surface,
     onClick: (() -> Unit)? = null,
     contentPadding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit

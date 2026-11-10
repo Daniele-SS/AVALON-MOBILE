@@ -1,5 +1,8 @@
 package com.example.avalon_mobile.ui.screens.home
 
+import com.example.avalon_mobile.ui.theme.AtalhoFundo
+import com.example.avalon_mobile.ui.theme.AtalhoConteudo
+import com.example.avalon_mobile.ui.theme.Paletas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -48,6 +51,8 @@ import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.InfoBorder
@@ -87,7 +92,7 @@ fun HomeScreen(
 
     Column(Modifier.fillMaxSize().background(Background)) {
         Row(
-            Modifier.fillMaxWidth().background(Navy).statusBarsPadding().padding(start = 26.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
+            Modifier.fillMaxWidth().background(NavyFundo).statusBarsPadding().padding(start = 26.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AvalonWordmark(fontSize = 20.sp, modifier = Modifier.weight(1f))
@@ -183,12 +188,13 @@ private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
                 onClick = { onAtalho(atalho) },
                 modifier = Modifier.weight(1f).height(78.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
+                border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
             ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painterResource(atalho.icon), null, tint = TextPrimary, modifier = Modifier.size(22.dp))
+                    Icon(painterResource(atalho.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.height(6.dp))
-                    Text(atalho.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = TextPrimary, maxLines = 1)
+                    Text(atalho.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AtalhoConteudo, maxLines = 1)
                 }
             }
     }

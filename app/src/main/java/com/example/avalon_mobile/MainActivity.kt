@@ -31,8 +31,9 @@ class MainActivity : ComponentActivity() {
                 // Não toca no AppContainer: a tela de diagnóstico abre mesmo se ele for a causa.
                 CrashScreen(atual, onContinuar = { CrashLog.limpar(this); relatorio = null })
             } else {
-                AVALONMOBILETheme {
-                    AvalonNavHost((application as AvalonApp).container)
+                val container = (application as AvalonApp).container
+                AVALONMOBILETheme(aparencia = container.aparencia.atual) {
+                    AvalonNavHost(container)
                 }
             }
         }

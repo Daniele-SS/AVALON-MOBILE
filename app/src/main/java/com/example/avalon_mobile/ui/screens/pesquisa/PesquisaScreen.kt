@@ -44,6 +44,7 @@ import com.example.avalon_mobile.ui.components.AvalonSecondaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
 import com.example.avalon_mobile.ui.theme.BadgeGreenText
 import com.example.avalon_mobile.ui.theme.Border
@@ -94,7 +95,7 @@ fun PesquisaScreen(
             if (ui.confirmarEnvio) {
                 AlertDialog(
                     onDismissRequest = viewModel::cancelarConfirmacao,
-                    containerColor = Color.White,
+                    containerColor = Surface,
                     title = { Text("Confirmar envio?", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
                     text = {
                         Text(
@@ -112,7 +113,7 @@ fun PesquisaScreen(
     if (confirmarSaida) {
         AlertDialog(
             onDismissRequest = { confirmarSaida = false },
-            containerColor = Color.White,
+            containerColor = Surface,
             title = { Text("Sair da pesquisa?", fontFamily = Inter, fontWeight = FontWeight.Bold) },
             text = { Text("As respostas preenchidas serão descartadas.", fontFamily = Inter) },
             confirmButton = { TextButton(onClick = { confirmarSaida = false; onSair() }) { Text("Sair", color = Danger, fontFamily = Inter) } },
@@ -219,7 +220,7 @@ internal fun Aviso(texto: String, erro: Boolean) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(if (erro) DangerContainer else Color.White, RoundedCornerShape(14.dp))
+            .background(if (erro) DangerContainer else Surface, RoundedCornerShape(14.dp))
             .border(1.dp, if (erro) Danger.copy(alpha = 0.4f) else Border, RoundedCornerShape(14.dp))
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
