@@ -36,6 +36,8 @@ import com.example.avalon_mobile.ui.theme.DayOffText
 import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
+import com.example.avalon_mobile.ui.theme.DiaHojeTexto
+import com.example.avalon_mobile.ui.theme.DiaHoje
 import com.example.avalon_mobile.ui.theme.TabInactive
 import com.example.avalon_mobile.ui.theme.TextMuted
 import com.example.avalon_mobile.ui.theme.TextPrimary
@@ -75,7 +77,7 @@ fun JornadaScreen(
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Legenda(DayWork, "Trabalha")
-                        Legenda(NavyFundo, "Hoje")
+                        Legenda(DiaHoje, "Hoje")
                         Legenda(DayOff, "Folga")
                     }
                 }
@@ -99,7 +101,7 @@ fun JornadaScreen(
 @Composable
 private fun DiaChip(dia: DiaEscala, modifier: Modifier) {
     val (bg, fg) = when (dia.tipo) {
-        TipoDia.HOJE -> NavyFundo to Color.White
+        TipoDia.HOJE -> DiaHoje to DiaHojeTexto
         TipoDia.TRABALHO -> DayWork to TextPrimary
         TipoDia.FOLGA -> DayOff to DayOffText
     }
@@ -107,7 +109,8 @@ private fun DiaChip(dia: DiaEscala, modifier: Modifier) {
         Text(
             if (dia.sigla == "SAB") "SÁB" else dia.sigla,
             fontFamily = Inter, fontSize = 10.sp,
-            color = if (dia.tipo == TipoDia.HOJE) TabInactive else TextSecondary
+            fontWeight = if (dia.tipo == TipoDia.HOJE) FontWeight.Bold else FontWeight.Normal,
+            color = if (dia.tipo == TipoDia.HOJE) TextPrimary else TextSecondary
         )
         Spacer(Modifier.height(4.dp))
         Box(Modifier.fillMaxWidth().height(36.dp).background(bg, RoundedCornerShape(5.dp)), contentAlignment = Alignment.Center) {
