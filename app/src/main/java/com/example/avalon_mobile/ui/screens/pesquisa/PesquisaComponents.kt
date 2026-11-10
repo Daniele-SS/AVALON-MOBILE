@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
+import com.example.avalon_mobile.ui.theme.SurfaceSelected
 import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.Surface
@@ -71,7 +72,7 @@ fun OpcaoResposta(texto: String, selecionada: Boolean, onClick: () -> Unit) {
             .height(60.dp)
             .selectable(selected = selecionada, role = Role.RadioButton, onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = if (selecionada) SurfaceS else Surface),
+        colors = CardDefaults.cardColors(containerColor = if (selecionada) SurfaceSelected else Surface),
         border = BorderStroke(if (selecionada) 2.dp else 1.dp, if (selecionada) Navy else Border)
     ) {
         Row(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
