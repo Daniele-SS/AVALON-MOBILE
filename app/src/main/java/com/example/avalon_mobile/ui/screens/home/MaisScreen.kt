@@ -1,5 +1,9 @@
 package com.example.avalon_mobile.ui.screens.home
 
+import androidx.compose.foundation.BorderStroke
+import com.example.avalon_mobile.ui.theme.AtalhoFundo
+import com.example.avalon_mobile.ui.theme.AtalhoConteudo
+import com.example.avalon_mobile.ui.theme.Paletas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,12 +70,13 @@ fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Uni
                         onClick = { onModulo(m) },
                         modifier = Modifier.weight(1f).height(86.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Surface)
+                        colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
+                        border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
                     ) {
                         Column(Modifier.fillMaxSize().padding(6.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(painterResource(m.icon), null, tint = TextPrimary, modifier = Modifier.size(23.dp))
+                            Icon(painterResource(m.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(23.dp))
                             Spacer(Modifier.height(6.dp))
-                            Text(m.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = TextPrimary, textAlign = TextAlign.Center, lineHeight = 13.sp)
+                            Text(m.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AtalhoConteudo, textAlign = TextAlign.Center, lineHeight = 13.sp)
                         }
                     }
             }

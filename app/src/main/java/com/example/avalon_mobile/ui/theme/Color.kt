@@ -275,6 +275,8 @@ object Paletas {
         else -> Claro
     }
 
+    val altoContraste: Boolean get() = atual === ClaroAltoContraste || atual === EscuroAltoContraste
+
     /** Paleta em uso. Escrita apenas por AVALONMOBILETheme. */
     var atual by mutableStateOf(Claro)
 }
@@ -326,3 +328,8 @@ val NavyFundo: Color get() = Paletas.atual.navyFundo
 val SurfaceInfo: Color get() = Paletas.atual.surfaceInfo
 val SurfaceMuted: Color get() = Paletas.atual.surfaceMuted
 val SurfaceSelected: Color get() = Paletas.atual.surfaceSelected
+
+// Atalhos da Home e da tela Mais: no alto contraste viram botões brancos com contorno preto e conteúdo preto
+// (no tema escuro de alto contraste o fundo da tela é preto, então o botão branco se destaca).
+val AtalhoFundo: Color get() = if (Paletas.altoContraste) Color.White else Surface
+val AtalhoConteudo: Color get() = if (Paletas.altoContraste) Color.Black else TextPrimary
