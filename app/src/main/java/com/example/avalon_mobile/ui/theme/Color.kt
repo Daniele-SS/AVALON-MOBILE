@@ -64,7 +64,9 @@ data class Paleta(
     val navyFundo: Color,
     val surfaceInfo: Color,
     val surfaceMuted: Color,
-    val surfaceSelected: Color
+    val surfaceSelected: Color,
+    val diaHoje: Color,
+    val diaHojeTexto: Color
 )
 
 object Paletas {
@@ -115,7 +117,9 @@ object Paletas {
         navyFundo = Color(0xFF001F3F),
         surfaceInfo = Color(0xFFF0F6FF),
         surfaceMuted = Color(0xFFF7F7F7),
-        surfaceSelected = Color(0xFFEAF3FF)
+        surfaceSelected = Color(0xFFEAF3FF),
+        diaHoje = Color(0xFF001F3F),
+        diaHojeTexto = Color(0xFFFFFFFF)
     )
 
     val Escuro = Paleta(
@@ -165,7 +169,9 @@ object Paletas {
         navyFundo = Color(0xFF17417A),
         surfaceInfo = Color(0xFF182F47),
         surfaceMuted = Color(0xFF0F1C2A),
-        surfaceSelected = Color(0xFF1B3A5C)
+        surfaceSelected = Color(0xFF1B3A5C),
+        diaHoje = Color(0xFF8DB7E8),
+        diaHojeTexto = Color(0xFF0B1622)
     )
 
     val ClaroAltoContraste = Paleta(
@@ -215,7 +221,9 @@ object Paletas {
         navyFundo = Color(0xFF00112B),
         surfaceInfo = Color(0xFFFFFFFF),
         surfaceMuted = Color(0xFFFFFFFF),
-        surfaceSelected = Color(0xFFE3EEFF)
+        surfaceSelected = Color(0xFFE3EEFF),
+        diaHoje = Color(0xFF00112B),
+        diaHojeTexto = Color(0xFFFFFFFF)
     )
 
     val EscuroAltoContraste = Paleta(
@@ -265,7 +273,9 @@ object Paletas {
         navyFundo = Color(0xFF00112B),
         surfaceInfo = Color(0xFF000000),
         surfaceMuted = Color(0xFF000000),
-        surfaceSelected = Color(0xFF0B2D52)
+        surfaceSelected = Color(0xFF0B2D52),
+        diaHoje = Color(0xFFFFFFFF),
+        diaHojeTexto = Color(0xFF000000)
     )
 
     fun escolher(escuro: Boolean, altoContraste: Boolean): Paleta = when {
@@ -333,3 +343,8 @@ val SurfaceSelected: Color get() = Paletas.atual.surfaceSelected
 // (no tema escuro de alto contraste o fundo da tela é preto, então o botão branco se destaca).
 val AtalhoFundo: Color get() = if (Paletas.altoContraste) Color.White else Surface
 val AtalhoConteudo: Color get() = if (Paletas.altoContraste) Color.Black else TextPrimary
+
+// Dia de hoje na Jornada: azul-marinho com texto branco no tema claro; no escuro, preenchimento claro com texto escuro,
+// para se destacar dos dias de trabalho e de folga, que ficam escuros.
+val DiaHoje: Color get() = Paletas.atual.diaHoje
+val DiaHojeTexto: Color get() = Paletas.atual.diaHojeTexto
