@@ -28,8 +28,10 @@ interface AuthRepository {
     val usuario: StateFlow<UsuarioResumo?>
     suspend fun login(login: String, senha: String): AppResult<UsuarioResumo>
     suspend fun logout()
-    suspend fun esqueciSenha(login: String): AppResult<Unit>
-    suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit>
+    /** Pede o código de 4 dígitos ao e-mail corporativo [email]. */
+    suspend fun esqueciSenha(email: String): AppResult<Unit>
+    /** [email] e [codigo] (4 dígitos) identificam a solicitação; a confirmação da senha é conferida no app. */
+    suspend fun redefinirSenha(email: String, codigo: String, novaSenha: String): AppResult<Unit>
     suspend fun solicitarCodigoAlteracao(senhaAtual: String): AppResult<Unit>
     suspend fun alterarSenha(senhaAtual: String, codigo: String, novaSenha: String, confirmacao: String): AppResult<Unit>
 }
@@ -57,6 +59,8 @@ interface AvalonRepository {
     suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray>
 
     suspend fun feedbacks(): AppResult<List<Feedback>>
+    /** Guarda no aparelho que o feedback foi aberto (o banco não tem o campo "lido"). */
+    suspend fun marcarFeedbackLido(idFeedback: Int) {}
     suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>>
     suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback>
 
@@ -69,4 +73,6 @@ interface AvalonRepository {
     suspend fun responderAvaliacao(id: Int, respostas: List<RespostaAvaliacaoItem>): AppResult<RespostaConfirmacao>
 
     suspend fun notificacoes(): AppResult<List<Notificacao>>
+    /** Guarda no aparelho as notificações já vistas. */
+    suspend fun marcarNotificacoesLidas(ids: List<Int>) {}
 }

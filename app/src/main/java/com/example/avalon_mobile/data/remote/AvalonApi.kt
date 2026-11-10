@@ -8,20 +8,16 @@ import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.BeneficioColaborador
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.Documento
-import com.example.avalon_mobile.model.EsqueciSenhaRequest
-import com.example.avalon_mobile.model.Feedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.LoginRequest
 import com.example.avalon_mobile.model.LogoutRequest
 import com.example.avalon_mobile.model.MeResponse
-import com.example.avalon_mobile.model.Notificacao
-import com.example.avalon_mobile.model.RedefinirSenhaRequest
+import com.example.avalon_mobile.model.RedefinirRecuperacaoRequest
+import com.example.avalon_mobile.model.SolicitarRecuperacaoRequest
 import com.example.avalon_mobile.model.RefreshRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
-import com.example.avalon_mobile.model.RespostaFeedback
-import com.example.avalon_mobile.model.RespostaFeedbackRequest
 import com.example.avalon_mobile.model.TokenResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -53,11 +49,14 @@ interface AvalonApi {
     @PUT("v1/senai/avalon/auth/senha")
     suspend fun alterarSenha(@Body body: AlterarSenhaRequest): Response<Unit>
 
-    @POST("v1/senai/avalon/auth/senha/esqueci")
-    suspend fun esqueciSenha(@Body body: EsqueciSenhaRequest): Response<Unit>
+    // Recuperação de senha (rotas públicas publicadas em 06/11/2026): código de 4 dígitos enviado ao e-mail.
+    @Headers("Content-Type: application/json")
+    @POST("v1/senai/avalon/recuperacao_senha/solicitar")
+    suspend fun solicitarRecuperacao(@Body body: SolicitarRecuperacaoRequest): Response<Unit>
 
-    @POST("v1/senai/avalon/auth/senha/redefinir")
-    suspend fun redefinirSenha(@Body body: RedefinirSenhaRequest): Response<Unit>
+    @Headers("Content-Type: application/json")
+    @POST("v1/senai/avalon/recuperacao_senha/redefinir")
+    suspend fun redefinirRecuperacao(@Body body: RedefinirRecuperacaoRequest): Response<Unit>
 
     // Dashboard (6.3.1)
     @GET("v1/senai/avalon/dashboard")
@@ -96,19 +95,16 @@ interface AvalonApi {
     @GET("v1/senai/avalon/documento")
     suspend fun documentos(): Response<JsonElement>
 
+    // Devolve o arquivo (attachment). O Back-end publicou esta rota em 09/11/2026.
     @Streaming
-    @GET("v1/senai/avalon/documento/{id}/arquivo")
+    @GET("v1/senai/avalon/documento/download/{id}")
     suspend fun baixarDocumento(@Path("id") id: Int): Response<ResponseBody>
 
     // Feedback (6.7)
+    // Publicado em 06/11/2026: lista de todos os colaboradores (sem escopo por perfil); o app filtra pelo titular.
+    // Não há rota de resposta ao feedback (tbl_resposta_feedback não foi exposta).
     @GET("v1/senai/avalon/feedback")
-    suspend fun feedbacks(@Query("id_colaborador_destinatario") idDestinatario: Int): Response<List<Feedback>>
-
-    @GET("v1/senai/avalon/feedback/{id}/resposta")
-    suspend fun respostasFeedback(@Path("id") id: Int): Response<List<RespostaFeedback>>
-
-    @POST("v1/senai/avalon/feedback/{id}/resposta")
-    suspend fun responderFeedback(@Path("id") id: Int, @Body body: RespostaFeedbackRequest): Response<RespostaFeedback>
+    suspend fun feedbacks(): Response<JsonElement>
 
     // Pesquisas (6.6)
     // Rotas publicadas pelo Back-end (05/11/2026): listagens completas; o app filtra pelas participações do titular.
@@ -132,8 +128,9 @@ interface AvalonApi {
     suspend fun responderAvaliacao(@Path("id") id: Int, @Body body: RespostaAvaliacaoLote): Response<RespostaConfirmacao>
 
     // Notificações (6.3.4)
+    // Publicado em 06/11/2026: lista de todos os colaboradores; o app filtra pelo titular.
     @GET("v1/senai/avalon/notificacao")
-    suspend fun notificacoes(): Response<List<Notificacao>>
+    suspend fun notificacoes(): Response<JsonElement>
 }
 
 /** Cliente separado e sem autenticador, usado apenas para renovar o token (evita recursão no 401). */

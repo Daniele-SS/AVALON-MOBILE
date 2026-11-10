@@ -74,14 +74,14 @@ class MockAuthRepository(
         sessionManager.end()
     }
 
-    override suspend fun esqueciSenha(login: String): AppResult<Unit> {
+    override suspend fun esqueciSenha(email: String): AppResult<Unit> {
         delay(LATENCIA)
         return AppResult.Success(Unit) // sempre 202, exista ou não o login
     }
 
-    override suspend fun redefinirSenha(token: String, novaSenha: String, confirmacao: String): AppResult<Unit> {
+    override suspend fun redefinirSenha(email: String, codigo: String, novaSenha: String): AppResult<Unit> {
         delay(LATENCIA)
-        return if (token.trim().length == 4) AppResult.Success(Unit)
+        return if (codigo.trim().length == 4) AppResult.Success(Unit)
         else AppResult.Failure(AppError("TOKEN_REDEFINICAO_INVALIDO", "O código expirou ou já foi utilizado.", 422))
     }
 

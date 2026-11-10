@@ -36,7 +36,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | Pacote | `com.example.avalon_mobile` |
 | Público | Autoatendimento do colaborador. Qualquer perfil (Colaborador, Gestor, RH) pode entrar e vê os próprios dados (TS08: regras de perfil iguais na Web e no mobile) |
 | Rede | Retrofit + OkHttp + Gson, seguindo o contrato `openapi.yaml` v2.1.0 do repositório de Back-end |
-| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (recuperação de senha, envio de respostas de pesquisa, Feedbacks, Notificações, Dashboard, Mural, correção cadastral e download de documentos); Perfil, Jornada, Férias, Benefícios, Documentos e a leitura de Pesquisas usam a API real (`MODULOS_API`) |
+| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (envio de respostas de pesquisa, resposta a feedback, Dashboard, Mural, correção cadastral e alteração de senha logado); Perfil, Jornada, Férias, Benefícios, Documentos (inclusive o download do arquivo), a leitura de Pesquisas, Feedbacks, Notificações e a recuperação de senha usam a API real (`MODULOS_API`) |
 
 ### O que o app faz
 
@@ -79,7 +79,7 @@ Observações:
 
 - **Login por e-mail corporativo (decisão de 19/10/2026).** O app envia o e-mail digitado no campo `login` do contrato. Em 21/10/2026 a API ainda procura só por `tbl_usuario.login`, então o e-mail é recusado. A correção no Back-end é uma linha na consulta do login (`where u.login = ? or c.email = ?`); com ela, os e-mails da tabela entram. O "Login antigo" serve só para testar a API por ferramenta (Postman, curl).
 - **Importar o banco com acentos corretos:** `mysql -u root -p --default-character-set=utf8mb4 < BD01.sql` e, em seguida, `mysql -u root -p --default-character-set=utf8mb4 db_tcc_rh < BD02.sql` (idem `BD03.sql` e `BD04.sql`). O `BD01` recria o banco do zero. Sem essa opção, nomes como "Tecnologia da Informação" chegam ao app como "InformaÃ§Ã£o".
-- **Recuperação de senha por código.** Código de 4 dígitos enviado ao e-mail corporativo, com validade de 30 minutos e reenvio bloqueado por 2 minutos (RF 5.1.84). O 4º erro bloqueia a conta, e só o RH redefine a senha (RF 5.1.85 e 5.1.86). O app mostra a mensagem devolvida pelo servidor; os códigos de erro `CONTA_BLOQUEADA` e `TENTATIVAS_EXCEDIDAS` são suposição a confirmar com o Back-end.
+- **Recuperação de senha por código (integrada à API em 10/11/2026).** O e-mail digitado no login segue pelas telas até a redefinição; o limite de tentativas e o bloqueio de reenvio ainda não existem no servidor (o app mostra a mensagem devolvida). Código de 4 dígitos enviado ao e-mail corporativo, com validade de 30 minutos e reenvio bloqueado por 2 minutos (RF 5.1.84). O 4º erro bloqueia a conta, e só o RH redefine a senha (RF 5.1.85 e 5.1.86). O app mostra a mensagem devolvida pelo servidor; os códigos de erro `CONTA_BLOQUEADA` e `TENTATIVAS_EXCEDIDAS` são suposição a confirmar com o Back-end.
 - São dados de teste: todas as senhas estão em texto puro no banco. Em produção devem ser trocadas e gravadas com hash.
 - Todos os 13 usuários estão **ativos**. A única colaboradora inativa da carga (Patricia Regina Mendes, MAT010) não tem login, então o TS18 (conta desativada) só pode ser executado depois de inativar um colaborador que tenha usuário, por exemplo:
   `UPDATE tbl_colaborador SET status = 'Inativo', data_desligamento = CURDATE() WHERE id = 9;` (Gustavo). A tentativa de login passa a responder "Esta conta está inativa. Procure o RH."
@@ -184,7 +184,7 @@ flowchart TD
 | `inicio` | `InicioScreen` | — |
 | `login` | `LoginScreen` | — |
 | `recuperar/codigo` | `CodigoRecuperacaoScreen` | — |
-| `recuperar/redefinir/{token}` | `RedefinirSenhaScreen` | — |
+| `recuperar/redefinir/{login}/{token}` | `RedefinirSenhaScreen` | — |
 | `servidor` | `ServidorScreen` | — |
 | `home` | `HomeScreen` | Home |
 | `pesquisas` | `PesquisasScreen` | Pesquisas |
@@ -222,11 +222,12 @@ Telas sem barra inferior são fluxos que o usuário deve concluir ou cancelar (l
 | Jornada | `GET /colaborador/{id}` → `GET /jornada_escala/{id}` → `GET /jornada_escala/{id}/dias` (se a API não tiver essa rota, usa `GET /dia_semana` e filtra pela jornada) |
 | Férias | `GET /ferias?id_colaborador=`, `POST /ferias` |
 | Benefícios | `GET /colaborador/{id}/beneficio` |
-| Documentos / Downloads | `GET /documento?id_colaborador=`, `GET /documento/{id}/arquivo` |
-| Feedbacks | `GET /feedback?id_colaborador_destinatario=`, `GET/POST /feedback/{id}/resposta` |
+| Documentos / Downloads | `GET /documento`, `GET /documento/download/{id}` (arquivo; tipo PDF/PNG/JPEG lido dos primeiros bytes) |
+| Feedbacks | `GET /feedback` (todos os colaboradores; o app filtra pelo destinatário e ignora `ativo = 0`). Sem rota de resposta: o app avisa que ainda não está disponível |
 | Pesquisas | Em uso (leitura, 05/11/2026): `GET /pesquisa`, `GET /pergunta`, `GET /participacao` (listagens completas; o app filtra pelo titular). Envio: `POST /resposta` e `POST /participacao` respondem 403 para o Colaborador (só RH grava). Contrato original, sem rota no Back-end: `GET /pesquisa/{id}/pergunta`, `POST /pesquisa/{id}/resposta` |
 | Avaliação psicossocial | `GET /avaliacao?somente_pendentes=true`, `GET /avaliacao/{id}/pergunta`, `POST /avaliacao/{id}/resposta` |
-| Notificações | `GET /notificacao` |
+| Notificações | `GET /notificacao` (todos os colaboradores; o app filtra pelo titular). Sem data e sem campo `lida` no banco: a ordem é por id decrescente e a leitura fica no aparelho |
+| Recuperação de senha | `POST /recuperacao_senha/solicitar` (`email`), `POST /recuperacao_senha/redefinir` (`email`, `codigo`, `nova_senha`), rotas públicas; antes de 06/11 o app usava `/auth/senha/*`, que não existe |
 
 Todos os caminhos têm o prefixo `/v1/senai/avalon`.
 
@@ -1103,3 +1104,17 @@ Pendentes do Módulo 1 (dependem do back-end): TS06 (alterar senha), TS07 (recup
 ### 15/10/2026
 
 Primeira versão: telas das Sprints 1 a 4 seguindo o Figma e o contrato, modo demonstração, sessão cifrada, correções de ícones e de componentes experimentais que fechavam o app, e esta documentação.
+
+## Atualização de 10/11/2026 — Sprint 3 (integração com as rotas publicadas em 06–09/11)
+
+| Item | O que mudou |
+|---|---|
+| Feedbacks (6.7) | Leitura real. `LeituraApi.feedbacks` filtra pelo destinatário, descarta `ativo = 0`, ordena por data e id. `lido` vem de `LeituraLocal` (ids vistos no aparelho); abrir o detalhe marca como lido. Resposta a feedback segue indisponível: não há rota |
+| Notificações (6.3.4) | Leitura real, filtrada pelo titular. Abrir a central marca tudo como lido no aparelho (o banco não tem `lida`) |
+| Recuperação de senha (6.2.2) | `AvalonApi.solicitarRecuperacao` e `redefinirRecuperacao`; a rota de redefinição agora recebe `login` e `token` (código) |
+| Download de documento (6.5.4) | `GET /documento/download/{id}`, leitura do corpo em `Dispatchers.IO`; `DocumentOpener` detecta PDF, PNG ou JPEG |
+| Estado de leitura local | `data/local/LeituraLocal.kt` (SharedPreferences `avalon_leitura`, chave `tipo_idColaborador`, só ids) |
+| `MODULOS_API` | Acrescentados `feedback` e `notificacao` |
+| Testes | `LeituraApiFeedbackNotificacaoTest` (6 casos). Os 15 testes de `LeituraApi*` passam compilados com kotlinc; o app completo não foi compilado por falta do Android SDK no ambiente |
+
+**Pendências que dependem do Back-end/Banco:** resposta a feedback, marcação de leitura de notificação, envio de resposta de pesquisa (403 para Colaborador), correção cadastral, `/dashboard`, alteração de senha logado, limite de tentativas e bloqueio de reenvio na recuperação, e escopo por colaborador em feedback/notificação/documento (hoje o servidor devolve dados de todos e o download aceita qualquer id).

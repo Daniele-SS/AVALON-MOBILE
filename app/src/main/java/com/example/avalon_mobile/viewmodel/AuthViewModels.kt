@@ -124,6 +124,7 @@ class RedefinirSenhaViewModel(
     handle: SavedStateHandle
 ) : ViewModel() {
 
+    private val login: String = checkNotNull(handle["login"])
     private val token: String = checkNotNull(handle["token"])
 
     private val _state = MutableStateFlow(RedefinirSenhaUiState())
@@ -142,7 +143,7 @@ class RedefinirSenhaViewModel(
         }
         _state.update { it.copy(loading = true) }
         viewModelScope.launch {
-            when (val r = auth.redefinirSenha(token, s.novaSenha, s.confirmacao)) {
+            when (val r = auth.redefinirSenha(login, token, s.novaSenha)) {
                 is AppResult.Success -> _state.update { it.copy(loading = false, concluido = true) }
                 is AppResult.Failure -> _state.update {
                     it.copy(

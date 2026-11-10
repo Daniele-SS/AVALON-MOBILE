@@ -17,14 +17,16 @@ data class LogoutRequest(
     @SerializedName("refresh_token") val refreshToken: String?
 )
 
-data class EsqueciSenhaRequest(
-    val login: String
+/** POST /recuperacao_senha/solicitar: o e-mail corporativo identifica a conta. */
+data class SolicitarRecuperacaoRequest(
+    val email: String
 )
 
-data class RedefinirSenhaRequest(
-    val token: String,
-    @SerializedName("nova_senha") val novaSenha: String,
-    @SerializedName("confirmacao_nova_senha") val confirmacaoNovaSenha: String
+/** POST /recuperacao_senha/redefinir: e-mail, código de 4 dígitos recebido e a nova senha. */
+data class RedefinirRecuperacaoRequest(
+    val email: String,
+    val codigo: String,
+    @SerializedName("nova_senha") val novaSenha: String
 )
 
 data class SolicitarCodigoSenhaRequest(
