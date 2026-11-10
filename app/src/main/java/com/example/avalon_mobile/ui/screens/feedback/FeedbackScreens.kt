@@ -42,6 +42,7 @@ import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -120,7 +121,7 @@ fun FeedbackDetalheScreen(
                     Text(fb.descricao.orEmpty(), fontFamily = Inter, fontSize = 15.sp, color = TextPrimary)
                 }
                 state.respostas.forEach { r ->
-                    AvalonCard(radius = 16.dp, border = BorderSoft, container = Color(0xFFF0F6FF)) {
+                    AvalonCard(radius = 16.dp, border = BorderSoft, container = SurfaceI) {
                         Text("Sua resposta • ${Datas.dataCurta(r.dataResposta)}", fontFamily = Inter, fontSize = 12.sp, color = TextSecondary)
                         Spacer(Modifier.height(4.dp))
                         Text(r.descricao, fontFamily = Inter, fontSize = 14.sp, color = TextPrimary)

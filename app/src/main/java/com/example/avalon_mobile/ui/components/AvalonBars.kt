@@ -23,14 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Inter
+import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TabInactive
 
@@ -47,7 +49,7 @@ fun AvalonTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Navy)
+            .background(NavyFundo)
             .statusBarsPadding()
             .padding(start = if (onBack != null) 12.dp else 24.dp, end = 12.dp, top = 12.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -59,7 +61,7 @@ fun AvalonTopBar(
             Spacer(Modifier.width(4.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
+            Text(title, Modifier.semantics { heading() }, color = Color.White, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
             if (subtitle != null) {
                 Text(subtitle, color = Color.White.copy(alpha = 0.6f), fontFamily = Inter, fontSize = 13.sp)
             }
@@ -81,7 +83,7 @@ fun AvalonBottomBar(selected: MainTab?, onSelect: (MainTab) -> Unit, modifier: M
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Navy)
+            .background(NavyFundo)
             .navigationBarsPadding()
             .height(64.dp),
         horizontalArrangement = Arrangement.SpaceAround,

@@ -33,6 +33,7 @@ import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.DangerContainer
 import com.example.avalon_mobile.ui.theme.Inter
@@ -65,7 +66,7 @@ fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Uni
                         onClick = { onModulo(m) },
                         modifier = Modifier.weight(1f).height(86.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = Surface)
                     ) {
                         Column(Modifier.fillMaxSize().padding(6.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(painterResource(m.icon), null, tint = TextPrimary, modifier = Modifier.size(23.dp))

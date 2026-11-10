@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.theme.Danger
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.StatusApprovedText
@@ -66,7 +67,7 @@ fun SolicitarFeriasSheet(
 
     AlertDialog(
         onDismissRequest = onFechar,
-        containerColor = Color.White,
+        containerColor = Surface,
         title = {
             Text(
                 if (state is SolicitacaoState.Enviada) "Solicitação enviada" else "Solicitar férias",

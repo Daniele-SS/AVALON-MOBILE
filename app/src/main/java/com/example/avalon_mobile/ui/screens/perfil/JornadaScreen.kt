@@ -30,6 +30,7 @@ import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.DayOff
 import com.example.avalon_mobile.ui.theme.DayOffText
 import com.example.avalon_mobile.ui.theme.DayWork
@@ -74,7 +75,7 @@ fun JornadaScreen(
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Legenda(DayWork, "Trabalha")
-                        Legenda(Navy, "Hoje")
+                        Legenda(NavyFundo, "Hoje")
                         Legenda(DayOff, "Folga")
                     }
                 }
@@ -98,7 +99,7 @@ fun JornadaScreen(
 @Composable
 private fun DiaChip(dia: DiaEscala, modifier: Modifier) {
     val (bg, fg) = when (dia.tipo) {
-        TipoDia.HOJE -> Navy to Color.White
+        TipoDia.HOJE -> NavyFundo to Color.White
         TipoDia.TRABALHO -> DayWork to TextPrimary
         TipoDia.FOLGA -> DayOff to DayOffText
     }

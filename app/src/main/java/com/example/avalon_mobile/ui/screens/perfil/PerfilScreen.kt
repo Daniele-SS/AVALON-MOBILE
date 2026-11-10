@@ -37,6 +37,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
+import com.example.avalon_mobile.model.CorrecaoRegistrada
+import com.example.avalon_mobile.ui.theme.StatusPendingBg
+import com.example.avalon_mobile.ui.theme.StatusPendingText
+import com.example.avalon_mobile.util.CorrecaoRegras
+import com.example.avalon_mobile.util.Datas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +59,10 @@ import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.Surface
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.BorderSoft
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.DangerContainer
@@ -68,11 +84,13 @@ fun PerfilScreen(
     onNotificacoes: () -> Unit,
     onTermos: () -> Unit,
     onAlterarSenha: () -> Unit,
+    onAparencia: () -> Unit,
     onSair: () -> Unit,
-    viewModel: PerfilViewModel = avalonViewModel { c, _ -> PerfilViewModel(c.avalonRepository, c.authRepository) }
+    viewModel: PerfilViewModel = avalonViewModel { c, _ -> PerfilViewModel(c.avalonRepository, c.authRepository, c.correcaoLocal) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val correcao by viewModel.correcao.collectAsStateWithLifecycle()
+    val historico by viewModel.historico.collectAsStateWithLifecycle()
     var mostrarCorrecao by rememberSaveable { mutableStateOf(false) }
     var confirmarSaida by rememberSaveable { mutableStateOf(false) }
 
@@ -85,10 +103,12 @@ fun PerfilScreen(
                     TextButton(onClick = { mostrarCorrecao = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                         Text("Solicitar correção", fontFamily = Inter, fontSize = 15.sp, color = Navy)
                     }
+                    if (historico.isNotEmpty()) MinhasSolicitacoes(historico)
                     AvalonCard(radius = 16.dp, border = BorderSoft, contentPadding = 15.dp) {
                         ItemAjuste(R.drawable.ic_shield_check, "Alterar Senha", onAlterarSenha)
                         ItemAjuste(R.drawable.ic_lock, "Configurações de Privacidade e Anonimato (LGPD)", onPrivacidade)
                         ItemAjuste(R.drawable.ic_bell, "Gerenciar Notificações", onNotificacoes)
+                        ItemAjuste(R.drawable.ic_eye, "Aparência e acessibilidade", onAparencia)
                         ItemAjuste(R.drawable.ic_clipboard, "Termos de Uso e Políticas", onTermos)
                         ItemAjuste(R.drawable.ic_log_out, "Sair da Conta", { confirmarSaida = true }, perigo = true)
                     }
@@ -113,7 +133,7 @@ fun PerfilScreen(
                 TextButton(onClick = { confirmarSaida = false; viewModel.sair(onSair) }) { Text("Sair", color = Danger, fontFamily = Inter) }
             },
             dismissButton = { TextButton(onClick = { confirmarSaida = false }) { Text("Cancelar", color = Navy, fontFamily = Inter) } },
-            containerColor = Color.White
+            containerColor = Surface
         )
     }
 }
@@ -123,7 +143,7 @@ private fun Cabecalho(colaborador: Colaborador, onBack: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(Navy)
+            .background(NavyFundo)
             .statusBarsPadding()
             .padding(start = 12.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -134,19 +154,20 @@ private fun Cabecalho(colaborador: Colaborador, onBack: () -> Unit) {
         }
         Spacer(Modifier.width(4.dp))
         Column(Modifier.weight(1f)) {
-            Text("Meu Perfil", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = Color.White)
+            Text("Meu Perfil", Modifier.semantics { heading() }, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = Color.White)
             Text("Ajustes e dados funcionais", fontFamily = Inter, fontSize = 13.sp, color = Color.White.copy(alpha = 0.6f))
         }
         // O contrato não expõe foto: avatar com iniciais.
         Box(
             Modifier
                 .size(110.dp)
-                .background(Color.White, CircleShape)
-                .border(BorderStroke(3.dp, Color(0xFFCECECE)), CircleShape)
+                .semantics { contentDescription = "Iniciais de ${colaborador.nome}" }
+                .background(Surface, CircleShape)
+                .border(BorderStroke(3.dp, Border), CircleShape)
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
-            Box(Modifier.size(100.dp).background(Color(0xFFBADAFF), CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(100.dp).background(DayWork, CircleShape), contentAlignment = Alignment.Center) {
                 Text(colaborador.iniciais, fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 34.sp, color = Navy)
             }
         }
@@ -172,13 +193,18 @@ private fun InformacoesRegistro(c: Colaborador) {
 
 @Composable
 private fun Campo(rotulo: String, valor: String, bloqueado: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        Modifier.semantics(mergeDescendants = true) {
+            contentDescription = "$rotulo: $valor" + if (bloqueado) ". Somente leitura." else ""
+        },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Column(Modifier.weight(1f)) {
             Text(rotulo.uppercase(), fontFamily = Inter, fontSize = 11.sp, color = TextSecondary)
             Text(valor, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextStrong)
         }
         if (bloqueado) {
-            Icon(painterResource(R.drawable.ic_lock), contentDescription = "Somente leitura", tint = TextSecondary, modifier = Modifier.size(16.dp))
+            Icon(painterResource(R.drawable.ic_lock), contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -190,7 +216,7 @@ private fun ItemAjuste(icon: Int, texto: String, onClick: () -> Unit, perigo: Bo
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .background(if (perigo) DangerContainer else Color.Transparent, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -201,18 +227,16 @@ private fun ItemAjuste(icon: Int, texto: String, onClick: () -> Unit, perigo: Bo
     }
 }
 
-private val camposCorrigiveis = listOf("Nome", "CPF", "E-mail", "Cargo", "Setor", "Matrícula")
-
 @Composable
 private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, String) -> Unit, onFechar: () -> Unit) {
-    var campo by rememberSaveable { mutableStateOf(camposCorrigiveis.first()) }
+    var campo by rememberSaveable { mutableStateOf(CorrecaoRegras.CAMPOS.first()) }
     var expandido by rememberSaveable { mutableStateOf(false) }
     var valor by rememberSaveable { mutableStateOf("") }
     var justificativa by rememberSaveable { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onFechar,
-        containerColor = Color.White,
+        containerColor = Surface,
         title = { Text("Solicitar correção", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
         text = {
             if (state is CorrecaoState.Enviada) {
@@ -230,14 +254,24 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
                             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                         }
                         DropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
-                            camposCorrigiveis.forEach { opcao ->
+                            CorrecaoRegras.CAMPOS.forEach { opcao ->
                                 DropdownMenuItem(text = { Text(opcao) }, onClick = { campo = opcao; expandido = false })
                             }
                         }
                     }
-                    AvalonTextField("Valor correto", valor, { valor = it })
-                    AvalonTextField("Justificativa", justificativa, { justificativa = it }, singleLine = false, minHeight = 90)
-                    if (state is CorrecaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
+                    AvalonTextField(
+                        "Valor correto", valor, { valor = it },
+                        keyboardType = if (campo == "E-mail") KeyboardType.Email else KeyboardType.Text
+                    )
+                    AvalonTextField("Justificativa", justificativa, { justificativa = it.take(CorrecaoRegras.JUSTIFICATIVA_MAX) }, singleLine = false, minHeight = 90)
+                    Text(
+                        "${justificativa.trim().length}/${CorrecaoRegras.JUSTIFICATIVA_MAX} (mínimo ${CorrecaoRegras.JUSTIFICATIVA_MIN})",
+                        fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
+                    )
+                    if (state is CorrecaoState.Erro) Text(
+                        state.mensagem, Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                        color = Danger, fontFamily = Inter, fontSize = 13.sp
+                    )
                 }
             }
         },
@@ -254,4 +288,43 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
             if (state !is CorrecaoState.Enviada) TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
         }
     )
+}
+
+@Composable
+private fun MinhasSolicitacoes(historico: List<CorrecaoRegistrada>) {
+    AvalonCard(radius = 16.dp, border = BorderSoft, contentPadding = 15.dp) {
+        Text(
+            "Minhas solicitações", Modifier.semantics { heading() },
+            fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextStrong
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Registro neste aparelho. A resposta do RH chega por notificação.",
+            fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
+        )
+        Spacer(Modifier.height(12.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            historico.take(5).forEach { item ->
+                val status = if (item.status == CorrecaoRegistrada.EM_ANALISE) "Em análise" else item.status
+                val data = Datas.dataCurta(item.criadaEm)
+                Row(
+                    Modifier.semantics(mergeDescendants = true) {
+                        contentDescription = "${item.campo}, novo valor ${item.valorSugerido}, $status, enviada em $data"
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(item.campo, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextStrong)
+                        Text(item.valorSugerido, fontFamily = Inter, fontSize = 13.sp, color = TextPrimary)
+                        Text(data, fontFamily = Inter, fontSize = 11.sp, color = TextSecondary)
+                    }
+                    Text(
+                        status,
+                        Modifier.background(StatusPendingBg, RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = StatusPendingText
+                    )
+                }
+            }
+        }
+    }
 }

@@ -39,6 +39,7 @@ import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Background
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -115,7 +116,7 @@ private fun CartaoPendente(titulo: String, detalhe: String, anonima: Boolean, on
 @Composable
 private fun CartaoRespondida(p: Pesquisa) {
     val respondida = p.respondida == true
-    AvalonCard(radius = 16.dp, container = if (respondida) Color.White else Color(0xFFF7F7F7)) {
+    AvalonCard(radius = 16.dp, container = if (respondida) Surface else SurfaceM) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(p.titulo, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = TextPrimary)

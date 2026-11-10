@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
@@ -39,7 +41,7 @@ import com.example.avalon_mobile.ui.theme.TextPrimary
 @Composable
 fun FluxoTopBar(titulo: String, onFechar: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().background(Navy).statusBarsPadding().padding(horizontal = 8.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().background(NavyFundo).statusBarsPadding().padding(horizontal = 8.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onFechar) {
@@ -69,7 +71,7 @@ fun OpcaoResposta(texto: String, selecionada: Boolean, onClick: () -> Unit) {
             .height(60.dp)
             .selectable(selected = selecionada, role = Role.RadioButton, onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = if (selecionada) Color(0xFFEAF3FF) else Color.White),
+        colors = CardDefaults.cardColors(containerColor = if (selecionada) SurfaceS else Surface),
         border = BorderStroke(if (selecionada) 2.dp else 1.dp, if (selecionada) Navy else Border)
     ) {
         Row(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {

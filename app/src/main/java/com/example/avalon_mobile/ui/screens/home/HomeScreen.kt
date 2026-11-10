@@ -48,6 +48,8 @@ import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.InfoBorder
@@ -87,7 +89,7 @@ fun HomeScreen(
 
     Column(Modifier.fillMaxSize().background(Background)) {
         Row(
-            Modifier.fillMaxWidth().background(Navy).statusBarsPadding().padding(start = 26.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
+            Modifier.fillMaxWidth().background(NavyFundo).statusBarsPadding().padding(start = 26.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AvalonWordmark(fontSize = 20.sp, modifier = Modifier.weight(1f))
@@ -183,7 +185,7 @@ private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
                 onClick = { onAtalho(atalho) },
                 modifier = Modifier.weight(1f).height(78.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = Surface)
             ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(painterResource(atalho.icon), null, tint = TextPrimary, modifier = Modifier.size(22.dp))

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.BrunoAce
 import com.example.avalon_mobile.ui.theme.Navy
 
@@ -32,7 +33,7 @@ fun InicioScreen(onEntrar: () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Navy)
+            .background(NavyFundo)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {

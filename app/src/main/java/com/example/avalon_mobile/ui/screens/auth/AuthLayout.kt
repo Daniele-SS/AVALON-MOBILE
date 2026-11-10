@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonWordmark
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.NavyFundo
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextSubtle
 
@@ -38,7 +40,7 @@ fun AuthLayout(
     Column(
         Modifier
             .fillMaxSize()
-            .background(Navy)
+            .background(NavyFundo)
             .statusBarsPadding()
     ) {
         Box(Modifier.fillMaxWidth().height(230.dp), contentAlignment = Alignment.Center) {
@@ -57,7 +59,7 @@ fun AuthLayout(
             Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(Surface, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .navigationBarsPadding()
                 .imePadding()
                 .verticalScroll(rememberScrollState())

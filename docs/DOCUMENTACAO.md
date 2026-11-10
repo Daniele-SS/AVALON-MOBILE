@@ -635,7 +635,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | Membro | O que faz |
 |---|---|
 | `PerfilViewModel.carregar` | Busca o cadastro |
-| `solicitarCorrecao` | Exige valor e justificativa e envia; estado em `CorrecaoState` (`Idle`, `Enviando`, `Enviada`, `Erro`) |
+| `solicitarCorrecao` | Valida com `CorrecaoRegras` (CPF com dígitos verificadores, e-mail, justificativa de 10 a 500 caracteres, um pedido em análise por campo), envia e, em caso de sucesso, grava no histórico local; estado em `CorrecaoState` (`Idle`, `Enviando`, `Enviada`, `Erro`). `historico` expõe "Minhas solicitações" |
 | `sair(onDone)` | Faz logout e avisa a tela para navegar |
 | `JornadaViewModel.montarSemana(dias, hoje)` | Monta a semana atual de segunda a domingo e marca cada dia como `HOJE`, `TRABALHO` ou `FOLGA` cruzando com os dias ativos da escala |
 
@@ -733,7 +733,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 | Arquivo | Conteúdo |
 |---|---|
-| `PerfilScreen.kt` | `Cabecalho` (avatar com iniciais), `InformacoesRegistro` (cada `Campo` com cadeado se só leitura), "Solicitar correção" (`CorrecaoDialog`), ajustes (`ItemAjuste`: Alterar Senha, Privacidade, Notificações, Termos, Sair) e confirmação de saída |
+| `PerfilScreen.kt` | `Cabecalho` (avatar com iniciais), `InformacoesRegistro` (cada `Campo` com cadeado se só leitura), "Solicitar correção" (`CorrecaoDialog`), "Minhas solicitações" (últimas 5, status "Em análise"), ajustes (`ItemAjuste`: Alterar Senha, Privacidade, Notificações, Aparência e acessibilidade, Termos, Sair) e confirmação de saída |
 | `AlterarSenhaScreen.kt` | Duas etapas (RF 5.1.40 e 5.1.41). Etapa 1: senha atual e "Enviar código". Etapa 2: código, nova senha, confirmação, "Salvar nova senha" e "Reenviar código em m:ss". O texto do topo deixa claro que só a senha do AVALON muda, não a do e-mail corporativo (TS50, passo 1). Conta bloqueada: encerra a sessão e volta ao login com o aviso |
 | `JornadaScreen.kt` | Semana em chips (`DiaChip`), legenda (`Legenda`) e um cartão por dia com horário ou "Folga". Sem jornada vinculada: "Nenhuma jornada vinculada ao seu cadastro. Procure o RH." |
 
@@ -1118,3 +1118,30 @@ Primeira versão: telas das Sprints 1 a 4 seguindo o Figma e o contrato, modo de
 | Testes | `LeituraApiFeedbackNotificacaoTest` (6 casos). Os 15 testes de `LeituraApi*` passam compilados com kotlinc; o app completo não foi compilado por falta do Android SDK no ambiente |
 
 **Pendências que dependem do Back-end/Banco:** resposta a feedback, marcação de leitura de notificação, envio de resposta de pesquisa (403 para Colaborador), correção cadastral, `/dashboard`, alteração de senha logado, limite de tentativas e bloqueio de reenvio na recuperação, e escopo por colaborador em feedback/notificação/documento (hoje o servidor devolve dados de todos e o download aceita qualquer id).
+
+## Atualização de 10/11/2026 — Sprint 3 (correção cadastral em demonstração e acessibilidade, etapas 2 a 4)
+
+| Item | O que mudou |
+|---|---|
+| Correção cadastral (6.5.2) | Continua em demonstração (a API não tem a rota). Passou a validar no cliente (`util/CorrecaoRegras`): CPF com dígitos verificadores, e-mail, nome, matrícula, justificativa de 10 a 500 caracteres, e bloqueia segundo pedido em análise para o mesmo campo. O pedido aceito é gravado no aparelho (`data/local/CorrecaoLocal`, SharedPreferences `avalon_correcoes`, até 20 por colaborador) e aparece em "Minhas solicitações" no Perfil com status "Em análise". O status é local: só o RH muda a situação real, e isso depende da rota no Back-end |
+| Tema claro/escuro | `Aparencia.tema`: Seguir o aparelho (padrão), Claro, Escuro. Troca imediata, salva em `avalon_aparencia` |
+| Alto contraste | Quarta e quinta paletas (claro e escuro) com texto >= 7:1 e bordas pretas/brancas |
+| Escala de fonte | 0,85 / 1,0 / 1,15 / 1,3, multiplicada pela fonte do aparelho via `LocalDensity`. Só `sp` escala; alturas em `dp` não mudam |
+| Tela | Perfil > "Aparência e acessibilidade" (`AparenciaScreen`, rota `perfil/aparencia`) |
+| TalkBack | Títulos como `heading`; campos de texto anunciam o rótulo (`contentDescription`); linhas de ajuste com `Role.Button`; opções de tema/fonte com `Role.RadioButton` e alto contraste com `Role.Switch`; cada campo do cadastro e cada solicitação é lido como uma frase; erros de validação em região ao vivo |
+
+**Como os tokens ficaram dinâmicos.** `ui/theme/Color.kt` agora tem a `data class Paleta` e quatro instâncias em `Paletas`. Cada token (`Navy`, `Surface`, `TextPrimary`...) virou propriedade com getter que lê `Paletas.atual` (estado do Compose), então os pontos de uso não mudaram e recompõem ao trocar o tema. `AVALONMOBILETheme` escolhe a paleta e monta o `ColorScheme`. Dois tokens novos separam usos que antes dividiam o mesmo azul: `Navy` é cor de **conteúdo** (texto, ícone, foco) e `NavyFundo` é **fundo** de barras e botões com texto branco; no tema claro são o mesmo valor. Também entraram `SurfaceInfo`, `SurfaceMuted` e `SurfaceSelected` no lugar de três cores literais. `Color.White` como fundo de cartão, diálogo ou campo virou `Surface`; `Color.White` como texto ou ícone sobre barra azul foi mantido.
+
+**Contraste medido** (script sobre os valores reais; alfa composto sobre Surface e Background; texto 4,5:1 e bordas de componente 3:1; 7:1 nas paletas de alto contraste):
+
+| Paleta | Menor razão entre os textos principais e Surface/Background |
+|---|---|
+| Claro (original, WCAG AA da etapa 1) | 4,5:1 |
+| Escuro | 7,2:1 |
+| Claro, alto contraste | 10,6:1 |
+| Escuro, alto contraste | 11,8:1 |
+
+Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: texto de aviso/sucesso/link sobre os fundos translúcidos quando o cartão está sobre `Background` (4,2 a 4,4:1), borda `BorderStrong` de cartão (2,4:1) e cor `Success` como indicador (2,8:1). O fundo dos cartões dessas combinações é `Surface`, onde a razão passa de 4,5:1; o risco existe só se alguém colocar esses selos direto sobre `Background`.
+
+**Limites desta entrega.** (1) O app completo não foi compilado nem executado: o ambiente não tem Android SDK; as regras de cliente (12 testes em `CorrecaoAparenciaTest`) foram compiladas e passam com kotlinc, mas a camada Compose precisa ser aberta no Android Studio e percorrida em claro, escuro, alto contraste e fonte 1,3 antes da demonstração. (2) Fonte 1,3 pode truncar textos em alturas fixas em `dp`. (3) `CrashScreen` (diagnóstico de debug) mantém cores próprias. (4) Imagens e ícones vetoriais usam `tint` do tema; nenhum recurso `drawable` com cor fixa foi alterado. (5) TalkBack só foi tratado por semântica no código, sem teste em aparelho.
+
