@@ -143,7 +143,7 @@ private fun PedidoCard(pedido: Ferias) {
         Row(Modifier.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    "${pedido.quantidadeDias ?: "—"} dias - ${Datas.intervalo(pedido.dataInicio, pedido.dataFim)}",
+                    "${pedido.dias.takeIf { it > 0 } ?: "—"} dias - ${Datas.intervalo(pedido.dataInicio, pedido.dataFim)}",
                     fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = TextStrong
                 )
                 pedido.dataSolicitacao?.let {
