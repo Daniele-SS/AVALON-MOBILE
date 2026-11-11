@@ -58,11 +58,14 @@ class FeriasViewModel(private val repository: AvalonRepository) : ViewModel() {
      */
     fun solicitar(inicio: LocalDate, fim: LocalDate, observacao: String) {
         val dias = ChronoUnit.DAYS.between(inicio, fim).toInt() + 1
-        val saldo = (state.value as? LoadState.Content)?.data?.saldo?.diasDisponiveis
+        val saldoCompleto = (state.value as? LoadState.Content)?.data?.saldo
+        val saldo = saldoCompleto?.diasDisponiveis
         val erro = when {
             !inicio.isAfter(LocalDate.now()) -> "A data de início deve ser futura."
             fim.isBefore(inicio) -> "A data final deve ser igual ou posterior à inicial."
             dias < MIN_DIAS -> "O período mínimo é de $MIN_DIAS dias."
+            saldoCompleto != null && !saldoCompleto.inicioDentroDoLimite(inicio) ->
+                "O início deve ser antes de ${Datas.dataCurta(saldoCompleto.limiteGozo.toString())}, limite para gozar este período aquisitivo."
             saldo != null && dias > saldo -> "Saldo insuficiente: você tem $saldo dias disponíveis."
             else -> null
         }

@@ -1,6 +1,8 @@
 package com.example.avalon_mobile.model
 
+import com.example.avalon_mobile.util.Datas
 import com.google.gson.annotations.SerializedName
+import java.time.temporal.ChronoUnit
 
 data class Ferias(
     val id: Int,
@@ -14,6 +16,14 @@ data class Ferias(
     @SerializedName("data_solicitacao") val dataSolicitacao: String? = null
 ) {
     val situacao: SituacaoFerias get() = SituacaoFerias.from(status)
+
+    /** Dias do pedido: o campo do servidor ou, na falta dele, o intervalo entre as datas (inclusivo). */
+    val dias: Int
+        get() = quantidadeDias ?: run {
+            val i = Datas.parse(dataInicio)
+            val f = Datas.parse(dataFim)
+            if (i != null && f != null && !f.isBefore(i)) (ChronoUnit.DAYS.between(i, f) + 1).toInt() else 0
+        }
 }
 
 data class FeriasRequest(
