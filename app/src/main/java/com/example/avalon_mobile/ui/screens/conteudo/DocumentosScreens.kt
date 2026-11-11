@@ -121,10 +121,7 @@ fun DocumentosScreen(onBack: (() -> Unit)?, viewModel: DocumentosViewModel = doc
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(doc.nome, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrimary)
-                                Text(
-                                    "${doc.tipoDocumento} • ${if (doc.ativo) "Disponível desde ${Datas.dataCurta(doc.dataDisponibilizacao)}" else "Indisponível"}",
-                                    fontFamily = Inter, fontSize = 13.sp, color = TextSecondary
-                                )
+                                Text(doc.legenda, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
                             }
                             when {
                                 state.baixando == doc.id -> CircularProgressIndicator(Modifier.size(18.dp), color = Navy, strokeWidth = 2.dp)
@@ -163,7 +160,7 @@ fun DownloadsScreen(onBack: () -> Unit, viewModel: DocumentosViewModel = documen
                 item { Rotulo("Documentos Assinados") }
                 if (assinados.isEmpty()) item { EmptyState("Nenhum documento assinado.") }
                 items(assinados, key = { "a${it.id}" }) { doc ->
-                    LinhaDownload(doc.nome, "Assinado em ${Datas.dataCurta(doc.dataDisponibilizacao)} • PDF", R.drawable.ic_download,
+                    LinhaDownload(doc.nome, doc.legendaAssinado, R.drawable.ic_download,
                         carregando = state.baixando == doc.id, onClick = { viewModel.baixar(doc) }, selo = "Assinado" to (BadgeGreenBg to BadgeGreenText))
                 }
                 item { Rotulo("Extratos") }

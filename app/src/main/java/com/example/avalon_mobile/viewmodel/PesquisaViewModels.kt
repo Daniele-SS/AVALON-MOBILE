@@ -1,5 +1,6 @@
 package com.example.avalon_mobile.viewmodel
 
+import com.example.avalon_mobile.util.PesquisaRegras
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -64,7 +65,7 @@ data class PesquisaUi(
 ) {
     val atual: Pergunta? get() = perguntas.getOrNull(indice)
     val obrigatoriasPendentes: List<Pergunta>
-        get() = perguntas.filter { it.obrigatorio && respostas[it.id].isNullOrBlank() }
+        get() = PesquisaRegras.pendentes(perguntas, respostas)
 }
 
 /** Resposta de pesquisa: pergunta a pergunta, revisão e envio em lote (contrato: `RespostaPesquisaLoteInput`). */
@@ -92,7 +93,7 @@ class PesquisaViewModel(
 
     private fun edit(block: (PesquisaUi) -> PesquisaUi) = _state.update { s -> if (s is LoadState.Content) LoadState.Content(block(s.data)) else s }
 
-    fun responder(idPergunta: Int, valor: String) = edit { it.copy(respostas = it.respostas + (idPergunta to valor), alertaObrigatoria = false) }
+    fun responder(idPergunta: Int, valor: String) = edit { it.copy(respostas = it.respostas + (idPergunta to valor), alertaObrigatoria = false, erro = null) }
 
     fun proxima() = edit { ui ->
         val atual = ui.atual ?: return@edit ui
@@ -115,8 +116,13 @@ class PesquisaViewModel(
 
     fun editar(indice: Int) = edit { it.copy(indice = indice, etapa = EtapaPesquisa.PERGUNTAS, voltarParaRevisao = true) }
 
+    /**
+     * 6.6.2: com obrigatória em branco o envio não segue; o app leva à primeira pendente e exibe o alerta ali
+     * (ao responder, "Revisar" devolve à revisão). Sem pendência, abre a confirmação.
+     */
     fun pedirConfirmacao() = edit { ui ->
-        if (ui.obrigatoriasPendentes.isNotEmpty()) ui.copy(erro = "Responda as perguntas obrigatórias marcadas com *.")
+        val pendente = PesquisaRegras.indiceDaPrimeiraPendente(ui.perguntas, ui.respostas)
+        if (pendente != null) ui.copy(indice = pendente, etapa = EtapaPesquisa.PERGUNTAS, voltarParaRevisao = true, alertaObrigatoria = true, erro = null)
         else ui.copy(confirmarEnvio = true, erro = null)
     }
 
