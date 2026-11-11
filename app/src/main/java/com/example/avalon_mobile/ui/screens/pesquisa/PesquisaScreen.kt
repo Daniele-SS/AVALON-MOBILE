@@ -1,5 +1,8 @@
 package com.example.avalon_mobile.ui.screens.pesquisa
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -219,6 +222,8 @@ private fun ItemRevisao(pergunta: Pergunta, resposta: String?, onEditar: () -> U
 internal fun Aviso(texto: String, erro: Boolean) {
     Row(
         Modifier
+            // Alerta de erro é anunciado pelo leitor de tela assim que aparece (TS112).
+            .then(if (erro) Modifier.semantics { liveRegion = LiveRegionMode.Assertive } else Modifier)
             .fillMaxWidth()
             .background(if (erro) DangerContainer else Surface, RoundedCornerShape(14.dp))
             .border(1.dp, if (erro) Danger.copy(alpha = 0.4f) else Border, RoundedCornerShape(14.dp))

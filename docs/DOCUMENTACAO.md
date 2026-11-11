@@ -1145,3 +1145,11 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 
 **Limites desta entrega.** (1) O app completo não foi compilado nem executado: o ambiente não tem Android SDK; as regras de cliente (12 testes em `CorrecaoAparenciaTest`) foram compiladas e passam com kotlinc, mas a camada Compose precisa ser aberta no Android Studio e percorrida em claro, escuro, alto contraste e fonte 1,3 antes da demonstração. (2) Fonte 1,3 pode truncar textos em alturas fixas em `dp`. (3) `CrashScreen` (diagnóstico de debug) mantém cores próprias. (4) Imagens e ícones vetoriais usam `tint` do tema; nenhum recurso `drawable` com cor fixa foi alterado. (5) TalkBack só foi tratado por semântica no código, sem teste em aparelho.
 
+
+## Atualização de 11/11/2026 — Sprint 3 (alerta de obrigatórias e Documentos)
+
+**6.6.2 — alerta de pergunta obrigatória.** O alerta por pergunta e o bloqueio na revisão já existiam; a revisão desta data fecha três lacunas: (1) ao tocar em "Enviar respostas" com obrigatória em branco, o app leva à primeira pendente e mostra o alerta ali (antes só aparecia uma mensagem na revisão); (2) a mensagem de erro da revisão não fica mais "presa" depois que a pessoa responde; (3) o alerta de erro é anunciado pelo leitor de tela (`liveRegion`). A regra (resposta em branco ou só com espaços não atende a obrigatoriedade) está em `util/PesquisaRegras.kt`.
+
+**Documentos.** `tbl_documentos` não tem coluna de data; a lista não exibe mais "Disponível desde —" nem "Assinado em —". Sem data, mostra "Disponível" e "Assinado • PDF"; com data, o texto anterior. Regras em `Documento.situacao`, `legenda` e `legendaAssinado`.
+
+**Testes.** `PesquisaDocumentoTest` (8 casos, regras puras, executados com kotlinc). O app completo continua sem compilação neste ambiente (sem Android SDK): a parte de Compose (`liveRegion`, navegação para a pendente) precisa ser conferida no emulador (TS57 passo 2 e TS112).
