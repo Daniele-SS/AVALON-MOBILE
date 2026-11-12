@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.defaultMinSize
 import com.example.avalon_mobile.ui.components.GradeAdaptavel
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.platform.LocalDensity
@@ -176,21 +177,22 @@ private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: 
     val icone = maxOf(44.dp, with(LocalDensity.current) { 44.sp.toDp() })
     Card(
         onClick = onClick,
-        modifier = Modifier.widthIn(min = lado).heightIn(min = lado),
         shape = RoundedCornerShape(30.dp),
         colors = CardDefaults.cardColors(containerColor = fundo),
         border = BorderStroke(1.dp, borda)
     ) {
-        Column(
-            // fillMaxSize: o conteúdo ocupa o card (largura/altura mínimas) e fica centralizado, inclusive em fonte grande.
-            Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        // O Card já embrulha o conteúdo num Column que mede os filhos sem largura mínima; por isso o tamanho mínimo
+        // (e a centralização) ficam neste Box, que ocupa pelo menos lado x lado e centraliza o conteúdo.
+        Box(
+            Modifier.defaultMinSize(minWidth = lado, minHeight = lado).padding(horizontal = 14.dp, vertical = 16.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(painterResource(icon), null, tint = cor, modifier = Modifier.size(icone))
-            Spacer(Modifier.height(6.dp))
-            Text("$valor", fontFamily = Inter, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, color = cor)
-            Text(rotulo, fontFamily = Actor, fontSize = 20.sp, lineHeight = 24.sp, textAlign = TextAlign.Center, color = cor)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(painterResource(icon), null, tint = cor, modifier = Modifier.size(icone))
+                Spacer(Modifier.height(6.dp))
+                Text("$valor", fontFamily = Inter, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, color = cor)
+                Text(rotulo, fontFamily = Actor, fontSize = 20.sp, lineHeight = 24.sp, textAlign = TextAlign.Center, color = cor)
+            }
         }
     }
 }

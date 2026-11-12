@@ -1164,7 +1164,7 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 **Home e Mais — cards que crescem com a fonte.** Os atalhos tinham altura fixa (78 dp e 86 dp), `maxLines = 1` e 4/3 colunas fixas; com "Grande" ou "Muito grande" o texto era cortado ("Documento"). Agora:
 - `GradeAdaptavel` (em `AvalonCommon.kt`) mede a palavra mais larga dos rótulos com o tamanho de fonte efetivo (fonte do aparelho × "Tamanho da fonte" do app) e reduz as colunas (Home 4→3→2→1; Mais 3→2→1) até ela caber inteira. A escolha é a função pura `util/ColunasGrade.escolher` (testada em `ColunasGradeTest`, 6 casos).
 - Os cards não têm mais altura fixa: altura mínima e ícone são medidos em `sp` convertidos para `dp`, então crescem com as letras; rótulos de mais de uma palavra quebram linha; os cards de uma mesma linha têm a mesma altura (`IntrinsicSize.Min`).
-- Os indicadores (Pesquisas/Férias/Feedback pendentes) deixaram de ter 168 dp fixos: são o mínimo de 168 dp ou o equivalente em `sp`, e crescem com o texto.
+- Os indicadores (Pesquisas/Férias/Feedback pendentes) deixaram de ter 168 dp fixos: o conteúdo fica num `Box` com `defaultMinSize` de 168 dp (ou o equivalente em `sp`) e `contentAlignment = Center`, então o card cresce com o texto e o conteúdo fica centralizado. O tamanho mínimo não pode ficar no `Modifier` do `Card`: o `Card` embrulha o conteúdo num `Column` que mede os filhos sem largura mínima, e o conteúdo ficava à esquerda.
 
 **Mais — "Sair da Conta" removido.** A saída já existe em Perfil (com confirmação); `MaisScreen` perdeu o parâmetro `onSair` e a navegação deixou de passá-lo. Vale para os quatro temas.
 
