@@ -5,17 +5,14 @@ import com.example.avalon_mobile.ui.theme.AtalhoFundo
 import com.example.avalon_mobile.ui.theme.AtalhoConteudo
 import com.example.avalon_mobile.ui.theme.Paletas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +21,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.example.avalon_mobile.ui.components.GradeAdaptavel
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,11 +37,8 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonTopBar
-import com.example.avalon_mobile.ui.components.GradeFixa
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Surface
-import com.example.avalon_mobile.ui.theme.Danger
-import com.example.avalon_mobile.ui.theme.DangerContainer
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
@@ -59,36 +58,35 @@ enum class Modulo(val label: String, val icon: Int) {
 
 /** Todos os módulos do colaborador (Figma "Mais"). */
 @Composable
-fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit, onSair: () -> Unit) {
+fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit) {
     Column(Modifier.fillMaxSize().background(Background)) {
         AvalonTopBar("Mais", onBack = onBack)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
             Text("Todos os módulos e serviços do colaborador.", fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
             Spacer(Modifier.height(16.dp))
-            GradeFixa(Modulo.entries, colunas = 3, espaco = 12.dp, modifier = Modifier.fillMaxWidth()) { m ->
-                    Card(
-                        onClick = { onModulo(m) },
-                        modifier = Modifier.weight(1f).height(86.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
-                        border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
-                    ) {
-                        Column(Modifier.fillMaxSize().padding(6.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(painterResource(m.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(23.dp))
-                            Spacer(Modifier.height(6.dp))
-                            Text(m.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AtalhoConteudo, textAlign = TextAlign.Center, lineHeight = 13.sp)
-                        }
+            val estilo = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 13.sp)
+            val densidade = LocalDensity.current
+            // Altura mínima e ícone acompanham o tamanho da fonte (sp→dp): o card cresce junto com as letras.
+            val alturaMinima = maxOf(86.dp, with(densidade) { 86.sp.toDp() })
+            val icone = maxOf(23.dp, with(densidade) { 23.sp.toDp() })
+            GradeAdaptavel(
+                itens = Modulo.entries, colunasMaximas = 3, espaco = 12.dp,
+                rotulo = { it.label }, estiloRotulo = estilo, paddingHorizontalItem = 6.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) { m ->
+                Card(
+                    onClick = { onModulo(m) },
+                    modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = alturaMinima),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
+                    border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
+                ) {
+                    Column(Modifier.fillMaxSize().padding(6.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(painterResource(m.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(icone))
+                        Spacer(Modifier.height(6.dp))
+                        Text(m.label, style = estilo, color = AtalhoConteudo, textAlign = TextAlign.Center)
                     }
-            }
-            Spacer(Modifier.height(20.dp))
-            Row(
-                Modifier.fillMaxWidth().background(DangerContainer, RoundedCornerShape(8.dp)).clickable(onClick = onSair).padding(horizontal = 12.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(painterResource(R.drawable.ic_log_out), null, tint = Danger, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(12.dp))
-                Text("Sair da Conta", Modifier.weight(1f), fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Danger)
-                Icon(painterResource(R.drawable.ic_chevron_right), null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                }
             }
             Spacer(Modifier.height(16.dp))
             Text("Versão do aplicativo ${BuildConfig.VERSION_NAME}", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)

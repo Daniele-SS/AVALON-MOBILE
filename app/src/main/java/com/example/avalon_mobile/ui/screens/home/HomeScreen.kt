@@ -28,6 +28,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.example.avalon_mobile.ui.components.GradeAdaptavel
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -165,15 +171,22 @@ private fun Saudacao(texto: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: Color, borda: Color, onClick: () -> Unit) {
+    // 168 dp no tamanho padrão; com fonte maior o card cresce (largura e altura mínimas acompanham o texto).
+    val lado = maxOf(168.dp, with(LocalDensity.current) { 168.sp.toDp() })
+    val icone = maxOf(44.dp, with(LocalDensity.current) { 44.sp.toDp() })
     Card(
         onClick = onClick,
-        modifier = Modifier.size(168.dp),
+        modifier = Modifier.widthIn(min = lado).heightIn(min = lado),
         shape = RoundedCornerShape(30.dp),
         colors = CardDefaults.cardColors(containerColor = fundo),
         border = BorderStroke(1.dp, borda)
     ) {
-        Column(Modifier.fillMaxSize().padding(top = 16.dp, bottom = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(painterResource(icon), null, tint = cor, modifier = Modifier.size(44.dp))
+        Column(
+            Modifier.padding(horizontal = 14.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(painterResource(icon), null, tint = cor, modifier = Modifier.size(icone))
             Spacer(Modifier.height(6.dp))
             Text("$valor", fontFamily = Inter, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, color = cor)
             Text(rotulo, fontFamily = Actor, fontSize = 20.sp, lineHeight = 24.sp, textAlign = TextAlign.Center, color = cor)
@@ -183,19 +196,32 @@ private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: 
 
 @Composable
 private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
-    GradeFixa(Atalho.entries, colunas = 4, espaco = 10.dp, modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp)) { atalho ->
-            Card(
-                onClick = { onAtalho(atalho) },
-                modifier = Modifier.weight(1f).height(78.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
-                border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
+    val estilo = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+    val densidade = LocalDensity.current
+    // Altura mínima e ícone acompanham o tamanho da fonte (sp→dp): o card cresce junto com as letras.
+    val alturaMinima = maxOf(78.dp, with(densidade) { 78.sp.toDp() })
+    val icone = maxOf(22.dp, with(densidade) { 22.sp.toDp() })
+    GradeAdaptavel(
+        itens = Atalho.entries, colunasMaximas = 4, espaco = 10.dp,
+        rotulo = { it.label }, estiloRotulo = estilo, paddingHorizontalItem = 4.dp,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp)
+    ) { atalho ->
+        Card(
+            onClick = { onAtalho(atalho) },
+            modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = alturaMinima),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
+            border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
+        ) {
+            Column(
+                Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painterResource(atalho.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.height(6.dp))
-                    Text(atalho.label, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AtalhoConteudo, maxLines = 1)
-                }
+                Icon(painterResource(atalho.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(icone))
+                Spacer(Modifier.height(6.dp))
+                Text(atalho.label, style = estilo, color = AtalhoConteudo, textAlign = TextAlign.Center)
             }
+        }
     }
 }

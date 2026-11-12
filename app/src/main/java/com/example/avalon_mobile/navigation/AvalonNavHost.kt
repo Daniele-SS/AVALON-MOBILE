@@ -147,14 +147,6 @@ fun AvalonNavHost(container: AppContainer) {
         }
     }
 
-    val sair: () -> Unit = {
-        scope.launch {
-            container.authRepository.logout()
-            avisoLogin = null
-            navController.reiniciarEm(Routes.LOGIN)
-        }
-    }
-
     fun abrir(route: String) = navController.navigate(route) { launchSingleTop = true }
 
     CompositionLocalProvider(LocalSnackbarHostState provides snackbar) {
@@ -294,7 +286,6 @@ fun AvalonNavHost(container: AppContainer) {
                 composable(Routes.MAIS) {
                     MaisScreen(
                         onBack = { navController.popBackStack() },
-                        onSair = sair,
                         onModulo = { m ->
                             when (m) {
                                 Modulo.JORNADA -> abrir(Routes.JORNADA)

@@ -726,7 +726,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 |---|---|
 | `HomeScreen.kt` | Cabeçalho com logotipo e sino (ponto vermelho se há não lidas); saudação `Saudacao` ("Olá, Nome Completo" em uma linha; a fonte diminui de 36sp até 20sp para o nome caber e só abrevia com reticências abaixo disso); 3 indicadores (`Indicador`); grade de atalhos (`Atalho`, `AtalhosGrid`); comunicados |
 | `NotificacoesScreen.kt` | Central de notificações agrupada; o toque leva ao módulo de origem (`iconeOrigem` escolhe o ícone). Também contém `ComunicadosScreen` (mural) |
-| `MaisScreen.kt` | Grade com os 10 módulos (`Modulo`), "Sair da Conta" e versão do app |
+| `MaisScreen.kt` | Grade adaptativa com os 10 módulos (`Modulo`) e versão do app (sem "Sair da Conta": a saída fica só em Perfil) |
 | `InfoScreen.kt` | Textos de Privacidade/LGPD e Termos de Uso (`Informativo`) |
 
 ### `ui/screens/perfil` — Sprints 2 e 3
@@ -1155,3 +1155,17 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 **Testes.** `PesquisaDocumentoTest` (8 casos, regras puras, executados com kotlinc). O app completo continua sem compilação neste ambiente (sem Android SDK): a parte de Compose (`liveRegion`, navegação para a pendente) precisa ser conferida no emulador (TS57 passo 2 e TS112).
 
 **Férias — saldo (11/11/2026).** O saldo estimado ignorava pedidos que começam depois do limite de gozo do período aquisitivo, então 41 dias pedidos ainda mostravam 11 disponíveis. Agora todo pedido não negado que começa a partir do fim do período aquisitivo é descontado; o saldo não fica negativo. O app também recusa novo pedido que comece a partir do limite de gozo (CLT art. 134) e, sem `quantidade_dias` no servidor, usa o intervalo das datas. Testes: `SaldoFeriasTest` (10 casos). Enquanto o Back-end não expuser o saldo oficial, o cálculo continua sendo estimativa do cliente.
+
+
+## Atualização de 12/11/2026 — acabamento de Férias, Home e Mais
+
+**Férias — botão "Solicitar férias" branco e sem texto.** O botão usava `container = NavyLight`, que nas paletas de alto contraste vale branco (`0xFFFFFFFF`), e o texto e o ícone do botão são brancos: branco sobre branco. Passou a usar o `NavyFundo` padrão de `AvalonPrimaryButton`, que é, por definição, o fundo para texto branco (ver "Como os tokens ficaram dinâmicos").
+
+**Home e Mais — cards que crescem com a fonte.** Os atalhos tinham altura fixa (78 dp e 86 dp), `maxLines = 1` e 4/3 colunas fixas; com "Grande" ou "Muito grande" o texto era cortado ("Documento"). Agora:
+- `GradeAdaptavel` (em `AvalonCommon.kt`) mede a palavra mais larga dos rótulos com o tamanho de fonte efetivo (fonte do aparelho × "Tamanho da fonte" do app) e reduz as colunas (Home 4→3→2→1; Mais 3→2→1) até ela caber inteira. A escolha é a função pura `util/ColunasGrade.escolher` (testada em `ColunasGradeTest`, 6 casos).
+- Os cards não têm mais altura fixa: altura mínima e ícone são medidos em `sp` convertidos para `dp`, então crescem com as letras; rótulos de mais de uma palavra quebram linha; os cards de uma mesma linha têm a mesma altura (`IntrinsicSize.Min`).
+- Os indicadores (Pesquisas/Férias/Feedback pendentes) deixaram de ter 168 dp fixos: são o mínimo de 168 dp ou o equivalente em `sp`, e crescem com o texto.
+
+**Mais — "Sair da Conta" removido.** A saída já existe em Perfil (com confirmação); `MaisScreen` perdeu o parâmetro `onSair` e a navegação deixou de passá-lo. Vale para os quatro temas.
+
+**Limites.** O app completo continua sem compilação neste ambiente (sem Android SDK): só `ColunasGradeTest` (kotlinc) foi executado. A camada Compose (`GradeAdaptavel` com `BoxWithConstraints`/`rememberTextMeasurer`/`IntrinsicSize.Min`, cards e botão) precisa ser conferida no emulador em Padrão, Grande e Muito grande, nos quatro temas, e também com a fonte do aparelho em "Grande".

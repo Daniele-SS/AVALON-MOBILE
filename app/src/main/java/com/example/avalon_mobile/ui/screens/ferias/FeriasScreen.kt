@@ -44,7 +44,6 @@ import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.BorderStrong
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
-import com.example.avalon_mobile.ui.theme.NavyLight
 import com.example.avalon_mobile.ui.theme.StatusApprovedBg
 import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.StatusDeniedBg
@@ -78,7 +77,6 @@ fun FeriasScreen(
                     AvalonPrimaryButton(
                         "Solicitar férias",
                         onClick = { viewModel.resetSolicitacao(); mostrarFormulario = true },
-                        container = NavyLight,
                         leadingIcon = R.drawable.ic_calendar_plus,
                         enabled = ui.saldo?.diasDisponiveis != 0
                     )

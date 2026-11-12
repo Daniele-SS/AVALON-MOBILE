@@ -4,6 +4,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,16 +22,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
+import com.example.avalon_mobile.util.ColunasGrade
 import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
@@ -149,6 +158,52 @@ fun <T> GradeFixa(
             androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(espaco)) {
                 linha.forEach { item(it) }
                 repeat(colunas - linha.size) { androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+/**
+ * Grade de atalhos que acompanha o tamanho da fonte: mede a palavra mais larga dos rótulos e reduz o número
+ * de colunas (de [colunasMaximas] até 1) até ela caber inteira, sem cortar texto. Os cards de uma mesma linha
+ * têm a mesma altura (a do maior), e cada card cresce com o texto, sem altura fixa.
+ */
+@Composable
+fun <T> GradeAdaptavel(
+    itens: List<T>,
+    colunasMaximas: Int,
+    espaco: Dp,
+    rotulo: (T) -> String,
+    estiloRotulo: TextStyle,
+    paddingHorizontalItem: Dp,
+    modifier: Modifier = Modifier,
+    item: @Composable RowScope.(T) -> Unit
+) {
+    val medidor = rememberTextMeasurer()
+    val densidade = LocalDensity.current
+    BoxWithConstraints(modifier) {
+        val maiorPalavra = remember(itens, estiloRotulo, densidade) {
+            itens.flatMap { rotulo(it).split(' ') }
+                .maxOfOrNull { medidor.measure(it, estiloRotulo).size.width } ?: 0
+        }
+        val colunas = with(densidade) {
+            ColunasGrade.escolher(
+                larguraDisponivel = maxWidth.toPx(),
+                larguraMaiorPalavra = maiorPalavra.toFloat(),
+                paddingHorizontalItem = paddingHorizontalItem.toPx(),
+                espaco = espaco.toPx(),
+                maximo = colunasMaximas
+            )
+        }
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(espaco)) {
+            itens.chunked(colunas).forEach { linha ->
+                androidx.compose.foundation.layout.Row(
+                    Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(espaco)
+                ) {
+                    linha.forEach { item(it) }
+                    repeat(colunas - linha.size) { androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }
+                }
             }
         }
     }
