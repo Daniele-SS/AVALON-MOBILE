@@ -1,6 +1,14 @@
 package com.example.avalon_mobile.ui.screens.perfil
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.draw.clip
+import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
+import com.example.avalon_mobile.ui.theme.SuccessContainer
+import com.example.avalon_mobile.ui.theme.SuccessText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -234,60 +242,99 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
     var valor by rememberSaveable { mutableStateOf("") }
     var justificativa by rememberSaveable { mutableStateOf("") }
 
+    if (state is CorrecaoState.Enviada) {
+        CorrecaoEnviadaDialog(onFechar)
+        return
+    }
+
     AlertDialog(
         onDismissRequest = onFechar,
         containerColor = Surface,
         title = { Text("Solicitar correção", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
         text = {
-            if (state is CorrecaoState.Enviada) {
-                Text("Solicitação enviada. O RH vai analisar e você será notificado.", fontFamily = Inter, color = TextPrimary)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Seletor com componentes estáveis (o ExposedDropdownMenuBox é experimental).
-                    Box {
-                        OutlinedButton(
-                            onClick = { expandido = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Campo: $campo", Modifier.weight(1f), fontFamily = Inter, color = TextPrimary)
-                            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = TextSecondary, modifier = Modifier.size(16.dp))
-                        }
-                        DropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
-                            CorrecaoRegras.CAMPOS.forEach { opcao ->
-                                DropdownMenuItem(text = { Text(opcao) }, onClick = { campo = opcao; expandido = false })
-                            }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Seletor com componentes estáveis (o ExposedDropdownMenuBox é experimental).
+                Box {
+                    OutlinedButton(
+                        onClick = { expandido = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Campo: $campo", Modifier.weight(1f), fontFamily = Inter, color = TextPrimary)
+                        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                    }
+                    DropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
+                        CorrecaoRegras.CAMPOS.forEach { opcao ->
+                            DropdownMenuItem(text = { Text(opcao) }, onClick = { campo = opcao; expandido = false })
                         }
                     }
-                    AvalonTextField(
-                        "Valor correto", valor, { valor = it },
-                        keyboardType = if (campo == "E-mail") KeyboardType.Email else KeyboardType.Text
-                    )
-                    AvalonTextField("Justificativa", justificativa, { justificativa = it.take(CorrecaoRegras.JUSTIFICATIVA_MAX) }, singleLine = false, minHeight = 90)
-                    Text(
-                        "${justificativa.trim().length}/${CorrecaoRegras.JUSTIFICATIVA_MAX} (mínimo ${CorrecaoRegras.JUSTIFICATIVA_MIN})",
-                        fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
-                    )
-                    if (state is CorrecaoState.Erro) Text(
-                        state.mensagem, Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
-                        color = Danger, fontFamily = Inter, fontSize = 13.sp
-                    )
                 }
+                AvalonTextField(
+                    "Valor correto", valor, { valor = it },
+                    keyboardType = if (campo == "E-mail") KeyboardType.Email else KeyboardType.Text
+                )
+                AvalonTextField("Justificativa", justificativa, { justificativa = it.take(CorrecaoRegras.JUSTIFICATIVA_MAX) }, singleLine = false, minHeight = 90)
+                Text(
+                    "${justificativa.trim().length}/${CorrecaoRegras.JUSTIFICATIVA_MAX} (mínimo ${CorrecaoRegras.JUSTIFICATIVA_MIN})",
+                    fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
+                )
+                if (state is CorrecaoState.Erro) Text(
+                    state.mensagem, Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                    color = Danger, fontFamily = Inter, fontSize = 13.sp
+                )
             }
         },
         confirmButton = {
-            if (state is CorrecaoState.Enviada) {
-                TextButton(onClick = onFechar) { Text("Fechar", color = Navy, fontFamily = Inter) }
-            } else {
-                TextButton(onClick = { onEnviar(campo, valor, justificativa) }, enabled = state !is CorrecaoState.Enviando) {
-                    Text(if (state is CorrecaoState.Enviando) "Enviando…" else "Enviar", color = Navy, fontFamily = Inter)
-                }
+            TextButton(onClick = { onEnviar(campo, valor, justificativa) }, enabled = state !is CorrecaoState.Enviando) {
+                Text(if (state is CorrecaoState.Enviando) "Enviando…" else "Enviar", color = Navy, fontFamily = Inter)
             }
         },
         dismissButton = {
-            if (state !is CorrecaoState.Enviada) TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
+            TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
         }
     )
+}
+
+/**
+ * Confirmação de envio da correção cadastral. Usa as cores da paleta ativa (Claro, Escuro e Alto contraste):
+ * fundo Surface com borda Border (forte no Alto contraste), ícone em SuccessText sobre SuccessContainer.
+ * O selo cresce com a fonte (mínimo em sp), como os demais cards.
+ */
+@Composable
+private fun CorrecaoEnviadaDialog(onFechar: () -> Unit) {
+    val selo = maxOf(64.dp, with(LocalDensity.current) { 64.sp.toDp() })
+    Dialog(onDismissRequest = onFechar) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(Surface)
+                .border(1.dp, Border, RoundedCornerShape(28.dp))
+                .padding(horizontal = 24.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                Modifier
+                    .defaultMinSize(minWidth = selo, minHeight = selo)
+                    .background(SuccessContainer, RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(painterResource(R.drawable.ic_check), null, tint = SuccessText, modifier = Modifier.size(32.dp))
+            }
+            Spacer(Modifier.height(18.dp))
+            Text(
+                "Solicitação enviada", Modifier.semantics { heading() },
+                fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextPrimary, textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "O RH vai analisar o seu pedido e você será notificado quando houver resposta.",
+                fontFamily = Inter, fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(24.dp))
+            AvalonPrimaryButton("Fechar", onFechar)
+        }
+    }
 }
 
 @Composable

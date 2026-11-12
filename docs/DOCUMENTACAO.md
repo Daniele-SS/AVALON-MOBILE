@@ -1176,3 +1176,9 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 - O servidor resolve a participação pelo token; o app não envia id de colaborador nem de participação.
 - `LeituraApi.falhaNoCorpo`: o Back-end pode devolver falha dentro de um HTTP 2xx (ex.: `{"status":409,"field":"PESQUISA_JA_RESPONDIDA"}` com HTTP 201). O app trata esse corpo como erro, para não mostrar "enviado" quando o servidor recusou.
 - Validado contra o Back-end (`origin/main` de 11/11): 1º envio retorna 201; reenvio retorna falha. Não validado em emulador.
+
+### Card de confirmação da correção cadastral (12/11/2026)
+
+- Antes: após enviar, o `AlertDialog` mostrava só uma linha de texto em `TextPrimary`, com fundo `Surface` sem borda, que parecia um quadrado branco solto sobre a tela. O texto nunca foi verde na versão original (o verde de `StatusApprovedText` existe apenas no diálogo de Solicitar férias).
+- Agora: `CorrecaoEnviadaDialog` (`PerfilScreen.kt`) — selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título "Solicitação enviada", texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
+- Não validado em emulador.
