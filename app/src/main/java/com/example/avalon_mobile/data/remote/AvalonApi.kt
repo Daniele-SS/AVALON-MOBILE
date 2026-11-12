@@ -17,6 +17,7 @@ import com.example.avalon_mobile.model.RedefinirRecuperacaoRequest
 import com.example.avalon_mobile.model.SolicitarRecuperacaoRequest
 import com.example.avalon_mobile.model.RefreshRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
+import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.TokenResponse
 import okhttp3.ResponseBody
@@ -110,6 +111,11 @@ interface AvalonApi {
     // Rotas publicadas pelo Back-end (05/11/2026): listagens completas; o app filtra pelas participações do titular.
     @GET("v1/senai/avalon/pesquisa")
     suspend fun listaPesquisas(): Response<JsonElement>
+
+    // Publicado em 11/11/2026: envio em lote; a participação do titular é resolvida pelo servidor pelo token.
+    @Headers("Content-Type: application/json")
+    @POST("v1/senai/avalon/pesquisa/{id}/resposta")
+    suspend fun responderPesquisa(@Path("id") id: Int, @Body body: RespostaPesquisaLote): Response<JsonElement>
 
     @GET("v1/senai/avalon/pergunta")
     suspend fun listaPerguntas(): Response<JsonElement>

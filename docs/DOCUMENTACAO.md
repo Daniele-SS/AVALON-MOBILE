@@ -1169,3 +1169,10 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 **Mais — "Sair da Conta" removido.** A saída já existe em Perfil (com confirmação); `MaisScreen` perdeu o parâmetro `onSair` e a navegação deixou de passá-lo. Vale para os quatro temas.
 
 **Limites.** O app completo continua sem compilação neste ambiente (sem Android SDK): só `ColunasGradeTest` (kotlinc) foi executado. A camada Compose (`GradeAdaptavel` com `BoxWithConstraints`/`rememberTextMeasurer`/`IntrinsicSize.Min`, cards e botão) precisa ser conferida no emulador em Padrão, Grande e Muito grande, nos quatro temas, e também com a fonte do aparelho em "Grande".
+
+## Atualização de 12/11/2026 — envio de respostas de Pesquisa pela API
+
+- `RemoteRepositories.responderPesquisa` deixou de ser um stub ("ainda não está liberado") e passa a chamar `POST /v1/senai/avalon/pesquisa/{id}/resposta` (corpo `{"respostas":[{"id_pergunta","valor"}]}`), rota publicada pelo Back-end em 11/11.
+- O servidor resolve a participação pelo token; o app não envia id de colaborador nem de participação.
+- `LeituraApi.falhaNoCorpo`: o Back-end pode devolver falha dentro de um HTTP 2xx (ex.: `{"status":409,"field":"PESQUISA_JA_RESPONDIDA"}` com HTTP 201). O app trata esse corpo como erro, para não mostrar "enviado" quando o servidor recusou.
+- Validado contra o Back-end (`origin/main` de 11/11): 1º envio retorna 201; reenvio retorna falha. Não validado em emulador.

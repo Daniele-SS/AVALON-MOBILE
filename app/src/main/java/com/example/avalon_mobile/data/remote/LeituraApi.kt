@@ -19,6 +19,24 @@ import java.time.LocalDate
 
 object LeituraApi {
 
+    /**
+     * Falha embutida no corpo de uma resposta HTTP 2xx. O envio de respostas do Back-end devolve o conflito
+     * como {"status":409,"field":"PESQUISA_JA_RESPONDIDA","message":...} com HTTP 201; sem esta checagem o app
+     * mostraria "enviado" para uma pesquisa que o servidor recusou. Retorna (código, mensagem) ou null se não houve falha.
+     */
+    fun falhaNoCorpo(json: JsonElement): Pair<String, String?>? {
+        val o = json.objeto() ?: return null
+        val status = o.get("status")?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive ?: return null
+        val falhou = when {
+            status.isBoolean -> !status.asBoolean
+            status.isNumber -> status.asInt !in 200..299
+            else -> false
+        }
+        if (!falhou) return null
+        val http = if (status.isNumber) status.asInt else o.inteiro("status_code")
+        return Pair(o.texto("field") ?: "HTTP_${http ?: 0}", o.texto("message"))
+    }
+
     fun colaborador(json: JsonElement): Colaborador? {
         val o = registro(json, "colaborador") ?: return null
         val nome = o.texto("nome") ?: o.texto("nome_colaborador") ?: return null

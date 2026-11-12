@@ -36,6 +36,7 @@ import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaFeedback
 import com.example.avalon_mobile.model.RespostaPesquisaItem
+import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.SolicitacaoCorrecao
 import com.example.avalon_mobile.model.UsuarioResumo
 import kotlinx.coroutines.CoroutineScope
@@ -238,7 +239,15 @@ class RemoteAvalonRepository(
 
     // POST /resposta e POST /participacao respondem 403 para o perfil Colaborador (só o RH grava).
     override suspend fun responderPesquisa(id: Int, respostas: List<RespostaPesquisaItem>): AppResult<RespostaConfirmacao> =
-        AppResult.Failure(AppError(AppError.NAO_IMPLEMENTADO, "O envio de respostas ainda não está liberado no servidor para o seu perfil. Tente novamente mais tarde."))
+        when (val r = call.execute { api.responderPesquisa(id, RespostaPesquisaLote(respostas)) }) {
+            is AppResult.Failure -> r
+            is AppResult.Success -> LeituraApi.falhaNoCorpo(r.data)
+                ?.let { (codigo, mensagem) ->
+                    val texto = if (codigo == "PESQUISA_JA_RESPONDIDA") "Você já respondeu este questionário." else mensagem ?: "Não foi possível enviar as respostas."
+                    AppResult.Failure(AppError(codigo, texto, if (codigo == "PESQUISA_JA_RESPONDIDA") 409 else null))
+                }
+                ?: AppResult.Success(RespostaConfirmacao(respostas.size, true))
+        }
 
     override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> =
         call.execute { api.avaliacoes(somentePendentes = true) }.map { it.firstOrNull() }
