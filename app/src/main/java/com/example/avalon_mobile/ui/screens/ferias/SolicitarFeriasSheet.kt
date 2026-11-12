@@ -22,11 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonTextField
+import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
-import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.util.Datas
@@ -65,55 +65,51 @@ fun SolicitarFeriasSheet(
 
     val amanha = LocalDate.now().plusDays(1)
 
+    if (state is SolicitacaoState.Enviada) {
+        ConfirmacaoEnvioDialog(
+            titulo = "Solicitação enviada",
+            mensagem = "Seu pedido segue para aprovação do gestor e, depois, do RH. Você será notificado.",
+            onFechar = onFechar
+        )
+        return
+    }
+
     AlertDialog(
         onDismissRequest = onFechar,
         containerColor = Surface,
-        title = {
-            Text(
-                if (state is SolicitacaoState.Enviada) "Solicitação enviada" else "Solicitar férias",
-                fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary
-            )
-        },
+        title = { Text("Solicitar férias", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary) },
         text = {
-            if (state is SolicitacaoState.Enviada) {
-                Text("Seu pedido segue para aprovação do gestor e, depois, do RH. Você será notificado.", fontFamily = Inter, color = StatusApprovedText)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CampoData("Início", inicio, Modifier.weight(1f)) {
-                            escolherData(inicio ?: amanha, amanha) { d ->
-                                inicioIso = d.toString()
-                                if (fim != null && fim.isBefore(d)) fimIso = null
-                            }
-                        }
-                        CampoData("Fim", fim, Modifier.weight(1f)) {
-                            val minimo = inicio ?: amanha
-                            escolherData(fim ?: minimo.plusDays(4), minimo) { d -> fimIso = d.toString() }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CampoData("Início", inicio, Modifier.weight(1f)) {
+                        escolherData(inicio ?: amanha, amanha) { d ->
+                            inicioIso = d.toString()
+                            if (fim != null && fim.isBefore(d)) fimIso = null
                         }
                     }
-                    if (inicio != null && fim != null) {
-                        val dias = ChronoUnit.DAYS.between(inicio, fim) + 1
-                        // Vermelho quando o período pedido passa do saldo disponível (o envio também é barrado no ViewModel).
-                        val acimaDoSaldo = saldoDias != null && dias > saldoDias
-                        Text("$dias dias selecionados", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = if (acimaDoSaldo) Danger else Navy)
+                    CampoData("Fim", fim, Modifier.weight(1f)) {
+                        val minimo = inicio ?: amanha
+                        escolherData(fim ?: minimo.plusDays(4), minimo) { d -> fimIso = d.toString() }
                     }
-                    AvalonTextField("Observação (opcional)", observacao, { observacao = it.take(255) }, singleLine = false)
-                    if (state is SolicitacaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
                 }
+                if (inicio != null && fim != null) {
+                    val dias = ChronoUnit.DAYS.between(inicio, fim) + 1
+                    // Vermelho quando o período pedido passa do saldo disponível (o envio também é barrado no ViewModel).
+                    val acimaDoSaldo = saldoDias != null && dias > saldoDias
+                    Text("$dias dias selecionados", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = if (acimaDoSaldo) Danger else Navy)
+                }
+                AvalonTextField("Observação (opcional)", observacao, { observacao = it.take(255) }, singleLine = false)
+                if (state is SolicitacaoState.Erro) Text(state.mensagem, color = Danger, fontFamily = Inter, fontSize = 13.sp)
             }
         },
         confirmButton = {
-            if (state is SolicitacaoState.Enviada) {
-                TextButton(onClick = onFechar) { Text("Fechar", color = Navy, fontFamily = Inter) }
-            } else {
-                TextButton(
-                    onClick = { if (inicio != null && fim != null) onEnviar(inicio, fim, observacao) },
-                    enabled = inicio != null && fim != null && state !is SolicitacaoState.Enviando
-                ) { Text(if (state is SolicitacaoState.Enviando) "Enviando…" else "Enviar", color = Navy, fontFamily = Inter) }
-            }
+            TextButton(
+                onClick = { if (inicio != null && fim != null) onEnviar(inicio, fim, observacao) },
+                enabled = inicio != null && fim != null && state !is SolicitacaoState.Enviando
+            ) { Text(if (state is SolicitacaoState.Enviando) "Enviando…" else "Enviar", color = Navy, fontFamily = Inter) }
         },
         dismissButton = {
-            if (state !is SolicitacaoState.Enviada) TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
+            TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
         }
     )
 }

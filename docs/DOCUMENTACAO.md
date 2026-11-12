@@ -1177,8 +1177,9 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 - `LeituraApi.falhaNoCorpo`: o Back-end pode devolver falha dentro de um HTTP 2xx (ex.: `{"status":409,"field":"PESQUISA_JA_RESPONDIDA"}` com HTTP 201). O app trata esse corpo como erro, para não mostrar "enviado" quando o servidor recusou.
 - Validado contra o Back-end (`origin/main` de 11/11): 1º envio retorna 201; reenvio retorna falha. Não validado em emulador.
 
-### Card de confirmação da correção cadastral (12/11/2026)
+### Card de confirmação de envio (correção cadastral e solicitação de férias) — 12/11/2026
 
-- Antes: após enviar, o `AlertDialog` mostrava só uma linha de texto em `TextPrimary`, com fundo `Surface` sem borda, que parecia um quadrado branco solto sobre a tela. O texto nunca foi verde na versão original (o verde de `StatusApprovedText` existe apenas no diálogo de Solicitar férias).
-- Agora: `CorrecaoEnviadaDialog` (`PerfilScreen.kt`) — selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título "Solicitação enviada", texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
+- Antes: após enviar, o `AlertDialog` mostrava só texto simples, com fundo `Surface` sem borda, que parecia um quadrado branco solto sobre a tela. Na correção cadastral o texto era `TextPrimary`; o verde (`StatusApprovedText`) existia apenas no diálogo de Solicitar férias.
+- Agora os dois usam `ConfirmacaoEnvioDialog` (`ui/components/AvalonCommon.kt`): selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título, texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
+- Usado em `PerfilScreen.kt` (`CorrecaoDialog`) e `SolicitarFeriasSheet.kt`. Formulários de envio inalterados.
 - Não validado em emulador.

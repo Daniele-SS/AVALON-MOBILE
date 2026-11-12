@@ -1,14 +1,8 @@
 package com.example.avalon_mobile.ui.screens.perfil
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.draw.clip
-import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
-import com.example.avalon_mobile.ui.theme.SuccessContainer
-import com.example.avalon_mobile.ui.theme.SuccessText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -65,6 +59,7 @@ import com.example.avalon_mobile.R
 import com.example.avalon_mobile.model.Colaborador
 import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonTextField
+import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Border
@@ -243,7 +238,11 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
     var justificativa by rememberSaveable { mutableStateOf("") }
 
     if (state is CorrecaoState.Enviada) {
-        CorrecaoEnviadaDialog(onFechar)
+        ConfirmacaoEnvioDialog(
+            titulo = "Solicitação enviada",
+            mensagem = "O RH vai analisar o seu pedido e você será notificado quando houver resposta.",
+            onFechar = onFechar
+        )
         return
     }
 
@@ -293,48 +292,6 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
             TextButton(onClick = onFechar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) }
         }
     )
-}
-
-/**
- * Confirmação de envio da correção cadastral. Usa as cores da paleta ativa (Claro, Escuro e Alto contraste):
- * fundo Surface com borda Border (forte no Alto contraste), ícone em SuccessText sobre SuccessContainer.
- * O selo cresce com a fonte (mínimo em sp), como os demais cards.
- */
-@Composable
-private fun CorrecaoEnviadaDialog(onFechar: () -> Unit) {
-    val selo = maxOf(64.dp, with(LocalDensity.current) { 64.sp.toDp() })
-    Dialog(onDismissRequest = onFechar) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp))
-                .background(Surface)
-                .border(1.dp, Border, RoundedCornerShape(28.dp))
-                .padding(horizontal = 24.dp, vertical = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                Modifier
-                    .defaultMinSize(minWidth = selo, minHeight = selo)
-                    .background(SuccessContainer, RoundedCornerShape(20.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(painterResource(R.drawable.ic_check), null, tint = SuccessText, modifier = Modifier.size(32.dp))
-            }
-            Spacer(Modifier.height(18.dp))
-            Text(
-                "Solicitação enviada", Modifier.semantics { heading() },
-                fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextPrimary, textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "O RH vai analisar o seu pedido e você será notificado quando houver resposta.",
-                fontFamily = Inter, fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(24.dp))
-            AvalonPrimaryButton("Fechar", onFechar)
-        }
-    }
 }
 
 @Composable
