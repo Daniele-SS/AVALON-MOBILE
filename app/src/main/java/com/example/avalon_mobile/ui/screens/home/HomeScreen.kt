@@ -182,7 +182,8 @@ private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: 
         border = BorderStroke(1.dp, borda)
     ) {
         Column(
-            Modifier.padding(horizontal = 14.dp, vertical = 16.dp),
+            // fillMaxSize: o conteúdo ocupa o card (largura/altura mínimas) e fica centralizado, inclusive em fonte grande.
+            Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
