@@ -27,3 +27,10 @@ data class RespostaFeedback(
 data class RespostaFeedbackRequest(
     val descricao: String
 )
+
+/** Corpo de POST /resposta_feedback: o servidor lê o autor do corpo (não da sessão) e o banco exige autor = destinatário. */
+data class RespostaFeedbackNova(
+    @SerializedName("id_feedback") val idFeedback: Int,
+    @SerializedName("id_colaborador") val idColaborador: Int,
+    val descricao: String
+)

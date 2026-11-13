@@ -177,6 +177,8 @@ class FeedbackDetalheViewModel(
 
     fun onTexto(v: String) = _state.update { it.copy(texto = v.take(MAX), erro = null, enviado = false) }
 
+    fun fecharConfirmacao() = _state.update { it.copy(enviado = false) }
+
     fun enviar() {
         val texto = _state.value.texto.trim()
         if (texto.isEmpty()) {

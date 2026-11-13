@@ -6,6 +6,7 @@ import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.model.Feedback
+import com.example.avalon_mobile.model.RespostaFeedback
 import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
 import com.example.avalon_mobile.model.Notificacao
@@ -249,6 +250,26 @@ object LeituraApi {
                 lido = id in vistos
             )
         }.sortedWith(compareByDescending<Feedback> { it.dataFeedback.orEmpty() }.thenByDescending { it.id })
+    }
+
+    /**
+     * Respostas do titular a um feedback. O Back-end devolve as de todos os colaboradores; entram só as do [idFeedback]
+     * gravadas pelo titular e ativas, na ordem de gravação.
+     */
+    fun respostasFeedback(json: JsonElement, idFeedback: Int, idColaborador: Int): List<RespostaFeedback>? {
+        val itens = lista(json, "respostas") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            if (o.inteiro("id_feedback") != idFeedback || o.inteiro("id_colaborador") != idColaborador) return@mapNotNull null
+            if (o.logico("ativo") == false) return@mapNotNull null
+            RespostaFeedback(
+                id = o.inteiro("id") ?: return@mapNotNull null,
+                descricao = o.texto("descricao").orEmpty(),
+                idFeedback = idFeedback,
+                idColaborador = idColaborador,
+                dataResposta = o.data("data_resposta")
+            )
+        }.sortedBy { it.id }
     }
 
     /**
