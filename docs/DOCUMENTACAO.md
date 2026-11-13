@@ -36,7 +36,7 @@ Documento de referência do aplicativo Android do AVALON. Explica **o que cada p
 | Pacote | `com.example.avalon_mobile` |
 | Público | Autoatendimento do colaborador. Qualquer perfil (Colaborador, Gestor, RH) pode entrar e vê os próprios dados (TS08: regras de perfil iguais na Web e no mobile) |
 | Rede | Retrofit + OkHttp + Gson, seguindo o contrato `openapi.yaml` v2.1.0 do repositório de Back-end |
-| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (envio de respostas de pesquisa, resposta a feedback, Dashboard, Mural, correção cadastral e alteração de senha logado); Perfil, Jornada, Férias, Benefícios, Documentos (inclusive o download do arquivo), a leitura de Pesquisas, Feedbacks, Notificações e a recuperação de senha usam a API real (`MODULOS_API`) |
+| Modos | `USE_MOCK_AUTH = false` (padrão): login pela API e banco reais. `USE_MOCK_API = true` (padrão): em demonstração só o que a API ainda não publica (Dashboard, Mural, correção cadastral e alteração de senha logado); Perfil, Jornada, Férias, Benefícios, Documentos (inclusive o download do arquivo), o envio de respostas de pesquisa, Feedbacks (inclusive a resposta do destinatário), Notificações e a recuperação de senha usam a API real (`MODULOS_API`) |
 
 ### O que o app faz
 
@@ -223,7 +223,7 @@ Telas sem barra inferior são fluxos que o usuário deve concluir ou cancelar (l
 | Férias | `GET /ferias?id_colaborador=`, `POST /ferias` |
 | Benefícios | `GET /colaborador/{id}/beneficio` |
 | Documentos / Downloads | `GET /documento`, `GET /documento/download/{id}` (arquivo; tipo PDF/PNG/JPEG lido dos primeiros bytes) |
-| Feedbacks | `GET /feedback` (todos os colaboradores; o app filtra pelo destinatário e ignora `ativo = 0`). Sem rota de resposta: o app avisa que ainda não está disponível |
+| Feedbacks | `GET /feedback` (todos os colaboradores; o app filtra pelo destinatário e ignora `ativo = 0`). `GET /resposta_feedback` (todas as respostas; o app filtra por feedback e titular) e `POST /resposta_feedback` com `{id_feedback, id_colaborador, descricao}`: só o perfil Colaborador grava, uma resposta por feedback e o banco exige autor = destinatário. O servidor devolve 201 mesmo quando a trigger recusa e 500 com corpo HTML na duplicidade; por isso o app só considera enviada a resposta que aparece na releitura de `GET /resposta_feedback` |
 | Pesquisas | Em uso (leitura, 05/11/2026): `GET /pesquisa`, `GET /pergunta`, `GET /participacao` (listagens completas; o app filtra pelo titular). Envio: `POST /resposta` e `POST /participacao` respondem 403 para o Colaborador (só RH grava). Contrato original, sem rota no Back-end: `GET /pesquisa/{id}/pergunta`, `POST /pesquisa/{id}/resposta` |
 | Avaliação psicossocial | `GET /avaliacao?somente_pendentes=true`, `GET /avaliacao/{id}/pergunta`, `POST /avaliacao/{id}/resposta` |
 | Notificações | `GET /notificacao` (todos os colaboradores; o app filtra pelo titular). Sem data e sem campo `lida` no banco: a ordem é por id decrescente e a leitura fica no aparelho |
@@ -383,7 +383,8 @@ Classes de dados com o mesmo formato dos JSONs do contrato. `@SerializedName("no
 |---|---|
 | `Feedback` | Feedback recebido. `remetenteNome`, `remetenteCargo`, `lido` são **(fora do contrato)** |
 | `RespostaFeedback` | Resposta do titular |
-| `RespostaFeedbackRequest(descricao)` | Corpo de `POST /feedback/{id}/resposta` |
+| `RespostaFeedbackRequest(descricao)` | Corpo antigo (rota `/feedback/{id}/resposta`, que não existe; sem uso) |
+| `RespostaFeedbackNova` | Corpo de `POST /resposta_feedback` (`id_feedback`, `id_colaborador`, `descricao`) |
 
 ### `Pesquisa.kt`
 
@@ -654,7 +655,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 | `BeneficiosViewModel` | Lista, filtra (`Todos`/`Aderidos`/`Disponíveis`) e envia pedidos de adesão/cancelamento; o resultado vai para o snackbar |
 | `DocumentosViewModel` | Compartilhado por Documentos e Downloads. `buscar` filtra por nome/tipo; `baixar` recusa documentos inativos e emite `DownloadEvent.Abrir` com os bytes do PDF; `exportarPerfil` gera o PDF do perfil no aparelho. `baixando` guarda qual item mostra o indicador de progresso (`PERFIL_ID = -1` para o perfil) |
 | `FeedbacksViewModel` | Lista os feedbacks recebidos |
-| `FeedbackDetalheViewModel` | Lê o `id` da rota, carrega o feedback e as respostas; `enviar` valida texto (máx. 1000 caracteres) e adiciona a resposta à lista |
+| `FeedbackDetalheViewModel` | Lê o `id` da rota, carrega o feedback e as respostas; `enviar` valida texto (máx. 1000 caracteres) e adiciona à lista a resposta confirmada pelo servidor; `fecharConfirmacao` fecha o card de envio |
 
 ### `PesquisaViewModels.kt`
 
@@ -755,7 +756,7 @@ Um ViewModel guarda o estado de uma tela e sobrevive à rotação do aparelho. P
 
 | Arquivo | Conteúdo |
 |---|---|
-| `FeedbackScreens.kt` | `FeedbacksScreen` (lista com "Não lido") e `FeedbackDetalheScreen` (texto completo, respostas anteriores, campo de resposta). `Remetente` desenha avatar, nome e cargo; `TipoPill` colore o tipo |
+| `FeedbackScreens.kt` | `FeedbacksScreen` (lista com "Não lido") e `FeedbackDetalheScreen` (texto completo, respostas anteriores, campo de resposta que some depois da primeira resposta, card de confirmação). `Remetente` desenha avatar, nome e cargo; `TipoPill` colore o tipo |
 
 ### `ui/screens/pesquisa` — Sprint 4
 

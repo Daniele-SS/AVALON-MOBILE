@@ -80,4 +80,26 @@ class LeituraApiFeedbackNotificacaoTest {
         assertFalse(LeituraApi.notificacoes(envelope("notificacoes", listOf(nt(1, 3))), 3, emptySet())!!.isEmpty())
         assertNotNull(LeituraApi.notificacoes(json("[]"), 3, emptySet()))
     }
+
+    private fun resp(id: Int, fb: Int, col: Int, ativo: Int = 1) =
+        """{"id":$id,"id_feedback":$fb,"id_colaborador":$col,"descricao":"Resposta $id","data_resposta":"2026-11-13T03:00:00.000Z","ativo":$ativo}"""
+
+    @Test
+    fun `respostas de feedback - so as do titular naquele feedback, ativas, na ordem de gravacao`() {
+        val r = LeituraApi.respostasFeedback(envelope("respostas", listOf(
+            resp(9, fb = 7, col = 4),
+            resp(12, fb = 25, col = 3),
+            resp(8, fb = 25, col = 3, ativo = 0),
+            resp(6, fb = 25, col = 4)
+        )), idFeedback = 25, idColaborador = 3)!!
+        assertEquals(listOf(12), r.map { it.id })
+        assertEquals("Resposta 12", r.single().descricao)
+        assertEquals("2026-11-13", r.single().dataResposta)
+    }
+
+    @Test
+    fun `respostas de feedback - lista vazia e formato inesperado`() {
+        assertTrue(LeituraApi.respostasFeedback(json("[]"), 25, 3)!!.isEmpty())
+        assertNull(LeituraApi.respostasFeedback(json("""{"x":1}"""), 25, 3))
+    }
 }

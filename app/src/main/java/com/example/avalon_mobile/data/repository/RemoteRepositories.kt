@@ -35,6 +35,7 @@ import com.example.avalon_mobile.model.RespostaAvaliacaoItem
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaFeedback
+import com.example.avalon_mobile.model.RespostaFeedbackNova
 import com.example.avalon_mobile.model.RespostaPesquisaItem
 import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.SolicitacaoCorrecao
@@ -199,11 +200,35 @@ class RemoteAvalonRepository(
         leitura?.marcar(LeituraLocal.FEEDBACK, idColaborador, listOf(idFeedback))
     }
 
-    // Não existe rota para respostas de feedback (tbl_resposta_feedback não foi exposta pelo Back-end).
-    override suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>> = AppResult.Success(emptyList())
+    override suspend fun respostasFeedback(idFeedback: Int): AppResult<List<RespostaFeedback>> {
+        val id = idColaborador
+        return ler(listaOuVazia(call.execute { api.respostasFeedback() })) { LeituraApi.respostasFeedback(it, idFeedback, id) }
+    }
 
-    override suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback> =
-        naoDisponivel("A resposta ao feedback")
+    /**
+     * O servidor responde 201 mesmo quando a trigger do banco recusa a gravação (autor diferente do destinatário) e
+     * devolve 500 com corpo HTML na duplicidade. Por isso o resultado só vale depois de reler as respostas do titular:
+     * sem a releitura o app mostraria "enviada" para uma resposta que não existe.
+     */
+    override suspend fun responderFeedback(idFeedback: Int, texto: String): AppResult<RespostaFeedback> {
+        val corpo = RespostaFeedbackNova(idFeedback, idColaborador, texto.trim())
+        val envio = call.execute { api.responderFeedback(corpo) }
+        if (envio is AppResult.Failure && envio.error.codigo == AppError.SEM_CONEXAO) return envio
+        val recusa: AppError? = when (envio) {
+            is AppResult.Failure -> envio.error
+            is AppResult.Success -> LeituraApi.falhaNoCorpo(envio.data)?.let { (codigo, mensagem) -> AppError(codigo, mensagem ?: "Não foi possível enviar a resposta.") }
+        }
+        val gravadas = when (val r = respostasFeedback(idFeedback)) {
+            is AppResult.Success -> r.data
+            is AppResult.Failure -> return AppResult.Failure(AppError(r.error.codigo, "Não foi possível confirmar o envio. Atualize a tela antes de tentar de novo.", r.error.httpStatus))
+        }
+        if (recusa != null) {
+            return if (gravadas.isNotEmpty()) AppResult.Failure(AppError("FEEDBACK_JA_RESPONDIDO", "Você já respondeu este feedback.", 409))
+            else AppResult.Failure(AppError(recusa.codigo, if (recusa.httpStatus == 500) "Não foi possível enviar a resposta agora. Tente novamente." else recusa.mensagem, recusa.httpStatus))
+        }
+        return gravadas.lastOrNull { it.descricao.trim() == corpo.descricao }?.let { AppResult.Success(it) }
+            ?: AppResult.Failure(AppError("RESPOSTA_NAO_GRAVADA", "O servidor não registrou a resposta. Confira se este feedback é destinado a você e tente de novo."))
+    }
 
     // Leitura pela API real. O Back-end devolve as listagens de todos os colaboradores; o app filtra pelo titular.
     override suspend fun pesquisas(): AppResult<List<Pesquisa>> {

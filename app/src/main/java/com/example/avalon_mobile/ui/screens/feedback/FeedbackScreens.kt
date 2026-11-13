@@ -37,6 +37,7 @@ import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.AvalonTopBar
+import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.SectionTitle
@@ -56,7 +57,6 @@ import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Link
 import com.example.avalon_mobile.ui.theme.Navy
-import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.ui.theme.TextStrong
@@ -110,6 +110,13 @@ fun FeedbackDetalheScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().background(Background)) {
         AvalonTopBar("Feedbacks", onBack = onBack)
+        if (state.enviado) {
+            ConfirmacaoEnvioDialog(
+                titulo = "Resposta enviada",
+                mensagem = "Sua resposta foi registrada e fica junto ao feedback.",
+                onFechar = viewModel::fecharConfirmacao
+            )
+        }
         LoadStateContent(state.feedback, onRetry = viewModel::carregar) { fb ->
             Column(
                 Modifier
@@ -131,18 +138,20 @@ fun FeedbackDetalheScreen(
                         Text(r.descricao, fontFamily = Inter, fontSize = 14.sp, color = TextPrimary)
                     }
                 }
-                Text("RESPONDER FEEDBACK", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextSecondary)
-                AvalonTextField(
-                    label = "",
-                    value = state.texto,
-                    onValueChange = viewModel::onTexto,
-                    placeholder = "Escreva sua resposta...",
-                    singleLine = false,
-                    minHeight = 190,
-                    error = state.erro
-                )
-                if (state.enviado) Text("Resposta enviada.", fontFamily = Inter, color = StatusApprovedText)
-                AvalonPrimaryButton("Enviar resposta", onClick = viewModel::enviar, loading = state.enviando)
+                // Uma resposta por feedback (o banco recusa a segunda): depois de responder, o campo deixa de aparecer.
+                if (state.respostas.isEmpty()) {
+                    Text("RESPONDER FEEDBACK", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextSecondary)
+                    AvalonTextField(
+                        label = "",
+                        value = state.texto,
+                        onValueChange = viewModel::onTexto,
+                        placeholder = "Escreva sua resposta...",
+                        singleLine = false,
+                        minHeight = 190,
+                        error = state.erro
+                    )
+                    AvalonPrimaryButton("Enviar resposta", onClick = viewModel::enviar, loading = state.enviando)
+                }
             }
         }
     }

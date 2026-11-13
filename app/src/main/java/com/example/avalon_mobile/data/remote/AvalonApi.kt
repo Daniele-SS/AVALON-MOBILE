@@ -19,6 +19,7 @@ import com.example.avalon_mobile.model.RefreshRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
+import com.example.avalon_mobile.model.RespostaFeedbackNova
 import com.example.avalon_mobile.model.TokenResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -103,9 +104,17 @@ interface AvalonApi {
 
     // Feedback (6.7)
     // Publicado em 06/11/2026: lista de todos os colaboradores (sem escopo por perfil); o app filtra pelo titular.
-    // Não há rota de resposta ao feedback (tbl_resposta_feedback não foi exposta).
     @GET("v1/senai/avalon/feedback")
     suspend fun feedbacks(): Response<JsonElement>
+
+    // Resposta do destinatário ao feedback (Back-end, 12/11/2026). A listagem traz as de todos; o app filtra por feedback e titular.
+    @GET("v1/senai/avalon/resposta_feedback")
+    suspend fun respostasFeedback(): Response<JsonElement>
+
+    // Só o perfil Colaborador grava; uma resposta por feedback (a duplicidade volta como HTTP 500 com corpo HTML).
+    @Headers("Content-Type: application/json")
+    @POST("v1/senai/avalon/resposta_feedback")
+    suspend fun responderFeedback(@Body body: RespostaFeedbackNova): Response<JsonElement>
 
     // Pesquisas (6.6)
     // Rotas publicadas pelo Back-end (05/11/2026): listagens completas; o app filtra pelas participações do titular.
