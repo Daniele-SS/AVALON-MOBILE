@@ -19,6 +19,7 @@ import com.example.avalon_mobile.model.RefreshRequest
 import com.example.avalon_mobile.model.RespostaAvaliacaoLote
 import com.example.avalon_mobile.model.RespostaPesquisaLote
 import com.example.avalon_mobile.model.RespostaConfirmacao
+import com.example.avalon_mobile.model.RespostaFeedbackNova
 import com.example.avalon_mobile.model.TokenResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
