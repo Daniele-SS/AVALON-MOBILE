@@ -1,5 +1,6 @@
 package com.example.avalon_mobile.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -180,6 +181,7 @@ fun <T> GradeFixa(
  * de colunas (de [colunasMaximas] até 1) até ela caber inteira, sem cortar texto. Os cards de uma mesma linha
  * têm a mesma altura (a do maior), e cada card cresce com o texto, sem altura fixa.
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun <T> GradeAdaptavel(
     itens: List<T>,
