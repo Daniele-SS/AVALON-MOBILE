@@ -1202,3 +1202,11 @@ Atenção para a demonstração: o banco precisa ser recriado com o BD01 de 16/1
 ## Atualização de 16/11/2026 — Sprint 4 (contorno dos diálogos, achados do TS112)
 
 No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os demais `AlertDialog`) não tinham contorno: o cartão do diálogo se confundia com o fundo, branco sobre branco no Claro de alto contraste e preto sobre preto no Escuro de alto contraste; nos temas Claro e Escuro, a separação era fraca. Criado `Modifier.bordaDialogo()` (`ui/components/AvalonCommon.kt`): alto contraste usa `BorderStrong` com 2 dp (preto no Claro, branco no Escuro); Claro e Escuro usam `InputBorder` (>= 3:1) com 1,5 dp; raio de 28 dp, o mesmo do `AlertDialog`. Aplicado em Solicitar férias, Solicitar correção, Sair da conta, Confirmar envio da pesquisa e Sair da pesquisa. O `DatePickerDialog` nativo e o `ConfirmacaoEnvioDialog` (que já tinha borda) não mudaram. Não compilado aqui (sem Android SDK): reteste no emulador nos 4 temas.
+
+## Atualização de 16/11/2026 (mensagem do download de documento, achado do TS108 passo 3)
+
+- **Sintoma:** ao baixar um documento cujo arquivo não existe no servidor, o aplicativo mostrava "Funcionalidade ainda não disponível no servidor.".
+- **Causa:** o back-end responde 404 ("O arquivo físico correspondente não foi encontrado no servidor") sem o campo `codigo`; o `ApiCall` trata todo 404 sem `codigo` como `NAO_IMPLEMENTADO` e descarta a mensagem do servidor.
+- **Correção:** `RemoteRepositories.baixarDocumento` converte o 404 em `ARQUIVO_INDISPONIVEL`, com a mensagem "Arquivo indisponível no servidor. Procure o RH." (função `erroDownloadDocumento`). O mapeamento geral do `ApiCall` não mudou, para não afetar as demais telas na Sprint 4.
+- **Testes:** `DownloadDocumentoErroTest` (404 convertido; 403 e erro de conexão seguem como vieram).
+- **Fora do escopo (back-end):** o download não confere `tbl_documentos.ativo`; um documento indisponibilizado continua baixável por quem já tem a lista aberta (TS108 passo 2).

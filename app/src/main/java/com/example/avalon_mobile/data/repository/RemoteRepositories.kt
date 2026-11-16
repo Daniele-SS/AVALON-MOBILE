@@ -179,7 +179,7 @@ class RemoteAvalonRepository(
     override suspend fun baixarDocumento(documento: Documento): AppResult<ByteArray> {
         val resposta = call.execute { api.baixarDocumento(documento.id) }
         return when (resposta) {
-            is AppResult.Failure -> resposta
+            is AppResult.Failure -> AppResult.Failure(erroDownloadDocumento(resposta.error))
             is AppResult.Success -> try {
                 val bytes = withContext(Dispatchers.IO) { resposta.data.bytes() }
                 if (bytes.isEmpty()) AppResult.Failure(AppError(AppError.DESCONHECIDO, "O arquivo do documento está vazio. Procure o RH."))
@@ -293,3 +293,14 @@ class RemoteAvalonRepository(
         leitura?.marcar(LeituraLocal.NOTIFICACAO, idColaborador, ids)
     }
 }
+
+/**
+ * No download, o 404 do servidor significa documento ou arquivo ausente ("O arquivo físico correspondente não foi
+ * encontrado"), e não rota inexistente. O mapeamento geral do ApiCall trata todo 404 como "Funcionalidade ainda não
+ * disponível no servidor", que engana quem perdeu o holerite; aqui a mensagem manda procurar o RH.
+ */
+internal fun erroDownloadDocumento(erro: AppError): AppError =
+    if (erro.httpStatus == 404) AppError(ARQUIVO_INDISPONIVEL, "Arquivo indisponível no servidor. Procure o RH.", 404)
+    else erro
+
+internal const val ARQUIVO_INDISPONIVEL = "ARQUIVO_INDISPONIVEL"
