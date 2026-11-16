@@ -73,6 +73,13 @@ class LeituraApiFeedbackNotificacaoTest {
     }
 
     @Test
+    fun `notificacoes - data_criacao vira rotulo de data e hora`() {
+        val comData = """{"id":7,"id_colaborador":3,"titulo":"Com data","data_criacao":"2020-01-02 14:05:00"}"""
+        val r = LeituraApi.notificacoes(envelope("notificacoes", listOf(comData)), 3, emptySet())!!
+        assertEquals("02/01/2020, 14:05", r.single().dataHora)
+    }
+
+    @Test
     fun `notificacoes - sem titulo e descartada, formato inesperado devolve null`() {
         val semTitulo = """{"id":9,"id_colaborador":3,"tipo_origem":"FERIAS"}"""
         assertTrue(LeituraApi.notificacoes(envelope("notificacoes", listOf(semTitulo)), 3, emptySet())!!.isEmpty())

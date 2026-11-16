@@ -1194,3 +1194,8 @@ Verificação por cálculo (razão de contraste WCAG sobre os valores reais de `
 - Pesquisas, círculo da opção não selecionada: usava `Border` (1,31:1 no Claro, 1,66:1 no Escuro). Passou a `InputBorder` (>= 3:1, WCAG 1.4.11).
 
 Limites: o cálculo não cobre ícones sem texto, foco nem imagens; alvos de 48 dp seguem por inspeção manual. Accessibility Scanner não executado (emulador sem conta Google).
+## Atualização de 16/11/2026 — Sprint 4 (data nas notificações)
+
+O banco ganhou `tbl_notificacao.data_criacao` (DATETIME, padrão CURRENT_TIMESTAMP; BD01 de 16/11) e `GET /notificacao` já a devolve (`select *`). O app passou a lê-la: `LeituraApi.notificacoes` converte o valor com `Datas.dataHoraRotulo` para "Hoje, 09:12", "Ontem, 17:25" ou "13/11/2026, 14:05" (ISO com "Z" é convertido para o fuso do aparelho; sem fuso é tratado como local). A Central agrupa por esse rótulo. A ordem continua por id decrescente (monótono). Se a coluna não vier (banco antigo), a data some e o agrupamento volta a "Recentes", como antes. O estado "lida" segue local ao aparelho: o banco não tem essa coluna (NC-42). Testes: `DatasNotificacaoTest` (5) e 1 caso em `LeituraApiFeedbackNotificacaoTest`; a regra foi compilada e passou com kotlinc.
+
+Atenção para a demonstração: o banco precisa ser recriado com o BD01 de 16/11 (ou `ALTER TABLE tbl_notificacao ADD COLUMN data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`), senão a rota continua funcionando mas sem data.
