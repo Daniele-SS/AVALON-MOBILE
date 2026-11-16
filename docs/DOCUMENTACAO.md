@@ -1184,3 +1184,13 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 - Agora os dois usam `ConfirmacaoEnvioDialog` (`ui/components/AvalonCommon.kt`): selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título, texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
 - Usado em `PerfilScreen.kt` (`CorrecaoDialog`) e `SolicitarFeriasSheet.kt`. Formulários de envio inalterados.
 - Não validado em emulador.
+
+## Atualização de 16/11/2026 — Sprint 4 (contraste do tema Claro, achados do TS112)
+
+Verificação por cálculo (razão de contraste WCAG sobre os valores reais de `Color.kt`, alfa composto sobre `Surface` e `Background`, 99 pares por paleta; 4,5:1 para texto, 3:1 para componentes). Os dois temas de alto contraste e o Escuro não têm par reprovado em uso real. No Claro padrão havia 3 pontos:
+
+- Home, indicadores de Férias e Feedback: `WarningText` sobre `WarningContainer` (4,25:1) e `SuccessText` sobre `SuccessContainer` (4,23:1), medidos sobre o `Background` da tela. `WarningText` 9F6200 → 955A00 (4,8:1) e `SuccessText` 397C06 → 347305 (4,76:1).
+- Feedback, "Sua resposta • data" (12 sp) em `SurfaceInfo`: `TextSecondary` 4,47:1. `TextSecondary` 5B748D → 56708A (mínimo 4,6:1 sobre Background, Surface, SurfaceInfo e SurfaceSelected).
+- Pesquisas, círculo da opção não selecionada: usava `Border` (1,31:1 no Claro, 1,66:1 no Escuro). Passou a `InputBorder` (>= 3:1, WCAG 1.4.11).
+
+Limites: o cálculo não cobre ícones sem texto, foco nem imagens; alvos de 48 dp seguem por inspeção manual. Accessibility Scanner não executado (emulador sem conta Google).

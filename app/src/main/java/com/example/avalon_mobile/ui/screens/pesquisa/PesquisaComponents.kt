@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.SurfaceSelected
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.InputBorder
 import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.DayWork
@@ -77,7 +78,7 @@ fun OpcaoResposta(texto: String, selecionada: Boolean, onClick: () -> Unit) {
     ) {
         Row(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(texto, Modifier.weight(1f), fontFamily = Inter, fontSize = 18.sp, color = TextPrimary)
-            Box(Modifier.size(25.dp).border(2.dp, if (selecionada) Navy else Border, CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(25.dp).border(2.dp, if (selecionada) Navy else InputBorder, CircleShape), contentAlignment = Alignment.Center) {
                 if (selecionada) Box(Modifier.size(11.dp).background(Navy, CircleShape))
             }
         }
