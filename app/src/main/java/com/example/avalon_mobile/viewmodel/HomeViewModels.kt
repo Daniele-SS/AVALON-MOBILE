@@ -74,7 +74,7 @@ class NotificacoesViewModel(private val repository: AvalonRepository) : ViewMode
         _state.value = LoadState.Loading
         viewModelScope.launch {
             _state.value = when (val r = repository.notificacoes()) {
-                // Mais recentes primeiro (RF-504); sem data no DDL, o servidor ordena por id decrescente.
+                // Mais recentes primeiro (RF-504): ordem por id decrescente; a data exibida vem de data_criacao (BD01, 16/11).
                 is AppResult.Success -> {
                     // Abrir a central conta como leitura: o estado fica no aparelho (o banco não tem "lida").
                     repository.marcarNotificacoesLidas(r.data.filter { it.lida == false }.map { it.id })

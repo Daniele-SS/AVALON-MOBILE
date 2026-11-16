@@ -1184,3 +1184,9 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 - Agora os dois usam `ConfirmacaoEnvioDialog` (`ui/components/AvalonCommon.kt`): selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título, texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
 - Usado em `PerfilScreen.kt` (`CorrecaoDialog`) e `SolicitarFeriasSheet.kt`. Formulários de envio inalterados.
 - Não validado em emulador.
+
+## Atualização de 16/11/2026 — Sprint 4 (data nas notificações)
+
+O banco ganhou `tbl_notificacao.data_criacao` (DATETIME, padrão CURRENT_TIMESTAMP; BD01 de 16/11) e `GET /notificacao` já a devolve (`select *`). O app passou a lê-la: `LeituraApi.notificacoes` converte o valor com `Datas.dataHoraRotulo` para "Hoje, 09:12", "Ontem, 17:25" ou "13/11/2026, 14:05" (ISO com "Z" é convertido para o fuso do aparelho; sem fuso é tratado como local). A Central agrupa por esse rótulo. A ordem continua por id decrescente (monótono). Se a coluna não vier (banco antigo), a data some e o agrupamento volta a "Recentes", como antes. O estado "lida" segue local ao aparelho: o banco não tem essa coluna (NC-42). Testes: `DatasNotificacaoTest` (5) e 1 caso em `LeituraApiFeedbackNotificacaoTest`; a regra foi compilada e passou com kotlinc.
+
+Atenção para a demonstração: o banco precisa ser recriado com o BD01 de 16/11 (ou `ALTER TABLE tbl_notificacao ADD COLUMN data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`), senão a rota continua funcionando mas sem data.

@@ -273,8 +273,8 @@ object LeituraApi {
     }
 
     /**
-     * Notificações do titular (o Back-end devolve as de todos). O banco não guarda data/hora nem "lida": a leitura vem
-     * de [lidas] (ids abertos neste aparelho) e a ordem é por id decrescente.
+     * Notificações do titular (o Back-end devolve as de todos). O banco guarda `data_criacao` (BD01, 16/11) mas não "lida": a data
+     * vem de `data_criacao`, a leitura de [lidas] (ids abertos neste aparelho) e a ordem é por id decrescente.
      */
     fun notificacoes(json: JsonElement, idColaborador: Int, lidas: Set<Int>): List<Notificacao>? {
         val itens = lista(json, "notificacoes") ?: return null
@@ -290,7 +290,7 @@ object LeituraApi {
                 titulo = o.texto("titulo") ?: return@mapNotNull null,
                 mensagem = o.texto("mensagem"),
                 lida = id in lidas,
-                dataHora = null
+                dataHora = Datas.dataHoraRotulo(o.texto("data_criacao"))
             )
         }.sortedByDescending { it.id }
     }

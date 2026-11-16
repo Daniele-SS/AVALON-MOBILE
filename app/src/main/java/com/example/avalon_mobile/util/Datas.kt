@@ -2,7 +2,10 @@ package com.example.avalon_mobile.util
 
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -14,6 +17,25 @@ object Datas {
     private val mesAno = DateTimeFormatter.ofPattern("MM/yyyy")
 
     fun parse(iso: String?): LocalDate? = iso?.let { runCatching { LocalDate.parse(it.take(10)) }.getOrNull() }
+
+    /**
+     * Rótulo de data e hora de uma notificação a partir de `data_criacao` (DATETIME do MySQL, serializado pela API em ISO
+     * com "Z" ou sem fuso). Com fuso, converte para o do aparelho; sem fuso, assume que já é local. Devolve
+     * "Hoje, 09:12", "Ontem, 17:25" ou "13/11/2026, 14:05"; null se o texto não for uma data válida.
+     */
+    fun dataHoraRotulo(iso: String?, agora: LocalDateTime = LocalDateTime.now(), zona: ZoneId = ZoneId.systemDefault()): String? {
+        val texto = iso?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val local = runCatching { OffsetDateTime.parse(texto).atZoneSameInstant(zona).toLocalDateTime() }.getOrNull()
+            ?: runCatching { LocalDateTime.parse(texto.replace(' ', 'T')) }.getOrNull()
+            ?: return null
+        val hora = "%02d:%02d".format(local.hour, local.minute)
+        val dia = when (local.toLocalDate()) {
+            agora.toLocalDate() -> "Hoje"
+            agora.toLocalDate().minusDays(1) -> "Ontem"
+            else -> local.toLocalDate().format(curta)
+        }
+        return "$dia, $hora"
+    }
 
     fun dataCurta(iso: String?): String = parse(iso)?.format(curta) ?: "—"
     fun diaMes(iso: String?): String = parse(iso)?.format(diaMes) ?: "—"
