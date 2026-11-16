@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
+import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.components.AvalonSecondaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.LoadStateContent
@@ -97,6 +98,7 @@ fun PesquisaScreen(
             }
             if (ui.confirmarEnvio) {
                 AlertDialog(
+                    modifier = Modifier.bordaDialogo(),
                     onDismissRequest = viewModel::cancelarConfirmacao,
                     containerColor = Surface,
                     title = { Text("Confirmar envio?", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
@@ -115,6 +117,7 @@ fun PesquisaScreen(
 
     if (confirmarSaida) {
         AlertDialog(
+            modifier = Modifier.bordaDialogo(),
             onDismissRequest = { confirmarSaida = false },
             containerColor = Surface,
             title = { Text("Sair da pesquisa?", fontFamily = Inter, fontWeight = FontWeight.Bold) },

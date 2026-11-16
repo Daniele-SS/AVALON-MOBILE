@@ -47,6 +47,9 @@ import com.example.avalon_mobile.ui.theme.SuccessText
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.util.ColunasGrade
 import com.example.avalon_mobile.ui.theme.Border
+import com.example.avalon_mobile.ui.theme.Paletas
+import com.example.avalon_mobile.ui.theme.BorderStrong
+import com.example.avalon_mobile.ui.theme.InputBorder
 import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
@@ -255,4 +258,15 @@ fun ConfirmacaoEnvioDialog(titulo: String, mensagem: String, onFechar: () -> Uni
             AvalonPrimaryButton("Fechar", onFechar)
         }
     }
+}
+
+/**
+ * Contorno dos diálogos (AlertDialog). Sem ele, o cartão do diálogo se confunde com o fundo: branco sobre branco no Claro
+ * de alto contraste e preto sobre preto no Escuro de alto contraste. Alto contraste usa BorderStrong (preto no Claro,
+ * branco no Escuro) com 2 dp; os demais temas usam InputBorder (>= 3:1, WCAG 1.4.11) com 1,5 dp. O raio é o do AlertDialog (28 dp).
+ */
+@Composable
+fun Modifier.bordaDialogo(): Modifier {
+    val forte = Paletas.altoContraste
+    return border(if (forte) 2.dp else 1.5.dp, if (forte) BorderStrong else InputBorder, RoundedCornerShape(28.dp))
 }
