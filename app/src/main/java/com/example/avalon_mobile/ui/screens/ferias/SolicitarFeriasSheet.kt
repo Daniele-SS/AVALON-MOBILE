@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonTextField
+import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.Surface
@@ -75,6 +76,7 @@ fun SolicitarFeriasSheet(
     }
 
     AlertDialog(
+        modifier = Modifier.bordaDialogo(),
         onDismissRequest = onFechar,
         containerColor = Surface,
         title = { Text("Solicitar férias", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary) },

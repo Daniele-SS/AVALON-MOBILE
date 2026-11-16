@@ -1184,3 +1184,7 @@ Ressalvas medidas na paleta clara original, **não alteradas** nesta etapa: text
 - Agora os dois usam `ConfirmacaoEnvioDialog` (`ui/components/AvalonCommon.kt`): selo com ícone de check em `SuccessText` sobre `SuccessContainer`, título, texto em `TextSecondary`, botão "Fechar" (`AvalonPrimaryButton`), cantos de 28 dp e borda `Border` (forte nos temas de Alto contraste). Todas as cores vêm da paleta ativa (Claro, Escuro, Claro AC e Escuro AC); o selo cresce com a fonte (mínimo em `sp`).
 - Usado em `PerfilScreen.kt` (`CorrecaoDialog`) e `SolicitarFeriasSheet.kt`. Formulários de envio inalterados.
 - Não validado em emulador.
+
+## Atualização de 16/11/2026 — Sprint 4 (contorno dos diálogos, achados do TS112)
+
+No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os demais `AlertDialog`) não tinham contorno: o cartão do diálogo se confundia com o fundo, branco sobre branco no Claro de alto contraste e preto sobre preto no Escuro de alto contraste; nos temas Claro e Escuro, a separação era fraca. Criado `Modifier.bordaDialogo()` (`ui/components/AvalonCommon.kt`): alto contraste usa `BorderStrong` com 2 dp (preto no Claro, branco no Escuro); Claro e Escuro usam `InputBorder` (>= 3:1) com 1,5 dp; raio de 28 dp, o mesmo do `AlertDialog`. Aplicado em Solicitar férias, Solicitar correção, Sair da conta, Confirmar envio da pesquisa e Sair da pesquisa. O `DatePickerDialog` nativo e o `ConfirmacaoEnvioDialog` (que já tinha borda) não mudaram. Não compilado aqui (sem Android SDK): reteste no emulador nos 4 temas.

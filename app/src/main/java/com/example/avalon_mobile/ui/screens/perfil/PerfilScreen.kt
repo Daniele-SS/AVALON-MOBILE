@@ -58,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.model.Colaborador
 import com.example.avalon_mobile.ui.components.AvalonCard
+import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.components.LoadStateContent
@@ -129,6 +130,7 @@ fun PerfilScreen(
     }
     if (confirmarSaida) {
         AlertDialog(
+            modifier = Modifier.bordaDialogo(),
             onDismissRequest = { confirmarSaida = false },
             title = { Text("Sair da conta?", fontFamily = Inter, fontWeight = FontWeight.Bold) },
             text = { Text("Sua sessão será encerrada neste aparelho.", fontFamily = Inter) },
@@ -247,6 +249,7 @@ private fun CorrecaoDialog(state: CorrecaoState, onEnviar: (String, String, Stri
     }
 
     AlertDialog(
+        modifier = Modifier.bordaDialogo(),
         onDismissRequest = onFechar,
         containerColor = Surface,
         title = { Text("Solicitar correção", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
