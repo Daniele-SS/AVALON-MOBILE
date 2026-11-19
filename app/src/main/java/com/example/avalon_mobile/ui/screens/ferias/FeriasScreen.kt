@@ -38,12 +38,10 @@ import com.example.avalon_mobile.ui.components.LoadState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Accent
-import com.example.avalon_mobile.ui.theme.NavyFundo
-import com.example.avalon_mobile.ui.theme.TextStrong
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.BorderStrong
 import com.example.avalon_mobile.ui.theme.Inter
-import com.example.avalon_mobile.ui.theme.Navy
+import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.StatusApprovedBg
 import com.example.avalon_mobile.ui.theme.StatusApprovedText
 import com.example.avalon_mobile.ui.theme.StatusDeniedBg
@@ -51,6 +49,7 @@ import com.example.avalon_mobile.ui.theme.StatusDeniedText
 import com.example.avalon_mobile.ui.theme.StatusPendingBg
 import com.example.avalon_mobile.ui.theme.StatusPendingText
 import com.example.avalon_mobile.ui.theme.TextMutedAlpha
+import com.example.avalon_mobile.ui.theme.TextStrong
 import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.util.SaldoFerias
 import com.example.avalon_mobile.viewmodel.FeriasViewModel

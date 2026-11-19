@@ -23,17 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.NavyFundo
-import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TabInactive
 
 /**
