@@ -1,5 +1,6 @@
 package com.example.avalon_mobile.ui.screens.perfil
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.draw.clip
@@ -27,7 +28,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -145,19 +145,16 @@ fun PerfilScreen(
 
 @Composable
 private fun Cabecalho(colaborador: Colaborador, onBack: () -> Unit) {
+    // Sem seta na tela: o gesto ou o botão voltar do sistema leva para a Home.
+    BackHandler { onBack() }
     Row(
         Modifier
             .fillMaxWidth()
             .background(NavyFundo)
             .statusBarsPadding()
-            .padding(start = 12.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
+            .padding(start = 24.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Mesma setinha das demais telas (AvalonTopBar): volta para a Home.
-        IconButton(onClick = onBack) {
-            Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = "Voltar", tint = Color.White, modifier = Modifier.size(28.dp))
-        }
-        Spacer(Modifier.width(4.dp))
         Column(Modifier.weight(1f)) {
             Text("Meu Perfil", Modifier.semantics { heading() }, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = Color.White)
             Text("Ajustes e dados funcionais", fontFamily = Inter, fontSize = 13.sp, color = Color.White.copy(alpha = 0.6f))

@@ -1,5 +1,6 @@
 package com.example.avalon_mobile.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,9 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,30 +35,27 @@ import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TabInactive
 
-/** Cabeçalho azul-marinho das telas internas (voltar + título + subtítulo opcional). */
+/**
+ * Cabeçalho azul-marinho das telas internas (título + subtítulo opcional). Não há seta de voltar na tela: no celular a
+ * navegação é pelo gesto ou pelos botões do sistema, e o [onBack] passa a responder a eles (mesma ação que a seta tinha).
+ */
 @Composable
 fun AvalonTopBar(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
-    backIcon: Int = R.drawable.ic_arrow_left,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
+    BackHandler(enabled = onBack != null) { onBack?.invoke() }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(NavyFundo)
             .statusBarsPadding()
-            .padding(start = if (onBack != null) 12.dp else 24.dp, end = 12.dp, top = 12.dp, bottom = 14.dp),
+            .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (onBack != null) {
-            IconButton(onClick = onBack) {
-                Icon(painterResource(backIcon), contentDescription = "Voltar", tint = Color.White, modifier = Modifier.size(28.dp))
-            }
-            Spacer(Modifier.width(4.dp))
-        }
         Column(Modifier.weight(1f)) {
             Text(title, Modifier.semantics { heading() }, color = Color.White, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
             if (subtitle != null) {

@@ -1224,3 +1224,10 @@ No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os dem
 - **Sintoma:** nos temas claro e escuro os cartões de "Acessos rápidos" (Home) e da grade de "Mais" ficavam sem borda e quase não se separavam do fundo; só o alto contraste tinha borda.
 - **Correção:** tokens `AtalhoBorda` e `AtalhoBordaLargura` (`ui/theme/Color.kt`) usam o mesmo `Border` de 1 dp dos cartões das telas de pesquisa (`AvalonCard`), que acompanha o tema; o alto contraste mantém a borda preta de 2 dp. `HomeScreen` (`AtalhosGrid`) e `MaisScreen` usam os mesmos tokens.
 - **Observação:** essa borda é discreta (a do tema claro é `#D9E2EC`, com contraste abaixo de 3:1 sobre o fundo). Escolha de consistência visual com as telas de pesquisa; quem precisa de contraste maior usa o alto contraste.
+
+## Atualização de 19/11/2026 (sem seta de voltar nas telas)
+
+- O cabeçalho das telas internas (`AvalonTopBar`) e o de "Meu Perfil" deixam de exibir a seta de voltar. No celular a navegação é pelo gesto ou pelos botões do sistema.
+- O parâmetro `onBack` foi mantido: agora ele responde ao gesto/botão voltar do sistema (`BackHandler`) e executa a mesma ação que a seta executava. Por isso o passo "voltar" da troca de senha (código para senha atual) e a volta à Home a partir do Perfil continuam iguais.
+- O título passa a ter o mesmo recuo (24 dp) em todas as telas. O ícone `ic_arrow_left` foi removido por ficar sem uso.
+- Não compilado neste ambiente: validar no emulador as telas Benefícios, Documentos, Downloads, Feedbacks, Informativos, Mais, Notificações, Mural, Aparência, Alterar senha, Jornada, Pesquisas, Férias e Perfil, com gesto e com os 3 botões.
