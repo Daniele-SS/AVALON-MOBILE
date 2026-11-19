@@ -1236,3 +1236,10 @@ No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os dem
 
 - Causa: `MainActivity` configura as barras do sistema com ícones claros (os cabeçalhos são azul-marinho). Nas telas sem a barra inferior de abas (Feedbacks, Informativos, Pesquisa respondendo, Login etc.), o fundo claro ficava sob os botões do sistema e os ícones brancos sumiam no modo de 3 botões.
 - Correção: `AvalonNavHost` passa a usar `FaixaBarraNavegacao` (azul-marinho, na altura da barra do sistema) como `bottomBar` quando a rota não tem abas. Telas com abas não mudam. Não compilado neste ambiente; validar no emulador em 3 botões e em gestos, nos quatro modos de tema.
+
+## Atualização de 19/11/2026 (entrada com e-mail corporativo ou login)
+
+- O campo da tela "Acesse sua conta" passa a se chamar "E-mail corporativo ou Login" e aceita os dois, como no Front-end (`Login.jsx` envia o texto digitado no campo `login`, sem checar formato). O Back-end já procura por `tbl_usuario.login` ou `tbl_colaborador.email` (`selectUsuarioByLogin`).
+- `validarIdentificadorLogin` só recusa campo vazio ou com espaço no meio. A decisão de 19/10 (somente e-mail) e a seção do campo de login nesta documentação ficam substituídas por esta; conferir o texto do RF 5.1.34 com a equipe.
+- "Esqueci minha senha" continua exigindo o e-mail: o Back-end envia o código ao endereço digitado, então um login não receberia o e-mail. Com um login no campo, o app avisa "Para recuperar a senha, informe o e-mail corporativo (não o login)."
+- Teste novo: `LoginIdentificadorTest`. Não compilado nem executado neste ambiente.

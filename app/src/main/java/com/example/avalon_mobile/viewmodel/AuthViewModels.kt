@@ -40,11 +40,22 @@ val CODIGOS_CONTA_BLOQUEADA = setOf("CONTA_BLOQUEADA", "TENTATIVAS_EXCEDIDAS")
 
 private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
 
-/** RF 5.1.34: o Colaborador entra com o e-mail corporativo. O servidor decide se a conta existe. */
+/** Recuperação de senha: exige o e-mail corporativo (o código é enviado ao endereço informado). */
 fun validarEmailCorporativo(valor: String, recuperacao: Boolean = false): String? = when {
     valor.isBlank() ->
         if (recuperacao) "Informe seu e-mail corporativo para recuperar a senha." else "Informe seu e-mail corporativo."
-    !EMAIL.matches(valor.trim()) -> "Informe um e-mail válido."
+    !EMAIL.matches(valor.trim()) ->
+        if (recuperacao) "Para recuperar a senha, informe o e-mail corporativo (não o login)." else "Informe um e-mail válido."
+    else -> null
+}
+
+/**
+ * Entrada no app: o Colaborador pode usar o e-mail corporativo ou o login (como no Front-end). O formato não é
+ * validado aqui, porque o login não tem formato de e-mail; o servidor decide se a conta existe.
+ */
+fun validarIdentificadorLogin(valor: String): String? = when {
+    valor.isBlank() -> "Informe seu e-mail corporativo ou login."
+    valor.trim().any(Char::isWhitespace) -> "O e-mail ou login não pode ter espaços."
     else -> null
 }
 
@@ -61,7 +72,7 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
 
     fun entrar() {
         val s = _state.value
-        val loginError = validarEmailCorporativo(s.login)
+        val loginError = validarIdentificadorLogin(s.login)
         val senhaError = if (s.senha.isEmpty()) "Informe sua senha." else null
         if (loginError != null || senhaError != null) {
             _state.update { it.copy(loginError = loginError, senhaError = senhaError) }

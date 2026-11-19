@@ -62,12 +62,12 @@ fun LoginScreen(
 
     AuthLayout(title = "Acesse sua conta") {
         aviso?.let { Banner(it, destaque = false, erro = false) }
-        // O Colaborador entra com o e-mail corporativo; o contrato o recebe no campo `login`.
+        // O Colaborador entra com o e-mail corporativo ou com o login; o contrato recebe o valor no campo `login`.
         AvalonTextField(
-            label = "E-mail corporativo",
+            label = "E-mail corporativo ou Login",
             value = state.login,
             onValueChange = viewModel::onLoginChange,
-            placeholder = "maria.silva@empresa.com.br",
+            placeholder = "maria.silva@empresa.com.br ou maria.silva",
             error = state.loginError,
             enabled = !state.loading,
             keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
