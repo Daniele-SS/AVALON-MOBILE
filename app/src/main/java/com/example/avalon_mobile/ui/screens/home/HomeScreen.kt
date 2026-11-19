@@ -1,8 +1,9 @@
 package com.example.avalon_mobile.ui.screens.home
 
 import com.example.avalon_mobile.ui.theme.AtalhoFundo
+import com.example.avalon_mobile.ui.theme.AtalhoBorda
+import com.example.avalon_mobile.ui.theme.AtalhoBordaLargura
 import com.example.avalon_mobile.ui.theme.AtalhoConteudo
-import com.example.avalon_mobile.ui.theme.Paletas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -214,7 +215,7 @@ private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
             modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = alturaMinima),
             shape = RoundedCornerShape(14.dp),
             colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
-            border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
+            border = BorderStroke(AtalhoBordaLargura, AtalhoBorda)
         ) {
             Column(
                 Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp),

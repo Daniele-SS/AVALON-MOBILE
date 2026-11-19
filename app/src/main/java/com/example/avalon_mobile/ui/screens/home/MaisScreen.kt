@@ -2,8 +2,9 @@ package com.example.avalon_mobile.ui.screens.home
 
 import androidx.compose.foundation.BorderStroke
 import com.example.avalon_mobile.ui.theme.AtalhoFundo
+import com.example.avalon_mobile.ui.theme.AtalhoBorda
+import com.example.avalon_mobile.ui.theme.AtalhoBordaLargura
 import com.example.avalon_mobile.ui.theme.AtalhoConteudo
-import com.example.avalon_mobile.ui.theme.Paletas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,7 +79,7 @@ fun MaisScreen(onBack: () -> Unit, onModulo: (Modulo) -> Unit) {
                     modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = alturaMinima),
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = AtalhoFundo),
-                    border = if (Paletas.altoContraste) BorderStroke(2.dp, Color.Black) else null
+                    border = BorderStroke(AtalhoBordaLargura, AtalhoBorda)
                 ) {
                     Column(Modifier.fillMaxSize().padding(6.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(painterResource(m.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(icone))

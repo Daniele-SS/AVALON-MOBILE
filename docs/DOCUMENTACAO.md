@@ -1218,3 +1218,9 @@ No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os dem
 - **Correção:** `avalonViewModel` (`viewmodel/ViewModelFactory.kt`) passa a identificar cada ViewModel por classe e usuário logado (`chaveViewModel`, formato `Classe:usuario-<idColaborador>`). A chave é calculada uma vez por composição (`remember`), para o ViewModel não ser trocado no meio da tela quando a sessão inicia no login. Outro usuário sempre recebe ViewModels novos; o mesmo usuário continua com o estado preservado.
 - **Testes:** `ChaveViewModelTest` (chaves distintas por usuário e por tela, estável para o mesmo usuário, zero sem sessão). A parte de interface não foi compilada aqui (sem Android SDK): reteste no emulador (Rafael visita Home, Pesquisas, Documentos e Perfil; sai; Juliana entra e visita as mesmas abas sem fechar o aplicativo; cada aba só mostra dados dela).
 - **Fora do escopo:** o controller de documentos do back-end (`controller_documentos.js`) não confere o dono do documento no download (NC-61) nem o `ativo` (NC-62); correção é do Matheus.
+
+## Atualização de 19/11/2026 (borda dos atalhos igual à dos cartões de pesquisa)
+
+- **Sintoma:** nos temas claro e escuro os cartões de "Acessos rápidos" (Home) e da grade de "Mais" ficavam sem borda e quase não se separavam do fundo; só o alto contraste tinha borda.
+- **Correção:** tokens `AtalhoBorda` e `AtalhoBordaLargura` (`ui/theme/Color.kt`) usam o mesmo `Border` de 1 dp dos cartões das telas de pesquisa (`AvalonCard`), que acompanha o tema; o alto contraste mantém a borda preta de 2 dp. `HomeScreen` (`AtalhosGrid`) e `MaisScreen` usam os mesmos tokens.
+- **Observação:** essa borda é discreta (a do tema claro é `#D9E2EC`, com contraste abaixo de 3:1 sobre o fundo). Escolha de consistência visual com as telas de pesquisa; quem precisa de contraste maior usa o alto contraste.

@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 // Tokens extraídos do protótipo AVALON (Figma).
 //
@@ -343,6 +345,11 @@ val SurfaceSelected: Color get() = Paletas.atual.surfaceSelected
 // (no tema escuro de alto contraste o fundo da tela é preto, então o botão branco se destaca).
 val AtalhoFundo: Color get() = if (Paletas.altoContraste) Color.White else Surface
 val AtalhoConteudo: Color get() = if (Paletas.altoContraste) Color.Black else TextPrimary
+
+// Borda dos atalhos (Acessos rápidos da Home e grade de "Mais"): a mesma dos cartões das telas de pesquisa
+// (token Border, 1 dp), que muda com o tema. No alto contraste continua a borda preta de 2 dp.
+val AtalhoBorda: Color get() = if (Paletas.altoContraste) Color.Black else Border
+val AtalhoBordaLargura: Dp get() = if (Paletas.altoContraste) 2.dp else 1.dp
 
 // Dia de hoje na Jornada: azul-marinho com texto branco no tema claro; no escuro, preenchimento claro com texto escuro,
 // para se destacar dos dias de trabalho e de folga, que ficam escuros.
