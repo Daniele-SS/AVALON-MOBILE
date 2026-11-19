@@ -57,6 +57,24 @@ class LeituraApiFeedbackNotificacaoTest {
     }
 
     @Test
+    fun `feedbacks - respondido pelo titular conta como lido mesmo sem estar em vistos`() {
+        val itens = envelope("feedbacks", listOf(
+            fb(1, dest = 3, rem = 1, tipo = "FORMAL", data = "2026-09-01"),
+            fb(2, dest = 3, rem = 1, tipo = "FORMAL", data = "2026-09-02")
+        ))
+        val respostas = envelope("respostas", listOf(
+            """{"id":1,"id_feedback":1,"id_colaborador":3,"descricao":"ok","ativo":1}""",
+            """{"id":2,"id_feedback":2,"id_colaborador":9,"descricao":"de outro","ativo":1}""",
+            """{"id":3,"id_feedback":2,"id_colaborador":3,"descricao":"inativa","ativo":0}"""
+        ))
+        val respondidos = LeituraApi.feedbacksRespondidos(respostas, 3)
+        assertEquals(setOf(1), respondidos)
+        val r = LeituraApi.feedbacks(itens, 3, vistos = emptySet(), respondidos = respondidos)!!.associateBy { it.id }
+        assertTrue(r.getValue(1).lido == true)
+        assertFalse(r.getValue(2).lido == true)
+    }
+
+    @Test
     fun `feedbacks - lista vazia e formato inesperado`() {
         assertTrue(LeituraApi.feedbacks(envelope("feedbacks", emptyList()), 3, emptySet())!!.isEmpty())
         assertNull(LeituraApi.feedbacks(json("""{"status":true,"response":{"outra":[]}}"""), 3, emptySet()))

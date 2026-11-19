@@ -228,7 +228,7 @@ object LeituraApi {
      * entram os do destinatário. O banco não tem o campo "lido": [vistos] são os ids já abertos neste aparelho.
      * Feedback com `ativo` = 0 foi desativado pelo RH e não aparece. Mais recentes primeiro.
      */
-    fun feedbacks(json: JsonElement, idColaborador: Int, vistos: Set<Int>): List<Feedback>? {
+    fun feedbacks(json: JsonElement, idColaborador: Int, vistos: Set<Int>, respondidos: Set<Int> = emptySet()): List<Feedback>? {
         val itens = lista(json, "feedbacks") ?: return null
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
@@ -247,9 +247,24 @@ object LeituraApi {
                 idRemetente = o.inteiro("id_colaborador_remetente") ?: remetente?.inteiro("id"),
                 remetenteNome = remetente?.texto("nome"),
                 remetenteCargo = relacionado(remetente ?: JsonObject(), "cargo")?.texto("nome"),
-                lido = id in vistos
+                lido = id in vistos || id in respondidos
             )
         }.sortedWith(compareByDescending<Feedback> { it.dataFeedback.orEmpty() }.thenByDescending { it.id })
+    }
+
+    /**
+     * Ids dos feedbacks que o titular já respondeu (resposta ativa gravada por ele). Quem respondeu já abriu o feedback,
+     * então ele conta como lido mesmo que o aparelho não tenha o id em "vistos" (outro aparelho, dados limpos, resposta
+     * registrada pelo RH ou pela API).
+     */
+    fun feedbacksRespondidos(json: JsonElement, idColaborador: Int): Set<Int> {
+        val itens = lista(json, "respostas") ?: return emptySet()
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            if (o.inteiro("id_colaborador") != idColaborador) return@mapNotNull null
+            if (o.logico("ativo") == false) return@mapNotNull null
+            o.inteiro("id_feedback")
+        }.toSet()
     }
 
     /**

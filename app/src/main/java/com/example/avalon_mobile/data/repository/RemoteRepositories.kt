@@ -193,7 +193,10 @@ class RemoteAvalonRepository(
     override suspend fun feedbacks(): AppResult<List<Feedback>> {
         val id = idColaborador
         val vistos = leitura?.ids(LeituraLocal.FEEDBACK, id).orEmpty()
-        return ler(listaOuVazia(call.execute { api.feedbacks() })) { LeituraApi.feedbacks(it, id, vistos) }
+        // Feedback já respondido conta como lido. Se as respostas não puderem ser lidas, vale só o que o aparelho guardou.
+        val respondidos = (listaOuVazia(call.execute { api.respostasFeedback() }) as? AppResult.Success)
+            ?.let { LeituraApi.feedbacksRespondidos(it.data, id) }.orEmpty()
+        return ler(listaOuVazia(call.execute { api.feedbacks() })) { LeituraApi.feedbacks(it, id, vistos, respondidos) }
     }
 
     override suspend fun marcarFeedbackLido(idFeedback: Int) {

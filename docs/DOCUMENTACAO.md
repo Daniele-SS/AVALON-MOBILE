@@ -1243,3 +1243,10 @@ No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os dem
 - `validarIdentificadorLogin` só recusa campo vazio ou com espaço no meio. A decisão de 19/10 (somente e-mail) e a seção do campo de login nesta documentação ficam substituídas por esta; conferir o texto do RF 5.1.34 com a equipe.
 - "Esqueci minha senha" continua exigindo o e-mail: o Back-end envia o código ao endereço digitado, então um login não receberia o e-mail. Com um login no campo, o app avisa "Para recuperar a senha, informe o e-mail corporativo (não o login)."
 - Teste novo: `LoginIdentificadorTest`. Não compilado nem executado neste ambiente.
+
+## Atualização de 19/11/2026 (feedback respondido conta como lido, NC-81)
+
+- Antes, "lido" era só "aberto neste aparelho". Um feedback que o colaborador já respondeu (resposta ativa gravada por ele) agora conta como lido, também no contador "Novo Feedback" da Home e no marcador "Não lido" da lista.
+- `LeituraApi.feedbacksRespondidos` lê a lista de respostas; `RemoteAvalonRepository.feedbacks` a combina com os ids vistos no aparelho. Se as respostas não puderem ser lidas, o comportamento anterior é mantido (vale só o que o aparelho guardou).
+- Custo: uma chamada a mais a `GET /resposta_feedback` por carregamento da lista e da Home.
+- Teste novo em `LeituraApiFeedbackNotificacaoTest`. Não compilado nem executado neste ambiente.
