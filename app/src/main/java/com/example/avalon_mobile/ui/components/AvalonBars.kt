@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -64,6 +65,15 @@ fun AvalonTopBar(
         }
         actions()
     }
+}
+
+/**
+ * Faixa azul-marinho na altura da barra de navegação do sistema, para as telas que não têm a barra inferior de abas.
+ * As barras do sistema usam ícones claros (cabeçalhos azul-marinho); sem a faixa, os botões somem sobre o fundo claro.
+ */
+@Composable
+fun FaixaBarraNavegacao(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().background(NavyFundo).navigationBarsPadding())
 }
 
 enum class MainTab(val label: String, @DrawableRes val icon: Int) {

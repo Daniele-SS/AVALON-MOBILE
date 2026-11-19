@@ -26,6 +26,7 @@ import androidx.navigation.navArgument
 import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.data.AppContainer
 import com.example.avalon_mobile.ui.components.AvalonBottomBar
+import com.example.avalon_mobile.ui.components.FaixaBarraNavegacao
 import com.example.avalon_mobile.ui.components.LocalSnackbarHostState
 import com.example.avalon_mobile.ui.components.MainTab
 import com.example.avalon_mobile.ui.screens.auth.CodigoRecuperacaoScreen
@@ -154,9 +155,9 @@ fun AvalonNavHost(container: AppContainer) {
             contentWindowInsets = WindowInsets(0),
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
-                abaPorRota[rotaAtual]?.let { aba ->
-                    AvalonBottomBar(selected = aba, onSelect = { navController.irParaAba(it.route()) })
-                }
+                val aba = abaPorRota[rotaAtual]
+                if (aba != null) AvalonBottomBar(selected = aba, onSelect = { navController.irParaAba(it.route()) })
+                else FaixaBarraNavegacao()
             }
         ) { padding ->
             NavHost(navController, startDestination = inicio, modifier = Modifier.padding(padding)) {
