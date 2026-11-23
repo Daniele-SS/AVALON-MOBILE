@@ -126,4 +126,21 @@ class LeituraApiAvaliacaoTest {
         val r = LeituraApi.perguntasAvaliacao(envelope("avaliacaoFatores", listOf(fator(1, 7, 9))), envelope("avaliacaoPerguntas", listOf(pergunta(10, 9, 1))), 99)!!
         assertEquals(emptyList<Int>(), r.map { it.id })
     }
+
+    @Test
+    fun `perguntas - 72 viram 12 em rodizio por fator`() {
+        val fatores = envelope("avaliacaoFatores", (1..9).map { fator(it, 7, it) })
+        val perguntas = envelope("avaliacaoPerguntas", (1..9).flatMap { f -> (1..8).map { o -> pergunta(f * 100 + o, f, o) } })
+        val r = LeituraApi.perguntasAvaliacao(fatores, perguntas, 7)!!
+        assertEquals(12, r.size)
+        assertEquals(9, r.map { it.idFator }.toSet().size)
+        assertEquals(listOf(101, 102, 201, 202, 301, 302, 401, 501, 601, 701, 801, 901), r.map { it.id })
+    }
+
+    @Test
+    fun `perguntas - ate 12 nao sao cortadas`() {
+        val fatores = envelope("avaliacaoFatores", listOf(fator(1, 7, 1), fator(2, 7, 2)))
+        val perguntas = envelope("avaliacaoPerguntas", (1..2).flatMap { f -> (1..6).map { o -> pergunta(f * 100 + o, f, o) } })
+        assertEquals(12, LeituraApi.perguntasAvaliacao(fatores, perguntas, 7)!!.size)
+    }
 }

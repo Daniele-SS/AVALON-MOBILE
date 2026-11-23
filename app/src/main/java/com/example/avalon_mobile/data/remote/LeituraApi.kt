@@ -21,6 +21,7 @@ import com.google.gson.JsonObject
 import java.time.LocalDate
 
 object LeituraApi {
+    const val LIMITE_PERGUNTAS_AVALIACAO = 12
 
     /**
      * Falha embutida no corpo de uma resposta HTTP 2xx. O envio de respostas do Back-end devolve o conflito
@@ -288,7 +289,23 @@ object LeituraApi {
                 obrigatorio = o.logico("obrigatorio") ?: false,
                 ativo = true
             )
-        }.sortedWith(compareBy({ it.idFator }, { it.ordem }))
+        }.sortedWith(compareBy({ it.idFator }, { it.ordem })).limitarBalanceado(LIMITE_PERGUNTAS_AVALIACAO)
+    }
+
+    /** Rodízio por fator (ordem 1 de cada fator, depois ordem 2...) até [limite]; saída ordenada por fator e ordem. */
+    private fun List<AvaliacaoPergunta>.limitarBalanceado(limite: Int): List<AvaliacaoPergunta> {
+        if (size <= limite) return this
+        val porFator = groupBy { it.idFator }.toSortedMap().values.map { it.sortedBy { p -> p.ordem } }
+        val escolhidas = ArrayList<AvaliacaoPergunta>(limite)
+        var rodada = 0
+        while (escolhidas.size < limite && porFator.any { rodada < it.size }) {
+            for (perguntas in porFator) {
+                if (escolhidas.size >= limite) break
+                perguntas.getOrNull(rodada)?.let { escolhidas.add(it) }
+            }
+            rodada++
+        }
+        return escolhidas.sortedWith(compareBy({ it.idFator }, { it.ordem }))
     }
 
     fun perguntas(json: JsonElement, idPesquisa: Int): List<Pergunta>? {
