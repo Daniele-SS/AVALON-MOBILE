@@ -3,8 +3,6 @@ package com.example.avalon_mobile.data.remote
 import com.example.avalon_mobile.model.AlterarSenhaRequest
 import com.example.avalon_mobile.model.SolicitarCodigoSenhaRequest
 import com.google.gson.JsonElement
-import com.example.avalon_mobile.model.AvaliacaoPergunta
-import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.BeneficioColaborador
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.Documento
@@ -29,7 +27,6 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 /** Rotas consumidas pelo Colaborador, conforme o contrato OpenAPI v2.1.0 (base `/v1/senai/avalon`). */
@@ -133,12 +130,25 @@ interface AvalonApi {
     suspend fun participacoes(): Response<JsonElement>
 
     // Avaliação de fatores psicossociais (6.6 / NR-1)
+    // Listagens abertas a qualquer perfil logado (GET sem restrição, conferido no Back-end em 23/11/2026): trazem as
+    // avaliações de todos; o app filtra por prazo e por público (todos, cargo ou setor do titular).
     @GET("v1/senai/avalon/avaliacao")
-    suspend fun avaliacoes(@Query("somente_pendentes") somentePendentes: Boolean = true): Response<List<Avaliacao>>
+    suspend fun listaAvaliacoes(): Response<JsonElement>
 
-    @GET("v1/senai/avalon/avaliacao/{id}/pergunta")
-    suspend fun perguntasAvaliacao(@Path("id") id: Int): Response<List<AvaliacaoPergunta>>
+    @GET("v1/senai/avalon/avaliacao_cargo")
+    suspend fun listaAvaliacaoCargos(): Response<JsonElement>
 
+    @GET("v1/senai/avalon/avaliacao_setor")
+    suspend fun listaAvaliacaoSetores(): Response<JsonElement>
+
+    @GET("v1/senai/avalon/avaliacao_fator")
+    suspend fun listaAvaliacaoFatores(): Response<JsonElement>
+
+    @GET("v1/senai/avalon/avaliacao_pergunta")
+    suspend fun listaAvaliacaoPerguntas(): Response<JsonElement>
+
+    // AINDA NÃO EXISTE no Back-end (404): a gravação em /avaliacao_resposta é só do RH e a leitura das participações é de
+    // Gestor e RH. O app já envia para esta rota; enquanto ela não for publicada, o envio volta como "sem rota".
     @POST("v1/senai/avalon/avaliacao/{id}/resposta")
     suspend fun responderAvaliacao(@Path("id") id: Int, @Body body: RespostaAvaliacaoLote): Response<RespostaConfirmacao>
 

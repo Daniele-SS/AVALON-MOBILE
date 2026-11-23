@@ -11,6 +11,8 @@ import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.JornadaEscala
 import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.model.Pergunta
+import com.example.avalon_mobile.model.Avaliacao
+import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.Pesquisa
 import com.example.avalon_mobile.util.Datas
 import com.google.gson.JsonArray
@@ -205,6 +207,88 @@ object LeituraApi {
                 respondida = respondida
             )
         }
+    }
+
+    /**
+     * Avaliação psicossocial a responder. O Back-end devolve as avaliações de todos e não informa participação ao
+     * Colaborador, então a regra é: ativa (`status`), dentro do prazo (início e fim, inclusive) e destinada ao titular.
+     * Público `TODOS` entra sempre; `CARGO` e `SETOR` só se o cargo ou o setor do titular estiver na lista da avaliação.
+     * Se a lista de cargos ou setores não puder ser lida, a avaliação segmentada fica de fora. [respondidas] são as já
+     * enviadas deste aparelho. Mais próxima do prazo primeiro.
+     */
+    fun avaliacoes(
+        avaliacoes: JsonElement,
+        cargos: JsonElement?,
+        setores: JsonElement?,
+        idCargo: Int?,
+        idSetor: Int?,
+        respondidas: Set<Int> = emptySet(),
+        hoje: LocalDate = LocalDate.now()
+    ): List<Avaliacao>? {
+        val itens = lista(avaliacoes, "avaliacoes") ?: return null
+        fun vinculos(json: JsonElement?, chave: String, campo: String): Set<Pair<Int, Int>> =
+            (json?.let { lista(it, chave) } ?: JsonArray()).mapNotNull { e ->
+                val o = e.objeto() ?: return@mapNotNull null
+                val avaliacao = o.inteiro("id_avaliacao") ?: relacionado(o, "avaliacao")?.inteiro("id") ?: return@mapNotNull null
+                val alvo = o.inteiro("id_$campo") ?: relacionado(o, campo)?.inteiro("id") ?: return@mapNotNull null
+                avaliacao to alvo
+            }.toSet()
+        val porCargo = vinculos(cargos, "avaliacaoCargos", "cargo")
+        val porSetor = vinculos(setores, "avaliacao_setor", "setor")
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val id = o.inteiro("id") ?: return@mapNotNull null
+            if (id in respondidas || o.logico("status") != true) return@mapNotNull null
+            val inicio = o.data("data_inicio") ?: return@mapNotNull null
+            val fim = o.data("data_fim") ?: return@mapNotNull null
+            if (Datas.parse(inicio)?.isAfter(hoje) == true || Datas.parse(fim)?.isBefore(hoje) == true) return@mapNotNull null
+            val publico = (o.texto("publico_selecionado") ?: "TODOS").uppercase()
+            val destinada = when (publico) {
+                "TODOS" -> true
+                "CARGO" -> idCargo != null && (id to idCargo) in porCargo
+                "SETOR" -> idSetor != null && (id to idSetor) in porSetor
+                else -> false
+            }
+            if (!destinada) return@mapNotNull null
+            Avaliacao(
+                id = id,
+                titulo = o.texto("titulo") ?: return@mapNotNull null,
+                descricao = o.texto("descricao"),
+                dataInicio = inicio,
+                dataFim = fim,
+                anonimo = o.logico("anonimo") ?: true,
+                status = true,
+                publicoSelecionado = publico
+            )
+        }.sortedBy { it.dataFim }
+    }
+
+    /**
+     * Perguntas da avaliação: as de fatores vinculados a ela (`avaliacao_fator`), ativas, por fator e ordem.
+     * A pergunta traz o fator em `psicossocial_fator` (objeto) ou em `id_psicossocial_fator`.
+     */
+    fun perguntasAvaliacao(fatores: JsonElement, perguntas: JsonElement, idAvaliacao: Int): List<AvaliacaoPergunta>? {
+        val vinculados = (lista(fatores, "avaliacaoFatores") ?: return null).mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val avaliacao = o.inteiro("id_avaliacao") ?: relacionado(o, "avaliacao")?.inteiro("id")
+            if (avaliacao != idAvaliacao) return@mapNotNull null
+            o.inteiro("id_psicossocial_fator") ?: relacionado(o, "psicossocial_fator")?.inteiro("id")
+        }.toSet()
+        val itens = lista(perguntas, "avaliacaoPerguntas") ?: return null
+        return itens.mapNotNull { e ->
+            val o = e.objeto() ?: return@mapNotNull null
+            val fator = o.inteiro("id_psicossocial_fator") ?: relacionado(o, "psicossocial_fator")?.inteiro("id") ?: return@mapNotNull null
+            if (fator !in vinculados || o.logico("ativo") == false) return@mapNotNull null
+            AvaliacaoPergunta(
+                id = o.inteiro("id") ?: return@mapNotNull null,
+                idFator = fator,
+                enunciado = o.texto("enunciado") ?: return@mapNotNull null,
+                tipo = o.texto("tipo") ?: "ESCALA",
+                ordem = o.inteiro("ordem") ?: 0,
+                obrigatorio = o.logico("obrigatorio") ?: false,
+                ativo = true
+            )
+        }.sortedWith(compareBy({ it.idFator }, { it.ordem }))
     }
 
     fun perguntas(json: JsonElement, idPesquisa: Int): List<Pergunta>? {

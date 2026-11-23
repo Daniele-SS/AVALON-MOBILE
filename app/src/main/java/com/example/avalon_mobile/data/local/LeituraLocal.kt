@@ -13,6 +13,7 @@ interface LeituraLocal {
     companion object {
         const val FEEDBACK = "feedback"
         const val NOTIFICACAO = "notificacao"
+        const val AVALIACAO_RESPONDIDA = "avaliacao_respondida"
         const val ARQUIVO = "avalon_leitura"
     }
 }
