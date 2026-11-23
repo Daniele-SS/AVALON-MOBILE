@@ -211,7 +211,7 @@ object LeituraApi {
 
     /**
      * Avaliação psicossocial a responder. O Back-end devolve as avaliações de todos e não informa participação ao
-     * Colaborador, então a regra é: ativa (`status`), dentro do prazo (início e fim, inclusive) e destinada ao titular.
+     * Colaborador, então a regra é: não encerrada (`status` 1 = encerrada; 0 = em aberto, como o Front-end grava), dentro do prazo (início e fim, inclusive) e destinada ao titular.
      * Público `TODOS` entra sempre; `CARGO` e `SETOR` só se o cargo ou o setor do titular estiver na lista da avaliação.
      * Se a lista de cargos ou setores não puder ser lida, a avaliação segmentada fica de fora. [respondidas] são as já
      * enviadas deste aparelho. Mais próxima do prazo primeiro.
@@ -238,7 +238,7 @@ object LeituraApi {
         return itens.mapNotNull { e ->
             val o = e.objeto() ?: return@mapNotNull null
             val id = o.inteiro("id") ?: return@mapNotNull null
-            if (id in respondidas || o.logico("status") != true) return@mapNotNull null
+            if (id in respondidas || o.logico("status") == true) return@mapNotNull null
             val inicio = o.data("data_inicio") ?: return@mapNotNull null
             val fim = o.data("data_fim") ?: return@mapNotNull null
             if (Datas.parse(inicio)?.isAfter(hoje) == true || Datas.parse(fim)?.isBefore(hoje) == true) return@mapNotNull null

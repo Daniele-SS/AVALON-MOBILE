@@ -17,7 +17,7 @@ class LeituraApiAvaliacaoTest {
     private fun envelope(chave: String, itens: List<String>) =
         json("""{"status":true,"status_code":200,"response":{"count":${itens.size},"$chave":[${itens.joinToString(",")}]}}""")
 
-    private fun av(id: Int, inicio: String, fim: String, status: Int = 1, publico: String = "TODOS") =
+    private fun av(id: Int, inicio: String, fim: String, status: Int = 0, publico: String = "TODOS") =
         """{"id":$id,"titulo":"Avaliação $id","descricao":"Descrição $id","data_inicio":"${inicio}T03:00:00.000Z","data_fim":"${fim}T03:00:00.000Z","anonimo":1,"status":$status,"publico_selecionado":"$publico"}"""
 
     private fun vinculoCargo(id: Int, avaliacao: Int, cargo: Int) =
@@ -35,7 +35,7 @@ class LeituraApiAvaliacaoTest {
         )!!
 
     @Test
-    fun `publico TODOS, ativa e no prazo, aparece`() {
+    fun `publico TODOS, em aberto (status 0) e no prazo, aparece`() {
         val r = avaliacoes(listOf(av(1, "2026-11-20", "2026-12-20")))
         assertEquals(listOf(1), r.map { it.id })
         assertEquals("Avaliação 1", r.single().titulo)
@@ -43,9 +43,9 @@ class LeituraApiAvaliacaoTest {
     }
 
     @Test
-    fun `inativa, que ainda nao comecou ou vencida nao aparece`() {
+    fun `encerrada (status 1), que ainda nao comecou ou vencida nao aparece`() {
         val r = avaliacoes(listOf(
-            av(1, "2026-11-01", "2026-12-01", status = 0),
+            av(1, "2026-11-01", "2026-12-01", status = 1),
             av(2, "2026-11-24", "2026-12-20"),
             av(3, "2026-10-01", "2026-11-22")
         ))
