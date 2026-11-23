@@ -14,8 +14,10 @@ import com.example.avalon_mobile.model.Ferias
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.JornadaEscala
 import com.example.avalon_mobile.model.Avaliacao
+import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.model.Pesquisa
+import com.example.avalon_mobile.model.RespostaAvaliacaoItem
 import com.example.avalon_mobile.model.RespostaConfirmacao
 import com.example.avalon_mobile.model.RespostaPesquisaItem
 
@@ -61,12 +63,12 @@ class AvalonRepositoryMisto(
                 is AppResult.Success -> r.data.count { it.status == "Pendente" || it.status == "Aprovado pelo Gestor" }
             }
         } else demo?.feriasEmAndamento ?: 0
-        // Com Pesquisas pela API, o contador vem das participações reais; a avaliação psicossocial (sem rota) não entra.
+        // Com Pesquisas pela API, o contador vem das participações reais; a avaliação psicossocial conta 1 quando há uma pendente (falha na leitura = 0).
         // Se a leitura falhar, a Home mostra 0 em vez de falhar inteira (a tela Pesquisas exibe o erro).
         val pesquisas = if (usaApi(PESQUISA)) {
             (api.pesquisas() as? AppResult.Success)?.data?.count { it.estaPendente() } ?: 0
         } else demo?.pesquisasPendentes ?: 0
-        val avaliacoes = if (usaApi(PESQUISA)) 0 else demo?.avaliacoesPendentes ?: 0
+        val avaliacoes = if (usaApi(PESQUISA)) ((api.avaliacaoPendente() as? AppResult.Success)?.data?.let { 1 } ?: 0) else demo?.avaliacoesPendentes ?: 0
         return AppResult.Success(
             Dashboard(
                 perfil = "Colaborador",
@@ -88,9 +90,16 @@ class AvalonRepositoryMisto(
     override suspend fun responderPesquisa(id: Int, respostas: List<RespostaPesquisaItem>): AppResult<RespostaConfirmacao> =
         if (usaApi(PESQUISA)) api.responderPesquisa(id, respostas) else demonstracao.responderPesquisa(id, respostas)
 
-    // A avaliação psicossocial (NR-1) ainda não tem rota para o Colaborador: com Pesquisas reais, a de demonstração não aparece.
+    // Avaliação psicossocial (NR-1): com Pesquisas reais, lê as rotas abertas do Back-end (avaliacao, fator, pergunta).
+    // O envio ainda não tem rota para o Colaborador e volta como erro claro; nunca cai na demonstração, que fingiria sucesso.
     override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> =
-        if (usaApi(PESQUISA)) AppResult.Success(null) else demonstracao.avaliacaoPendente()
+        if (usaApi(PESQUISA)) api.avaliacaoPendente() else demonstracao.avaliacaoPendente()
+
+    override suspend fun perguntasAvaliacao(id: Int): AppResult<List<AvaliacaoPergunta>> =
+        if (usaApi(PESQUISA)) api.perguntasAvaliacao(id) else demonstracao.perguntasAvaliacao(id)
+
+    override suspend fun responderAvaliacao(id: Int, respostas: List<RespostaAvaliacaoItem>): AppResult<RespostaConfirmacao> =
+        if (usaApi(PESQUISA)) api.responderAvaliacao(id, respostas) else demonstracao.responderAvaliacao(id, respostas)
 
     override suspend fun perfil(): AppResult<Colaborador> =
         if (usaApi(PERFIL)) api.perfil() else demonstracao.perfil()

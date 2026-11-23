@@ -277,14 +277,50 @@ class RemoteAvalonRepository(
                 ?: AppResult.Success(RespostaConfirmacao(respostas.size, true))
         }
 
-    override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> =
-        call.execute { api.avaliacoes(somentePendentes = true) }.map { it.firstOrNull() }
+    // As rotas de avaliação são abertas à leitura; não há participação por titular para o Colaborador, então "pendente"
+    // = ativa, no prazo, destinada ao titular e ainda não enviada deste aparelho (ver LeituraApi.avaliacoes).
+    override suspend fun avaliacaoPendente(): AppResult<Avaliacao?> {
+        val colaborador = (perfil() as? AppResult.Success)?.data
+        val avaliacoes = when (val r = listaOuVazia(call.execute { api.listaAvaliacoes() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
+        }
+        val cargos = (call.execute { api.listaAvaliacaoCargos() } as? AppResult.Success)?.data
+        val setores = (call.execute { api.listaAvaliacaoSetores() } as? AppResult.Success)?.data
+        val respondidas = leitura?.ids(LeituraLocal.AVALIACAO_RESPONDIDA, idColaborador).orEmpty()
+        return ler(AppResult.Success(avaliacoes)) {
+            LeituraApi.avaliacoes(it, cargos, setores, colaborador?.idCargo, colaborador?.idSetor, respondidas)
+        }.map { it.firstOrNull() }
+    }
 
-    override suspend fun perguntasAvaliacao(id: Int): AppResult<List<AvaliacaoPergunta>> =
-        call.execute { api.perguntasAvaliacao(id) }.map { lista -> lista.filter { it.ativo }.sortedWith(compareBy({ it.idFator }, { it.ordem })) }
+    override suspend fun perguntasAvaliacao(id: Int): AppResult<List<AvaliacaoPergunta>> {
+        val fatores = when (val r = listaOuVazia(call.execute { api.listaAvaliacaoFatores() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
+        }
+        val perguntas = when (val r = listaOuVazia(call.execute { api.listaAvaliacaoPerguntas() })) {
+            is AppResult.Failure -> return r
+            is AppResult.Success -> r.data
+        }
+        val lista = ler(AppResult.Success(fatores)) { LeituraApi.perguntasAvaliacao(it, perguntas, id) }
+        if (lista is AppResult.Success && lista.data.isEmpty())
+            return AppResult.Failure(AppError(AppError.DESCONHECIDO, "Esta avaliação ainda não possui perguntas."))
+        return lista
+    }
 
+    // A rota de envio ainda não existe no Back-end (404) e a gravação genérica é só do RH (403): o app diz isso com
+    // clareza e não marca a avaliação como respondida.
     override suspend fun responderAvaliacao(id: Int, respostas: List<RespostaAvaliacaoItem>): AppResult<RespostaConfirmacao> =
-        call.execute { api.responderAvaliacao(id, RespostaAvaliacaoLote(respostas)) }
+        when (val r = call.execute { api.responderAvaliacao(id, RespostaAvaliacaoLote(respostas)) }) {
+            is AppResult.Success -> {
+                leitura?.marcar(LeituraLocal.AVALIACAO_RESPONDIDA, idColaborador, listOf(id))
+                r
+            }
+            is AppResult.Failure ->
+                if (r.error.httpStatus == 404 || r.error.httpStatus == 403 || r.error.codigo == AppError.NAO_IMPLEMENTADO)
+                    AppResult.Failure(AppError(AppError.NAO_IMPLEMENTADO, "O envio da avaliação psicossocial ainda não está liberado no servidor. Suas respostas não foram enviadas.", r.error.httpStatus))
+                else r
+        }
 
     override suspend fun notificacoes(): AppResult<List<Notificacao>> {
         val id = idColaborador
