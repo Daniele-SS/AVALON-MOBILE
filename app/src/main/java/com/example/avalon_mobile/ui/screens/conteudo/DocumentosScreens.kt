@@ -34,17 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
-import com.example.avalon_mobile.model.Documento
 import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.IconTile
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.LocalSnackbarHostState
-import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.components.SectionTitle
+import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Background
-import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -55,6 +53,7 @@ import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.BorderSoft
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.ui.theme.TextStrong

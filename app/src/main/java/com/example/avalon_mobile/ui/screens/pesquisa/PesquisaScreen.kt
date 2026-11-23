@@ -1,8 +1,5 @@
 package com.example.avalon_mobile.ui.screens.pesquisa
 
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,8 +31,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,12 +42,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.model.Pergunta
 import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
-import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.components.AvalonSecondaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.LoadStateContent
+import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.theme.Background
-import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
 import com.example.avalon_mobile.ui.theme.BadgeGreenText
 import com.example.avalon_mobile.ui.theme.Border
@@ -56,6 +54,7 @@ import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.DangerContainer
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
+import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.viewmodel.EtapaPesquisa

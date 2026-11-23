@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -25,7 +25,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,15 +37,15 @@ import com.example.avalon_mobile.ui.components.AvalonTopBar
 import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.components.StatusPill
-import com.example.avalon_mobile.ui.theme.SurfaceMuted
 import com.example.avalon_mobile.ui.theme.Background
-import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
 import com.example.avalon_mobile.ui.theme.BadgeBlueText
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
 import com.example.avalon_mobile.ui.theme.BadgeGreenText
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
+import com.example.avalon_mobile.ui.theme.Surface
+import com.example.avalon_mobile.ui.theme.SurfaceMuted
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.util.Datas

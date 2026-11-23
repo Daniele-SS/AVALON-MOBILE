@@ -19,15 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonWordmark
 import com.example.avalon_mobile.ui.theme.Actor
+import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.NavyFundo
 import com.example.avalon_mobile.ui.theme.Surface
-import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextSubtle
 
 /** Estrutura comum das telas de acesso: logotipo no topo e folha branca arredondada. */

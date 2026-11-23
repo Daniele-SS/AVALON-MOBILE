@@ -1,17 +1,15 @@
 package com.example.avalon_mobile.ui.screens.home
 
 import androidx.compose.foundation.BorderStroke
-import com.example.avalon_mobile.ui.theme.AtalhoFundo
-import com.example.avalon_mobile.ui.theme.AtalhoBorda
-import com.example.avalon_mobile.ui.theme.AtalhoBordaLargura
-import com.example.avalon_mobile.ui.theme.AtalhoConteudo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -22,14 +20,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.example.avalon_mobile.ui.components.GradeAdaptavel
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,10 +32,13 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.BuildConfig
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.ui.components.AvalonTopBar
+import com.example.avalon_mobile.ui.components.GradeAdaptavel
+import com.example.avalon_mobile.ui.theme.AtalhoBorda
+import com.example.avalon_mobile.ui.theme.AtalhoBordaLargura
+import com.example.avalon_mobile.ui.theme.AtalhoConteudo
+import com.example.avalon_mobile.ui.theme.AtalhoFundo
 import com.example.avalon_mobile.ui.theme.Background
-import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.Inter
-import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 
 enum class Modulo(val label: String, val icon: Int) {
