@@ -146,6 +146,16 @@ class PesquisaViewModel(
 
         /** Escala Likert de concordância (perguntas `ESCALA`, valores "1"–"5"). */
         val ESCALA = listOf("1" to "Discordo totalmente", "2" to "Discordo", "3" to "Neutro", "4" to "Concordo", "5" to "Concordo totalmente")
+
+        /**
+         * Alternativas fixas das perguntas cadastradas pelo sistema web.
+         */
+        val ALTERNATIVAS = listOf(
+            "Excelente" to "Excelente",
+            "Bom" to "Bom",
+            "Regular" to "Regular",
+            "Ruim" to "Ruim"
+        )
     }
 }
 
@@ -230,5 +240,6 @@ class AvaliacaoViewModel(private val repository: AvalonRepository) : ViewModel()
     companion object {
         /** Escala de frequência 1–5 do protótipo; a interpretação de risco é feita no servidor (Motor de Regras). */
         val FREQUENCIA = listOf(1 to "Nunca", 2 to "Raramente", 3 to "Às vezes", 4 to "Frequentemente", 5 to "Sempre")
+
     }
 }

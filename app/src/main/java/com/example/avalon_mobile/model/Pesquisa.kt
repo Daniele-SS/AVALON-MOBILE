@@ -31,8 +31,18 @@ data class Pergunta(
     val obrigatorio: Boolean = false,
     @SerializedName("id_pesquisa") val idPesquisa: Int? = null
 ) {
-    val isEscala: Boolean get() = tipo.equals("ESCALA", ignoreCase = true)
-    val isSimNao: Boolean get() = tipo.equals("SIM_NAO", ignoreCase = true)
+
+    // Perguntas de escala de concordância (1 a 5).
+    val isEscala: Boolean
+        get() = tipo.equals("ESCALA", ignoreCase = true)
+
+    // Perguntas de alternativa fixa: Excelente, Bom, Regular ou Ruim.
+    val isAlternativa: Boolean
+        get() = tipo.equals("alternativa", ignoreCase = true)
+
+    // Perguntas de Sim ou Não.
+    val isSimNao: Boolean
+        get() = tipo.equals("SIM_NAO", ignoreCase = true)
 }
 
 data class RespostaPesquisaItem(

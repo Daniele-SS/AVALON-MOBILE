@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,53 +63,140 @@ import com.example.avalon_mobile.viewmodel.PesquisaUi
 import com.example.avalon_mobile.viewmodel.PesquisaViewModel
 import com.example.avalon_mobile.viewmodel.avalonViewModel
 
-/** Responder pesquisa com alerta de perguntas obrigatórias e revisão (Sprint 4 — 6.6). */
+/**
+ * Responder pesquisa com alerta de perguntas obrigatórias e revisão.
+ */
 @Composable
 fun PesquisaScreen(
     onSair: () -> Unit,
-    viewModel: PesquisaViewModel = avalonViewModel { c, h -> PesquisaViewModel(c.avalonRepository, h) }
+    viewModel: PesquisaViewModel = avalonViewModel { c, h ->
+        PesquisaViewModel(c.avalonRepository, h)
+    }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var confirmarSaida by rememberSaveable { mutableStateOf(false) }
-    val sair = { if ((state as? com.example.avalon_mobile.ui.components.LoadState.Content)?.data?.respostas?.isNotEmpty() == true) confirmarSaida = true else onSair() }
 
-    BackHandler { if (!viewModel.anterior()) sair() }
+    var confirmarSaida by rememberSaveable {
+        mutableStateOf(false)
+    }
 
-    Column(Modifier.fillMaxSize().background(Background)) {
-        LoadStateContent(state, onRetry = viewModel::carregar) { ui ->
+    val sair = {
+        val respostasPreenchidas =
+            (state as? com.example.avalon_mobile.ui.components.LoadState.Content)
+                ?.data
+                ?.respostas
+                ?.isNotEmpty() == true
+
+        if (respostasPreenchidas) {
+            confirmarSaida = true
+        } else {
+            onSair()
+        }
+    }
+
+    BackHandler {
+        if (!viewModel.anterior()) {
+            sair()
+        }
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Background)
+    ) {
+        LoadStateContent(
+            state,
+            onRetry = viewModel::carregar
+        ) { ui ->
+
             when (ui.etapa) {
+
                 EtapaPesquisa.PERGUNTAS -> {
-                    FluxoTopBar(ui.pesquisa.titulo, onFechar = sair)
+                    FluxoTopBar(
+                        ui.pesquisa.titulo,
+                        onFechar = sair
+                    )
+
                     Pergunta(ui, viewModel)
                 }
+
                 EtapaPesquisa.REVISAO -> {
-                    FluxoTopBar("Revisar respostas", onFechar = sair)
+                    FluxoTopBar(
+                        "Revisar respostas",
+                        onFechar = sair
+                    )
+
                     Revisao(ui, viewModel)
                 }
+
                 EtapaPesquisa.ENVIADA -> {
-                    FluxoTopBar(ui.pesquisa.titulo, onFechar = onSair)
+                    FluxoTopBar(
+                        ui.pesquisa.titulo,
+                        onFechar = onSair
+                    )
+
                     Concluido(
                         titulo = "Respostas enviadas",
-                        texto = if (ui.pesquisa.anonimo) "Obrigado por participar. Suas respostas são anônimas e serão analisadas apenas de forma consolidada."
-                        else "Obrigado por participar. Suas respostas foram registradas.",
+                        texto = if (ui.pesquisa.anonimo) {
+                            "Obrigado por participar. Suas respostas são anônimas e serão analisadas apenas de forma consolidada."
+                        } else {
+                            "Obrigado por participar. Suas respostas foram registradas."
+                        },
                         onVoltar = onSair
                     )
                 }
             }
+
             if (ui.confirmarEnvio) {
                 AlertDialog(
                     modifier = Modifier.bordaDialogo(),
                     onDismissRequest = viewModel::cancelarConfirmacao,
                     containerColor = Surface,
-                    title = { Text("Confirmar envio?", fontFamily = Inter, fontWeight = FontWeight.Bold, color = TextPrimary) },
-                    text = {
+
+                    title = {
                         Text(
-                            if (ui.pesquisa.anonimo) "Após o envio, esta resposta anônima não poderá ser alterada." else "Após o envio, as respostas não poderão ser alteradas.",
-                            fontFamily = Inter, color = TextPrimary
+                            "Confirmar envio?",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
                         )
                     },
-                    confirmButton = { TextButton(onClick = viewModel::enviar) { Text("Confirmar", color = Navy, fontFamily = Inter) } },
-                    dismissButton = { TextButton(onClick = viewModel::cancelarConfirmacao) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) } }
+
+                    text = {
+                        Text(
+                            if (ui.pesquisa.anonimo) {
+                                "Após o envio, esta resposta anônima não poderá ser alterada."
+                            } else {
+                                "Após o envio, as respostas não poderão ser alteradas."
+                            },
+                            fontFamily = Inter,
+                            color = TextPrimary
+                        )
+                    },
+
+                    confirmButton = {
+                        TextButton(
+                            onClick = viewModel::enviar
+                        ) {
+                            Text(
+                                "Confirmar",
+                                color = Navy,
+                                fontFamily = Inter
+                            )
+                        }
+                    },
+
+                    dismissButton = {
+                        TextButton(
+                            onClick = viewModel::cancelarConfirmacao
+                        ) {
+                            Text(
+                                "Cancelar",
+                                color = TextSecondary,
+                                fontFamily = Inter
+                            )
+                        }
+                    }
                 )
             }
         }
@@ -117,145 +205,470 @@ fun PesquisaScreen(
     if (confirmarSaida) {
         AlertDialog(
             modifier = Modifier.bordaDialogo(),
-            onDismissRequest = { confirmarSaida = false },
+            onDismissRequest = {
+                confirmarSaida = false
+            },
             containerColor = Surface,
-            title = { Text("Sair da pesquisa?", fontFamily = Inter, fontWeight = FontWeight.Bold) },
-            text = { Text("As respostas preenchidas serão descartadas.", fontFamily = Inter) },
-            confirmButton = { TextButton(onClick = { confirmarSaida = false; onSair() }) { Text("Sair", color = Danger, fontFamily = Inter) } },
-            dismissButton = { TextButton(onClick = { confirmarSaida = false }) { Text("Continuar respondendo", color = Navy, fontFamily = Inter) } }
+
+            title = {
+                Text(
+                    "Sair da pesquisa?",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+
+            text = {
+                Text(
+                    "As respostas preenchidas serão descartadas.",
+                    fontFamily = Inter
+                )
+            },
+
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmarSaida = false
+                        onSair()
+                    }
+                ) {
+                    Text(
+                        "Sair",
+                        color = Danger,
+                        fontFamily = Inter
+                    )
+                }
+            },
+
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        confirmarSaida = false
+                    }
+                ) {
+                    Text(
+                        "Continuar respondendo",
+                        color = Navy,
+                        fontFamily = Inter
+                    )
+                }
+            }
         )
     }
 }
 
 @Composable
-private fun Pergunta(ui: PesquisaUi, viewModel: PesquisaViewModel) {
+private fun Pergunta(
+    ui: PesquisaUi,
+    viewModel: PesquisaViewModel
+) {
     val pergunta = ui.atual ?: return
+
     Column(
-        Modifier.fillMaxSize().imePadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
+        Modifier
+            .fillMaxSize()
+            .imePadding()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Pergunta ${ui.indice + 1} de ${ui.perguntas.size}", fontFamily = Inter, fontSize = 14.sp, color = TextSecondary)
-        ProgressoSegmentado((ui.indice + 1f) / ui.perguntas.size, segmentos = ui.perguntas.size.coerceAtMost(10))
-        Spacer(Modifier.height(8.dp))
         Text(
-            pergunta.enunciado + if (pergunta.obrigatorio) " *" else "",
-            fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = TextPrimary
+            "Pergunta ${ui.indice + 1} de ${ui.perguntas.size}",
+            fontFamily = Inter,
+            fontSize = 14.sp,
+            color = TextSecondary
         )
+
+        ProgressoSegmentado(
+            (ui.indice + 1f) / ui.perguntas.size,
+            segmentos = ui.perguntas.size.coerceAtMost(10)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            pergunta.enunciado +
+                    if (pergunta.obrigatorio) " *" else "",
+            fontFamily = Inter,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp,
+            color = TextPrimary
+        )
+
+        // Pergunta de escala
         if (pergunta.isEscala) {
+
             PesquisaViewModel.ESCALA.forEach { (valor, rotulo) ->
-                OpcaoResposta(rotulo, ui.respostas[pergunta.id] == valor) { viewModel.responder(pergunta.id, valor) }
+                OpcaoResposta(
+                    rotulo,
+                    ui.respostas[pergunta.id] == valor
+                ) {
+                    viewModel.responder(
+                        pergunta.id,
+                        valor
+                    )
+                }
             }
+
+            // Pergunta de alternativa fixa
+        } else if (pergunta.isAlternativa) {
+
+            PesquisaViewModel.ALTERNATIVAS.forEach { (valor, rotulo) ->
+                OpcaoResposta(
+                    texto = rotulo,
+                    selecionada = ui.respostas[pergunta.id] == valor,
+                    onClick = {
+                        viewModel.responder(
+                            pergunta.id,
+                            valor
+                        )
+                    }
+                )
+            }
+
+            // Pergunta de Sim ou Não
         } else if (pergunta.isSimNao) {
+
             PesquisaViewModel.SIM_NAO.forEach { (valor, rotulo) ->
-                OpcaoResposta(rotulo, ui.respostas[pergunta.id] == valor) { viewModel.responder(pergunta.id, valor) }
+                OpcaoResposta(
+                    rotulo,
+                    ui.respostas[pergunta.id] == valor
+                ) {
+                    viewModel.responder(
+                        pergunta.id,
+                        valor
+                    )
+                }
             }
+
+            // Pergunta discursiva
         } else {
+
             AvalonTextField(
                 label = "",
                 value = ui.respostas[pergunta.id].orEmpty(),
-                onValueChange = { viewModel.responder(pergunta.id, it.take(1000)) },
+                onValueChange = {
+                    viewModel.responder(
+                        pergunta.id,
+                        it.take(1000)
+                    )
+                },
                 placeholder = "Escreva sua resposta...",
                 singleLine = false,
                 minHeight = 150
             )
         }
+
         if (ui.alertaObrigatoria) {
-            Aviso("Esta pergunta é obrigatória. Responda para continuar.", erro = true)
+            Aviso(
+                "Esta pergunta é obrigatória. Responda para continuar.",
+                erro = true
+            )
         } else {
-            Aviso("Perguntas com * são obrigatórias", erro = false)
+            Aviso(
+                "Perguntas com * são obrigatórias",
+                erro = false
+            )
         }
+
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AvalonSecondaryButton("Voltar", onClick = { viewModel.anterior() }, modifier = Modifier.weight(1f), enabled = ui.indice > 0)
-            Column(Modifier.weight(1f)) {
-                AvalonPrimaryButton(if (ui.indice == ui.perguntas.lastIndex || ui.voltarParaRevisao) "Revisar" else "Próxima", onClick = viewModel::proxima)
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            AvalonSecondaryButton(
+                "Voltar",
+                onClick = {
+                    viewModel.anterior()
+                },
+                modifier = Modifier.weight(1f),
+                enabled = ui.indice > 0
+            )
+
+            Column(
+                Modifier.weight(1f)
+            ) {
+                AvalonPrimaryButton(
+                    if (
+                        ui.indice == ui.perguntas.lastIndex ||
+                        ui.voltarParaRevisao
+                    ) {
+                        "Revisar"
+                    } else {
+                        "Próxima"
+                    },
+                    onClick = viewModel::proxima
+                )
             }
         }
     }
 }
 
 @Composable
-private fun Revisao(ui: PesquisaUi, viewModel: PesquisaViewModel) {
+private fun Revisao(
+    ui: PesquisaUi,
+    viewModel: PesquisaViewModel
+) {
     Column(
-        Modifier.fillMaxSize().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
+        Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         if (ui.pesquisa.anonimo) {
             Row(
-                Modifier.fillMaxWidth().background(BadgeGreenBg, RoundedCornerShape(14.dp)).padding(14.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        BadgeGreenBg,
+                        RoundedCornerShape(14.dp)
+                    )
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(painterResource(R.drawable.ic_shield_check), null, tint = BadgeGreenText, modifier = Modifier.size(22.dp))
+                Icon(
+                    painterResource(R.drawable.ic_shield_check),
+                    null,
+                    tint = BadgeGreenText,
+                    modifier = Modifier.size(22.dp)
+                )
+
                 Spacer(Modifier.width(10.dp))
-                Text("Resposta anônima - sua identidade não será associada", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = BadgeGreenText)
+
+                Text(
+                    "Resposta anônima - sua identidade não será associada",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = BadgeGreenText
+                )
             }
         }
-        ui.perguntas.forEachIndexed { i, p ->
-            ItemRevisao(p, ui.respostas[p.id], onEditar = { viewModel.editar(i) })
-            HorizontalDivider(color = Border, thickness = 2.dp)
+
+        ui.perguntas.forEachIndexed { i, pergunta ->
+            ItemRevisao(
+                pergunta = pergunta,
+                resposta = ui.respostas[pergunta.id],
+                onEditar = {
+                    viewModel.editar(i)
+                }
+            )
+
+            HorizontalDivider(
+                color = Border,
+                thickness = 2.dp
+            )
         }
-        ui.erro?.let { Aviso(it, erro = true) }
-        AvalonPrimaryButton("Enviar respostas", onClick = viewModel::pedirConfirmacao, loading = ui.enviando)
+
+        ui.erro?.let {
+            Aviso(
+                it,
+                erro = true
+            )
+        }
+
+        AvalonPrimaryButton(
+            "Enviar respostas",
+            onClick = viewModel::pedirConfirmacao,
+            loading = ui.enviando
+        )
     }
 }
 
 @Composable
-private fun ItemRevisao(pergunta: Pergunta, resposta: String?, onEditar: () -> Unit) {
+private fun ItemRevisao(
+    pergunta: Pergunta,
+    resposta: String?,
+    onEditar: () -> Unit
+) {
     val texto = when {
-        resposta.isNullOrBlank() -> if (pergunta.obrigatorio) "Obrigatória — sem resposta" else "Sem resposta"
-        pergunta.isEscala -> PesquisaViewModel.ESCALA.firstOrNull { it.first == resposta }?.second ?: resposta
-        pergunta.isSimNao -> PesquisaViewModel.SIM_NAO.firstOrNull { it.first == resposta }?.second ?: resposta
+        resposta.isNullOrBlank() -> {
+            if (pergunta.obrigatorio) {
+                "Obrigatória — sem resposta"
+            } else {
+                "Sem resposta"
+            }
+        }
+
+        pergunta.isEscala -> {
+            PesquisaViewModel.ESCALA
+                .firstOrNull { it.first == resposta }
+                ?.second ?: resposta
+        }
+
+        pergunta.isAlternativa -> {
+            PesquisaViewModel.ALTERNATIVAS
+                .firstOrNull { it.first == resposta }
+                ?.second ?: resposta
+        }
+
+        pergunta.isSimNao -> {
+            PesquisaViewModel.SIM_NAO
+                .firstOrNull { it.first == resposta }
+                ?.second ?: resposta
+        }
+
         else -> resposta
     }
-    Column(Modifier.fillMaxWidth().clickable(onClick = onEditar)) {
-        Text(pergunta.enunciado + if (pergunta.obrigatorio) " *" else "", fontFamily = Inter, fontSize = 15.sp, color = TextSecondary)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEditar)
+    ) {
+        Text(
+            pergunta.enunciado +
+                    if (pergunta.obrigatorio) " *" else "",
+            fontFamily = Inter,
+            fontSize = 15.sp,
+            color = TextSecondary
+        )
+
         Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                texto, Modifier.weight(1f), fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 18.sp,
-                color = if (resposta.isNullOrBlank() && pergunta.obrigatorio) Danger else TextPrimary
+                texto,
+                Modifier.weight(1f),
+                fontFamily = Inter,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = if (
+                    resposta.isNullOrBlank() &&
+                    pergunta.obrigatorio
+                ) {
+                    Danger
+                } else {
+                    TextPrimary
+                }
             )
-            Icon(painterResource(R.drawable.ic_pen_line), contentDescription = "Editar resposta", tint = Navy, modifier = Modifier.size(20.dp))
+
+            Icon(
+                painterResource(R.drawable.ic_pen_line),
+                contentDescription = "Editar resposta",
+                tint = Navy,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
 
 @Composable
-internal fun Aviso(texto: String, erro: Boolean) {
+internal fun Aviso(
+    texto: String,
+    erro: Boolean
+) {
     Row(
         Modifier
-            // Alerta de erro é anunciado pelo leitor de tela assim que aparece (TS112).
-            .then(if (erro) Modifier.semantics { liveRegion = LiveRegionMode.Assertive } else Modifier)
+            // Anuncia o alerta de erro para leitores de tela.
+            .then(
+                if (erro) {
+                    Modifier.semantics {
+                        liveRegion = LiveRegionMode.Assertive
+                    }
+                } else {
+                    Modifier
+                }
+            )
             .fillMaxWidth()
-            .background(if (erro) DangerContainer else Surface, RoundedCornerShape(14.dp))
-            .border(1.dp, if (erro) Danger.copy(alpha = 0.4f) else Border, RoundedCornerShape(14.dp))
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .background(
+                if (erro) DangerContainer else Surface,
+                RoundedCornerShape(14.dp)
+            )
+            .border(
+                1.dp,
+                if (erro) {
+                    Danger.copy(alpha = 0.4f)
+                } else {
+                    Border
+                },
+                RoundedCornerShape(14.dp)
+            )
+            .padding(
+                horizontal = 16.dp,
+                vertical = 16.dp
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painterResource(R.drawable.ic_info), null, tint = if (erro) Danger else Navy, modifier = Modifier.size(22.dp))
+        Icon(
+            painterResource(R.drawable.ic_info),
+            null,
+            tint = if (erro) Danger else Navy,
+            modifier = Modifier.size(22.dp)
+        )
+
         Spacer(Modifier.width(10.dp))
-        Text(texto, fontFamily = Inter, fontSize = 15.sp, color = if (erro) Danger else TextPrimary)
+
+        Text(
+            texto,
+            fontFamily = Inter,
+            fontSize = 15.sp,
+            color = if (erro) Danger else TextPrimary
+        )
     }
 }
 
 @Composable
-internal fun Concluido(titulo: String, texto: String, onVoltar: () -> Unit) {
+internal fun Concluido(
+    titulo: String,
+    texto: String,
+    onVoltar: () -> Unit
+) {
     Column(
-        Modifier.fillMaxSize().navigationBarsPadding().padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         androidx.compose.foundation.layout.Box(
-            Modifier.size(100.dp).background(BadgeGreenBg, RoundedCornerShape(24.dp)),
+            Modifier
+                .size(100.dp)
+                .background(
+                    BadgeGreenBg,
+                    RoundedCornerShape(24.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(painterResource(R.drawable.ic_check), null, tint = BadgeGreenText, modifier = Modifier.size(60.dp))
+            Icon(
+                painterResource(R.drawable.ic_check),
+                null,
+                tint = BadgeGreenText,
+                modifier = Modifier.size(60.dp)
+            )
         }
+
         Spacer(Modifier.height(24.dp))
-        Text(titulo, fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = TextPrimary)
+
+        Text(
+            titulo,
+            fontFamily = Inter,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 24.sp,
+            color = TextPrimary
+        )
+
         Spacer(Modifier.height(12.dp))
-        Text(texto, fontFamily = Inter, fontSize = 17.sp, color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+
+        Text(
+            texto,
+            fontFamily = Inter,
+            fontSize = 17.sp,
+            color = TextSecondary,
+            textAlign = TextAlign.Center
+        )
+
         Spacer(Modifier.height(32.dp))
-        AvalonPrimaryButton("Voltar ao início", onClick = onVoltar)
+
+        AvalonPrimaryButton(
+            "Voltar ao início",
+            onClick = onVoltar
+        )
     }
 }
