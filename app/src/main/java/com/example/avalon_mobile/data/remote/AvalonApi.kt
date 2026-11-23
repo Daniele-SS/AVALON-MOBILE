@@ -1,14 +1,6 @@
 package com.example.avalon_mobile.data.remote
 
 import com.example.avalon_mobile.model.AlterarSenhaRequest
-<<<<<<< HEAD
-import com.example.avalon_mobile.model.Avaliacao
-import com.example.avalon_mobile.model.AvaliacaoPergunta
-=======
-import com.example.avalon_mobile.model.SolicitarCodigoSenhaRequest
-import com.google.gson.JsonElement
-import com.example.avalon_mobile.model.BeneficioColaborador
->>>>>>> 4e7624772c145d6f6ca1576417f79b5da29c0d77
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.FeriasRequest
 import com.example.avalon_mobile.model.LoginRequest
