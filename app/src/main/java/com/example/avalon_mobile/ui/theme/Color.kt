@@ -351,6 +351,15 @@ val AtalhoConteudo: Color get() = if (Paletas.altoContraste) Color.Black else Te
 val AtalhoBorda: Color get() = if (Paletas.altoContraste) Color.Black else Border
 val AtalhoBordaLargura: Dp get() = if (Paletas.altoContraste) 2.dp else 1.dp
 
+// "Sair da Conta" no Perfil: nos temas Claro e Escuro usa DangerContainer. No alto contraste esse token é branco/preto
+// (usado em erros com borda), então o item ganha o mesmo tom avermelhado dos temas base, com contorno em Danger.
+val SairFundo: Color get() = when {
+    Paletas.atual === Paletas.ClaroAltoContraste -> Color(0xFFFFE5E5)
+    Paletas.atual === Paletas.EscuroAltoContraste -> Color(0xFF3A1A1F)
+    else -> DangerContainer
+}
+val SairBordaLargura: Dp get() = if (Paletas.altoContraste) 2.dp else 0.dp
+
 // Dia de hoje na Jornada: azul-marinho com texto branco no tema claro; no escuro, preenchimento claro com texto escuro,
 // para se destacar dos dias de trabalho e de folga, que ficam escuros.
 val DiaHoje: Color get() = Paletas.atual.diaHoje

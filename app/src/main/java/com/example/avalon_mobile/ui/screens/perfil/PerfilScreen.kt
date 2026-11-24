@@ -60,7 +60,8 @@ import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.BorderSoft
 import com.example.avalon_mobile.ui.theme.Danger
-import com.example.avalon_mobile.ui.theme.DangerContainer
+import com.example.avalon_mobile.ui.theme.SairBordaLargura
+import com.example.avalon_mobile.ui.theme.SairFundo
 import com.example.avalon_mobile.ui.theme.DayWork
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Link
@@ -215,7 +216,8 @@ private fun ItemAjuste(icon: Int, texto: String, onClick: () -> Unit, perigo: Bo
         Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .background(if (perigo) DangerContainer else Color.Transparent, RoundedCornerShape(8.dp))
+            .background(if (perigo) SairFundo else Color.Transparent, RoundedCornerShape(8.dp))
+            .then(if (perigo && SairBordaLargura > 0.dp) Modifier.border(SairBordaLargura, Danger, RoundedCornerShape(8.dp)) else Modifier)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically

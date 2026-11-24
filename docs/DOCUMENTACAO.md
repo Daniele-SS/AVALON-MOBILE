@@ -1290,3 +1290,8 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - O indicador "Pesquisas Pendentes" da Home não mudou: continua somando pesquisas e avaliações pendentes.
 - O app mostra uma única avaliação pendente (`avaliacaoPendente()` usa `firstOrNull()` da lista filtrada por prazo e público, na ordem do banco). Uma avaliação `SETOR`/`CARGO` de id menor aparece antes de uma `TODOS` de id maior.
 - **Home:** o indicador "Pesquisas Pendentes" passou a contar só pesquisas (igual à aba Pesquisas). A avaliação psicossocial pendente é sinalizada por uma bolinha vermelha no atalho "Riscos psicossociais" (`HomeUi.avaliacaoPendente`).
+
+## Atualização de 24/11/2026 (Sair da Conta no alto contraste)
+
+- Perfil > "Sair da Conta": nos temas Claro e Escuro nada mudou. No Claro de alto contraste o item ganhou fundo rosado (`#FFE5E5`) e no Escuro de alto contraste fundo avermelhado escuro (`#3A1A1F`), os mesmos tons dos temas base, com contorno de 2dp em `Danger` (`SairFundo` e `SairBordaLargura` em `ui/theme/Color.kt`).
+- `DangerContainer` do alto contraste (branco/preto) continua igual para os demais usos (erro do login e da pesquisa).
