@@ -46,6 +46,7 @@ import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.AvalonSecondaryButton
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.LoadStateContent
+import com.example.avalon_mobile.ui.components.SeloSucesso
 import com.example.avalon_mobile.ui.components.bordaDialogo
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.BadgeGreenBg
@@ -627,22 +628,7 @@ internal fun Concluido(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        androidx.compose.foundation.layout.Box(
-            Modifier
-                .size(100.dp)
-                .background(
-                    BadgeGreenBg,
-                    RoundedCornerShape(24.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_check),
-                null,
-                tint = BadgeGreenText,
-                modifier = Modifier.size(60.dp)
-            )
-        }
+        SeloSucesso(Modifier.size(100.dp), iconSize = 60.dp, radius = 24.dp)
 
         Spacer(Modifier.height(24.dp))
 

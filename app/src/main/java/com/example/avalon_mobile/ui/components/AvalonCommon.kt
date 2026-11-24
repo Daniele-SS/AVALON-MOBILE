@@ -43,7 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.window.Dialog
-import com.example.avalon_mobile.ui.theme.SuccessContainer
+import com.example.avalon_mobile.ui.theme.Success
 import com.example.avalon_mobile.ui.theme.SuccessText
 import com.example.avalon_mobile.R
 import com.example.avalon_mobile.util.ColunasGrade
@@ -226,7 +226,7 @@ fun <T> GradeAdaptavel(
 /**
  * Card de confirmação de envio (correção cadastral e solicitação de férias). Usa as cores da paleta ativa
  * (Claro, Escuro e Alto contraste): fundo Surface com borda Border (forte no Alto contraste) e ícone em
- * SuccessText sobre SuccessContainer. O selo cresce com a fonte (mínimo em sp), como os demais cards.
+ * SuccessText sobre o selo verde (SeloSucesso). O selo cresce com a fonte (mínimo em sp), como os demais cards.
  */
 @Composable
 fun ConfirmacaoEnvioDialog(titulo: String, mensagem: String, onFechar: () -> Unit) {
@@ -241,14 +241,7 @@ fun ConfirmacaoEnvioDialog(titulo: String, mensagem: String, onFechar: () -> Uni
                 .padding(horizontal = 24.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                Modifier
-                    .defaultMinSize(minWidth = selo, minHeight = selo)
-                    .background(SuccessContainer, RoundedCornerShape(20.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(painterResource(R.drawable.ic_check), null, tint = SuccessText, modifier = Modifier.size(32.dp))
-            }
+            SeloSucesso(Modifier.defaultMinSize(minWidth = selo, minHeight = selo), iconSize = 32.dp, radius = 20.dp)
             Spacer(Modifier.height(18.dp))
             Text(
                 titulo, Modifier.semantics { heading() },
@@ -271,4 +264,18 @@ fun ConfirmacaoEnvioDialog(titulo: String, mensagem: String, onFechar: () -> Uni
 fun Modifier.bordaDialogo(): Modifier {
     val forte = Paletas.altoContraste
     return border(if (forte) 2.dp else 1.5.dp, if (forte) BorderStrong else InputBorder, RoundedCornerShape(28.dp))
+}
+
+/** Caixa verde com o check de conclusão: fundo vivo e borda, usada em todas as telas de sucesso. */
+@Composable
+fun SeloSucesso(modifier: Modifier = Modifier, iconSize: Dp, radius: Dp) {
+    val forma = RoundedCornerShape(radius)
+    Box(
+        modifier
+            .background(Success.copy(alpha = 0.30f), forma)
+            .border(2.dp, Success, forma),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(painterResource(R.drawable.ic_check), null, tint = SuccessText, modifier = Modifier.size(iconSize))
+    }
 }

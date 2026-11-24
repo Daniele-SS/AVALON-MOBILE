@@ -1290,3 +1290,8 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - O indicador "Pesquisas Pendentes" da Home não mudou: continua somando pesquisas e avaliações pendentes.
 - O app mostra uma única avaliação pendente (`avaliacaoPendente()` usa `firstOrNull()` da lista filtrada por prazo e público, na ordem do banco). Uma avaliação `SETOR`/`CARGO` de id menor aparece antes de uma `TODOS` de id maior.
 - **Home:** o indicador "Pesquisas Pendentes" passou a contar só pesquisas (igual à aba Pesquisas). A avaliação psicossocial pendente é sinalizada por uma bolinha vermelha no atalho "Riscos psicossociais" (`HomeUi.avaliacaoPendente`).
+
+## Atualização de 24/11/2026 (selo verde de sucesso)
+
+- Nova `SeloSucesso` em `ui/components/AvalonCommon.kt`: caixa do check de conclusão com fundo verde mais vivo (`Success` a 30%) e borda de 2dp em `Success`; ícone em `SuccessText`. Funciona nas 4 paletas (Claro, Escuro, Alto contraste claro e escuro).
+- Usada na tela "Respostas enviadas" (`PesquisaScreen`, 100dp) e no diálogo de confirmação de envio (`ConfirmacaoEnvioDialog`, correção cadastral e férias). Eram os dois únicos lugares com esse selo.
