@@ -21,10 +21,9 @@ import kotlinx.coroutines.launch
 
 data class PesquisasUi(
     val pendentes: List<Pesquisa>,
-    val respondidas: List<Pesquisa>,
-    val avaliacao: Avaliacao?
+    val respondidas: List<Pesquisa>
 ) {
-    val totalPendentes: Int get() = pendentes.size + (if (avaliacao != null) 1 else 0)
+    val totalPendentes: Int get() = pendentes.size
 }
 
 /** Lista de pesquisas e avaliações (Sprint 4 — 6.6). */
@@ -36,12 +35,11 @@ class PesquisasViewModel(private val repository: AvalonRepository) : ViewModel()
         if (_state.value !is LoadState.Content) _state.value = LoadState.Loading
         viewModelScope.launch {
             val pesquisas = repository.pesquisas()
-            val avaliacao = (repository.avaliacaoPendente() as? AppResult.Success)?.data
             _state.value = when (pesquisas) {
                 is AppResult.Failure -> LoadState.Error(pesquisas.error.mensagem)
                 is AppResult.Success -> {
                     val (pendentes, outras) = pesquisas.data.partition { it.estaPendente() }
-                    LoadState.Content(PesquisasUi(pendentes.sortedBy { it.dataFim }, outras.sortedByDescending { it.dataFim }, avaliacao))
+                    LoadState.Content(PesquisasUi(pendentes.sortedBy { it.dataFim }, outras.sortedByDescending { it.dataFim }))
                 }
             }
         }

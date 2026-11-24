@@ -205,8 +205,7 @@ fun AvalonNavHost(container: AppContainer) {
                 composable(Routes.PESQUISAS) {
                     PesquisasScreen(
                         onBack = { navController.irParaAba(Routes.HOME) },
-                        onAbrirPesquisa = { abrir(Routes.pesquisa(it)) },
-                        onAbrirAvaliacao = { abrir(Routes.AVALIACAO) }
+                        onAbrirPesquisa = { abrir(Routes.pesquisa(it)) }
                     )
                 }
                 composable(Routes.DOCUMENTOS) { DocumentosScreen(onBack = { navController.irParaAba(Routes.HOME) }) }

@@ -57,7 +57,6 @@ import com.example.avalon_mobile.viewmodel.avalonViewModel
 fun PesquisasScreen(
     onBack: (() -> Unit)?,
     onAbrirPesquisa: (Int) -> Unit,
-    onAbrirAvaliacao: () -> Unit,
     viewModel: PesquisasViewModel = avalonViewModel { c, _ -> PesquisasViewModel(c.avalonRepository) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -78,11 +77,6 @@ fun PesquisasScreen(
             }
             LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 if (aba == 0) {
-                    ui.avaliacao?.let { av ->
-                        item(key = "avaliacao") {
-                            CartaoPendente(av.titulo, "Encerra em ${Datas.diaMes(av.dataFim)}", anonima = av.anonimo, onClick = onAbrirAvaliacao)
-                        }
-                    }
                     items(ui.pendentes, key = { it.id }) { p ->
                         CartaoPendente(
                             p.titulo,

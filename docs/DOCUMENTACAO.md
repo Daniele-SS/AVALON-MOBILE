@@ -1282,3 +1282,10 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - Na tela Aparência e acessibilidade, a descrição do Alto contraste deixou de citar "7:1 (WCAG AAA)" e passou a dizer: "Deixa textos e bordas mais fortes e nítidos, facilitando a leitura para quem tem baixa visão."
 - O critério técnico não mudou: as paletas de alto contraste continuam com texto >= 7:1 (WCAG 2.1 nível AAA), como medido na seção de contraste deste documento.
 
+
+## Atualização de 24/11/2026 (avaliação psicossocial fora da aba Pesquisas)
+
+- A avaliação psicossocial deixou de aparecer como item na aba Pesquisas (Pendentes). Ela só é aberta por **Home > Acessos rápidos > Riscos psicossociais**.
+- `PesquisasUi` não carrega mais a avaliação; `PesquisasScreen` perdeu o parâmetro `onAbrirAvaliacao`. O contador "Pendentes (n)" da aba passou a contar só pesquisas.
+- O indicador "Pesquisas Pendentes" da Home não mudou: continua somando pesquisas e avaliações pendentes.
+- O app mostra uma única avaliação pendente (`avaliacaoPendente()` usa `firstOrNull()` da lista filtrada por prazo e público, na ordem do banco). Uma avaliação `SETOR`/`CARGO` de id menor aparece antes de uma `TODOS` de id maior.
