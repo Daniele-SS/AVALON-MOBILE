@@ -44,11 +44,6 @@ import com.example.avalon_mobile.ui.components.SectionTitle
 import com.example.avalon_mobile.ui.components.StatusPill
 import com.example.avalon_mobile.ui.theme.Background
 import com.example.avalon_mobile.ui.theme.BadgeBlueBg
-import com.example.avalon_mobile.ui.theme.BadgeBlueText
-import com.example.avalon_mobile.ui.theme.BadgeGreenBg
-import com.example.avalon_mobile.ui.theme.BadgeGreenText
-import com.example.avalon_mobile.ui.theme.BadgeOrangeBg
-import com.example.avalon_mobile.ui.theme.BadgeOrangeText
 import com.example.avalon_mobile.ui.theme.Border
 import com.example.avalon_mobile.ui.theme.BorderSoft
 import com.example.avalon_mobile.ui.theme.Inter
@@ -57,7 +52,6 @@ import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.ui.theme.TextStrong
-import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.util.DocumentOpener
 import com.example.avalon_mobile.viewmodel.DocumentosViewModel
 import com.example.avalon_mobile.viewmodel.DownloadEvent
@@ -66,7 +60,7 @@ import com.example.avalon_mobile.viewmodel.avalonViewModel
 @Composable
 private fun documentosViewModel() = avalonViewModel { c, _ -> DocumentosViewModel(c.avalonRepository, c.pdfFactory) }
 
-/** Trata abertura do PDF e erros de download de forma única para as duas telas. */
+/** Trata abertura do PDF e erros de download de forma única. */
 @Composable
 private fun DownloadEffects(viewModel: DocumentosViewModel) {
     val context = LocalContext.current
@@ -101,7 +95,7 @@ private fun BuscaDocumentos(valor: String, onChange: (String) -> Unit, placehold
     )
 }
 
-/** Aba Documentos (Sprint 3 — 6.5.4): lista com busca; cadeado = documento indisponibilizado pelo RH. */
+/** Aba Documentos (Sprint 3 — 6.5.4): perfil completo em PDF e lista com busca; cadeado = documento indisponibilizado pelo RH. */
 @Composable
 fun DocumentosScreen(onBack: (() -> Unit)?, viewModel: DocumentosViewModel = documentosViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -111,6 +105,15 @@ fun DocumentosScreen(onBack: (() -> Unit)?, viewModel: DocumentosViewModel = doc
         LoadStateContent(state.documentos, onRetry = viewModel::carregar) {
             LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 item { BuscaDocumentos(state.busca, viewModel::buscar, "Buscar documento") }
+                item {
+                    LinhaDownload(
+                        titulo = "Baixar Perfil Completo",
+                        detalhe = "Exportar dados de registro • PDF",
+                        icone = R.drawable.ic_file_text,
+                        carregando = state.baixando == DocumentosViewModel.PERFIL_ID,
+                        onClick = viewModel::exportarPerfil
+                    )
+                }
                 item { SectionTitle("Meus documentos", Modifier.padding(top = 8.dp)) }
                 if (state.filtrados.isEmpty()) item { EmptyState("Nenhum documento encontrado.") }
                 items(state.filtrados, key = { it.id }) { doc ->
@@ -132,52 +135,6 @@ fun DocumentosScreen(onBack: (() -> Unit)?, viewModel: DocumentosViewModel = doc
             }
         }
     }
-}
-
-/** Downloads (Figma "Downloads"): perfil completo, documentos assinados e extratos/holerites. */
-@Composable
-fun DownloadsScreen(onBack: () -> Unit, viewModel: DocumentosViewModel = documentosViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    DownloadEffects(viewModel)
-    Column(Modifier.fillMaxSize().background(Background)) {
-        AvalonTopBar("Downloads", subtitle = "Documentos e extratos disponíveis", onBack = onBack)
-        LoadStateContent(state.documentos, onRetry = viewModel::carregar) {
-            val ativos = state.filtrados.filter { it.ativo }
-            LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                item { BuscaDocumentos(state.busca, viewModel::buscar, "Buscar documentos...") }
-                item { Rotulo("Meu Perfil") }
-                item {
-                    LinhaDownload(
-                        titulo = "Baixar Perfil Completo",
-                        detalhe = "Exportar dados de registro • PDF",
-                        icone = R.drawable.ic_file_text,
-                        carregando = state.baixando == DocumentosViewModel.PERFIL_ID,
-                        onClick = viewModel::exportarPerfil
-                    )
-                }
-                val (assinados, extratos) = ativos.partition { it.assinado }
-                item { Rotulo("Documentos Assinados") }
-                if (assinados.isEmpty()) item { EmptyState("Nenhum documento assinado.") }
-                items(assinados, key = { "a${it.id}" }) { doc ->
-                    LinhaDownload(doc.nome, doc.legendaAssinado, R.drawable.ic_download,
-                        carregando = state.baixando == doc.id, onClick = { viewModel.baixar(doc) }, selo = "Assinado" to (BadgeGreenBg to BadgeGreenText))
-                }
-                item { Rotulo("Extratos") }
-                if (extratos.isEmpty()) item { EmptyState("Nenhum extrato disponível.") }
-                items(extratos, key = { "e${it.id}" }) { doc ->
-                    val lido = doc.lido == true
-                    LinhaDownload(doc.nome, "Disponível • PDF${doc.tamanhoBytes?.let { " (${tamanho(it)})" } ?: ""}", R.drawable.ic_download,
-                        carregando = state.baixando == doc.id, onClick = { viewModel.baixar(doc) },
-                        selo = if (doc.lido == null) null else (if (lido) "Lido" else "Não Lido") to (if (lido) BadgeBlueBg to BadgeBlueText else BadgeOrangeBg to BadgeOrangeText))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Rotulo(texto: String) {
-    Text(texto, Modifier.padding(top = 8.dp), fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextSecondary)
 }
 
 @Composable
@@ -206,6 +163,3 @@ private fun LinhaDownload(
         }
     }
 }
-
-private fun tamanho(bytes: Long): String =
-    if (bytes >= 1_000_000) "%.1f MB".format(Datas.ptBR, bytes / 1_000_000.0) else "${bytes / 1000} KB"

@@ -36,7 +36,6 @@ import com.example.avalon_mobile.ui.screens.auth.RedefinirSenhaScreen
 import com.example.avalon_mobile.ui.screens.auth.ServidorScreen
 import com.example.avalon_mobile.ui.screens.conteudo.BeneficiosScreen
 import com.example.avalon_mobile.ui.screens.conteudo.DocumentosScreen
-import com.example.avalon_mobile.ui.screens.conteudo.DownloadsScreen
 import com.example.avalon_mobile.ui.screens.feedback.FeedbackDetalheScreen
 import com.example.avalon_mobile.ui.screens.feedback.FeedbacksScreen
 import com.example.avalon_mobile.ui.screens.ferias.FeriasScreen
@@ -44,8 +43,6 @@ import com.example.avalon_mobile.ui.screens.home.Atalho
 import com.example.avalon_mobile.ui.screens.home.HomeScreen
 import com.example.avalon_mobile.ui.screens.home.InfoScreen
 import com.example.avalon_mobile.ui.screens.home.Informativo
-import com.example.avalon_mobile.ui.screens.home.MaisScreen
-import com.example.avalon_mobile.ui.screens.home.Modulo
 import com.example.avalon_mobile.ui.screens.home.NotificacoesScreen
 import com.example.avalon_mobile.ui.screens.perfil.AlterarSenhaScreen
 import com.example.avalon_mobile.ui.screens.perfil.AparenciaScreen
@@ -71,13 +68,11 @@ object Routes {
     const val APARENCIA = "perfil/aparencia"
     const val FERIAS = "ferias"
     const val BENEFICIOS = "beneficios"
-    const val DOWNLOADS = "downloads"
     const val FEEDBACKS = "feedbacks"
     const val FEEDBACK = "feedback/{id}"
     const val PESQUISA = "pesquisa/{id}"
     const val AVALIACAO = "avaliacao"
     const val NOTIFICACOES = "notificacoes"
-    const val MAIS = "mais"
     const val PRIVACIDADE = "privacidade"
     const val TERMOS = "termos"
 
@@ -93,7 +88,6 @@ private val abaPorRota = mapOf(
     Routes.PESQUISAS to MainTab.PESQUISAS,
     Routes.DOCUMENTOS to MainTab.DOCUMENTOS,
     Routes.PERFIL to MainTab.PERFIL,
-    Routes.DOWNLOADS to MainTab.DOCUMENTOS,
     Routes.JORNADA to MainTab.PERFIL,
     Routes.ALTERAR_SENHA to MainTab.PERFIL,
     Routes.APARENCIA to MainTab.PERFIL,
@@ -101,7 +95,6 @@ private val abaPorRota = mapOf(
     Routes.BENEFICIOS to MainTab.HOME,
     Routes.FEEDBACKS to MainTab.HOME,
     Routes.NOTIFICACOES to MainTab.HOME,
-    Routes.MAIS to MainTab.HOME,
     Routes.PRIVACIDADE to MainTab.PERFIL,
     Routes.TERMOS to MainTab.PERFIL
 )
@@ -202,7 +195,8 @@ fun AvalonNavHost(container: AppContainer) {
                                 Atalho.DOCUMENTOS -> navController.irParaAba(Routes.DOCUMENTOS)
                                 Atalho.FEEDBACKS -> abrir(Routes.FEEDBACKS)
                                 Atalho.PESQUISAS -> navController.irParaAba(Routes.PESQUISAS)
-                                Atalho.MAIS -> abrir(Routes.MAIS)
+                                Atalho.RISCOS -> abrir(Routes.AVALIACAO)
+                                Atalho.TERMOS -> abrir(Routes.TERMOS)
                             }
                         },
                         onNotificacoes = { abrir(Routes.NOTIFICACOES) }
@@ -252,7 +246,6 @@ fun AvalonNavHost(container: AppContainer) {
                 // Sprint 3 — 6.4, 6.5.4, 6.7
                 composable(Routes.FERIAS) { FeriasScreen(onBack = { navController.popBackStack() }) }
                 composable(Routes.BENEFICIOS) { BeneficiosScreen(onBack = { navController.popBackStack() }) }
-                composable(Routes.DOWNLOADS) { DownloadsScreen(onBack = { navController.popBackStack() }) }
                 composable(Routes.FEEDBACKS) {
                     FeedbacksScreen(onBack = { navController.popBackStack() }, onAbrir = { abrir(Routes.feedback(it)) })
                 }
@@ -275,24 +268,6 @@ fun AvalonNavHost(container: AppContainer) {
                                 "FEEDBACK" -> abrir(Routes.FEEDBACKS)
                                 "BENEFICIO" -> abrir(Routes.BENEFICIOS)
                                 "DOCUMENTO" -> navController.irParaAba(Routes.DOCUMENTOS)
-                            }
-                        }
-                    )
-                }
-                composable(Routes.MAIS) {
-                    MaisScreen(
-                        onBack = { navController.popBackStack() },
-                        onModulo = { m ->
-                            when (m) {
-                                Modulo.JORNADA -> abrir(Routes.JORNADA)
-                                Modulo.NOTIFICACOES -> abrir(Routes.NOTIFICACOES)
-                                Modulo.RISCOS -> abrir(Routes.AVALIACAO)
-                                Modulo.FERIAS -> abrir(Routes.FERIAS)
-                                Modulo.BENEFICIOS -> abrir(Routes.BENEFICIOS)
-                                Modulo.DOWNLOADS -> abrir(Routes.DOWNLOADS)
-                                Modulo.DOCUMENTOS -> navController.irParaAba(Routes.DOCUMENTOS)
-                                Modulo.FEEDBACKS -> abrir(Routes.FEEDBACKS)
-                                Modulo.TERMOS -> abrir(Routes.TERMOS)
                             }
                         }
                     )

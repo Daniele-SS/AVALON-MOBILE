@@ -1269,3 +1269,11 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - **Documentos:** o app não mudou para o download. O `GET /documento/download/{id}` já funciona; o erro "Arquivo indisponível no servidor. Procure o RH." vinha de arquivos físicos ausentes no Back-end (os caminhos de `tbl_documentos` apontavam para arquivos que não existiam em `uploads/documentos`).
 - **Referências antigas ao mural** neste documento e no README (seções de Sprint 4, `HomeViewModel`, `NotificacoesScreen`, tabela de rotas sem contrato) descrevem o estado anterior a 24/11/2026.
 
+## Atualização de 24/11/2026 (Home sem "Mais"; Downloads incorporado a Documentos)
+
+- **Removidos:** a tela "Mais" (`MaisScreen`, enum `Modulo`, rota `mais` e o atalho da Home) e a tela "Downloads" (`DownloadsScreen`, rota `downloads`). Todo o conteúdo do "Mais" já existia na Home, no sino de notificações ou nos atalhos.
+- **Acessos rápidos da Home (8):** Jornada, Férias, Benefícios, Documentos, Feedbacks, Pesquisas, **Riscos psicossociais** (abre a avaliação) e **Termos e políticas**.
+- **Baixar Perfil Completo** (PDF do cadastro gerado no aparelho) passou para o topo da tela Documentos. A lista "Meus documentos" continua igual; a separação Assinados/Extratos do Downloads deixou de existir.
+- **Fora do app agora:** o texto "Versão do aplicativo" que ficava no rodapé do "Mais".
+- As referências a "Mais", "Downloads" e "Modulo" nas seções anteriores deste documento e no Plano de Teste descrevem o estado anterior a 24/11/2026.
+

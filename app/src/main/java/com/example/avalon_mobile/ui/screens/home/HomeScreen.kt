@@ -79,7 +79,8 @@ enum class Atalho(val label: String, val icon: Int) {
     DOCUMENTOS("Documentos", R.drawable.ic_file_text),
     FEEDBACKS("Feedbacks", R.drawable.ic_message_circle),
     PESQUISAS("Pesquisas", R.drawable.ic_clipboard_list),
-    MAIS("Mais", R.drawable.ic_layout_grid)
+    RISCOS("Riscos psicossociais", R.drawable.ic_shield),
+    TERMOS("Termos e políticas", R.drawable.ic_book_open)
 }
 
 @Composable
