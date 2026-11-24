@@ -121,7 +121,7 @@ fun HomeScreen(
                 Spacer(Modifier.height(28.dp))
                 SectionTitle("Acessos rápidos", Modifier.padding(horizontal = 26.dp))
                 Spacer(Modifier.height(8.dp))
-                AtalhosGrid(onAtalho)
+                AtalhosGrid(onAtalho, riscosPendente = ui.avaliacaoPendente)
             }
         }
     }
@@ -176,7 +176,7 @@ private fun Indicador(icon: Int, valor: Int, rotulo: String, cor: Color, fundo: 
 }
 
 @Composable
-private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
+private fun AtalhosGrid(onAtalho: (Atalho) -> Unit, riscosPendente: Boolean) {
     val estilo = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
     val densidade = LocalDensity.current
     // Altura mínima e ícone acompanham o tamanho da fonte (sp→dp): o card cresce junto com as letras.
@@ -199,7 +199,11 @@ private fun AtalhosGrid(onAtalho: (Atalho) -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(painterResource(atalho.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(icone))
+                Box {
+                    Icon(painterResource(atalho.icon), null, tint = AtalhoConteudo, modifier = Modifier.size(icone))
+                    // Avaliação psicossocial pendente: ela não entra no contador de Pesquisas Pendentes.
+                    if (atalho == Atalho.RISCOS && riscosPendente) Box(Modifier.size(10.dp).align(Alignment.TopEnd).background(Danger, CircleShape))
+                }
                 Spacer(Modifier.height(6.dp))
                 Text(atalho.label, style = estilo, color = AtalhoConteudo, textAlign = TextAlign.Center)
             }

@@ -1289,3 +1289,4 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - `PesquisasUi` não carrega mais a avaliação; `PesquisasScreen` perdeu o parâmetro `onAbrirAvaliacao`. O contador "Pendentes (n)" da aba passou a contar só pesquisas.
 - O indicador "Pesquisas Pendentes" da Home não mudou: continua somando pesquisas e avaliações pendentes.
 - O app mostra uma única avaliação pendente (`avaliacaoPendente()` usa `firstOrNull()` da lista filtrada por prazo e público, na ordem do banco). Uma avaliação `SETOR`/`CARGO` de id menor aparece antes de uma `TODOS` de id maior.
+- **Home:** o indicador "Pesquisas Pendentes" passou a contar só pesquisas (igual à aba Pesquisas). A avaliação psicossocial pendente é sinalizada por uma bolinha vermelha no atalho "Riscos psicossociais" (`HomeUi.avaliacaoPendente`).

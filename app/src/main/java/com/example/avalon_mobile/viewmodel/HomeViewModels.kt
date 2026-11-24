@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 data class HomeUi(
     val nomeCompleto: String,
     val pesquisasPendentes: Int,
+    val avaliacaoPendente: Boolean,
     val feriasPendentes: Int,
     val feedbacksNovos: Int,
     val notificacoesNaoLidas: Int
@@ -46,7 +47,8 @@ class HomeViewModel(
                             nomeCompleto = (perfil.await() as? AppResult.Success)?.data?.nome
                                 ?: auth.usuario.value?.nome
                                 ?: "colaborador",
-                            pesquisasPendentes = (c?.pesquisasPendentes ?: 0) + (c?.avaliacoesPendentes ?: 0),
+                            pesquisasPendentes = c?.pesquisasPendentes ?: 0,
+                            avaliacaoPendente = (c?.avaliacoesPendentes ?: 0) > 0,
                             feriasPendentes = c?.feriasEmAndamento ?: 0,
                             feedbacksNovos = (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,
                             notificacoesNaoLidas = (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0
