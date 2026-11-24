@@ -1295,3 +1295,8 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 
 - Nova `SeloSucesso` em `ui/components/AvalonCommon.kt`: caixa do check de conclusão com fundo verde mais vivo (`Success` a 30%) e borda de 2dp em `Success`; ícone em `SuccessText`. Funciona nas 4 paletas (Claro, Escuro, Alto contraste claro e escuro).
 - Usada na tela "Respostas enviadas" (`PesquisaScreen`, 100dp) e no diálogo de confirmação de envio (`ConfirmacaoEnvioDialog`, correção cadastral e férias). Eram os dois únicos lugares com esse selo.
+
+## Atualização de 24/11/2026 (Sair da Conta no alto contraste)
+
+- Perfil > "Sair da Conta": nos temas Claro e Escuro nada mudou. No Claro de alto contraste o item ganhou fundo rosado (`#FFE5E5`) e no Escuro de alto contraste fundo avermelhado escuro (`#3A1A1F`), os mesmos tons dos temas base, com contorno de 2dp em `Danger` (`SairFundo` e `SairBordaLargura` em `ui/theme/Color.kt`).
+- `DangerContainer` do alto contraste (branco/preto) continua igual para os demais usos (erro do login e da pesquisa).
