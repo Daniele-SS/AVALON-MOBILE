@@ -24,10 +24,3 @@ data class DashboardColaborador(
     @SerializedName("avaliacoes_pendentes") val avaliacoesPendentes: Int = 0,
     @SerializedName("notificacoes_total") val notificacoesTotal: Int = 0
 )
-
-/** Comunicado do mural de avisos (6.3.2). Não há rota no contrato v2.1.0. */
-data class Comunicado(
-    val id: Int,
-    val titulo: String,
-    val detalhe: String
-)

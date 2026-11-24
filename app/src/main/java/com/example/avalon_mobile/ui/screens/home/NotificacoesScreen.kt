@@ -39,7 +39,6 @@ import com.example.avalon_mobile.ui.theme.Link
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
-import com.example.avalon_mobile.viewmodel.ComunicadosViewModel
 import com.example.avalon_mobile.viewmodel.NotificacoesViewModel
 import com.example.avalon_mobile.viewmodel.avalonViewModel
 
@@ -94,30 +93,6 @@ private fun NotificacaoCard(n: Notificacao, onClick: () -> Unit) {
                 n.dataHora?.let {
                     Spacer(Modifier.height(6.dp))
                     Text(it, fontFamily = Inter, fontSize = 11.sp, color = TextSecondary)
-                }
-            }
-        }
-    }
-}
-
-/** Mural de avisos (Sprint 4 — 6.3.2). */
-@Composable
-fun ComunicadosScreen(
-    onBack: () -> Unit,
-    viewModel: ComunicadosViewModel = avalonViewModel { c, _ -> ComunicadosViewModel(c.avalonRepository) }
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    Column(Modifier.fillMaxSize().background(Background)) {
-        AvalonTopBar("Mural de avisos", onBack = onBack)
-        LoadStateContent(state, onRetry = viewModel::carregar) { lista ->
-            LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (lista.isEmpty()) item { EmptyState("Nenhum comunicado no momento.") }
-                items(lista, key = { it.id }) { c ->
-                    AvalonCard {
-                        Text(c.titulo, fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                        Spacer(Modifier.height(8.dp))
-                        Text(c.detalhe, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
-                    }
                 }
             }
         }

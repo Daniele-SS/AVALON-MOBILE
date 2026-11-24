@@ -16,7 +16,6 @@ import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.Colaborador
-import com.example.avalon_mobile.model.Comunicado
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
@@ -102,8 +101,6 @@ class RemoteAvalonRepository(
         AppResult.Failure(AppError(AppError.NAO_IMPLEMENTADO, "$oQue ainda não possui rota no contrato da API."))
 
     override suspend fun dashboard(): AppResult<Dashboard> = call.execute { api.dashboard() }
-
-    override suspend fun comunicados(): AppResult<List<Comunicado>> = AppResult.Success(emptyList())
 
     private fun <T> ler(resultado: AppResult<JsonElement>, leitor: (JsonElement) -> T?): AppResult<T> = when (resultado) {
         is AppResult.Failure -> resultado

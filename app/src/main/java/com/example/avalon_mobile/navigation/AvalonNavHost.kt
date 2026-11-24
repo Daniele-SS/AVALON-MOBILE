@@ -41,7 +41,6 @@ import com.example.avalon_mobile.ui.screens.feedback.FeedbackDetalheScreen
 import com.example.avalon_mobile.ui.screens.feedback.FeedbacksScreen
 import com.example.avalon_mobile.ui.screens.ferias.FeriasScreen
 import com.example.avalon_mobile.ui.screens.home.Atalho
-import com.example.avalon_mobile.ui.screens.home.ComunicadosScreen
 import com.example.avalon_mobile.ui.screens.home.HomeScreen
 import com.example.avalon_mobile.ui.screens.home.InfoScreen
 import com.example.avalon_mobile.ui.screens.home.Informativo
@@ -78,7 +77,6 @@ object Routes {
     const val PESQUISA = "pesquisa/{id}"
     const val AVALIACAO = "avaliacao"
     const val NOTIFICACOES = "notificacoes"
-    const val COMUNICADOS = "comunicados"
     const val MAIS = "mais"
     const val PRIVACIDADE = "privacidade"
     const val TERMOS = "termos"
@@ -103,7 +101,6 @@ private val abaPorRota = mapOf(
     Routes.BENEFICIOS to MainTab.HOME,
     Routes.FEEDBACKS to MainTab.HOME,
     Routes.NOTIFICACOES to MainTab.HOME,
-    Routes.COMUNICADOS to MainTab.HOME,
     Routes.MAIS to MainTab.HOME,
     Routes.PRIVACIDADE to MainTab.PERFIL,
     Routes.TERMOS to MainTab.PERFIL
@@ -208,8 +205,7 @@ fun AvalonNavHost(container: AppContainer) {
                                 Atalho.MAIS -> abrir(Routes.MAIS)
                             }
                         },
-                        onNotificacoes = { abrir(Routes.NOTIFICACOES) },
-                        onComunicados = { abrir(Routes.COMUNICADOS) }
+                        onNotificacoes = { abrir(Routes.NOTIFICACOES) }
                     )
                 }
                 composable(Routes.PESQUISAS) {
@@ -283,7 +279,6 @@ fun AvalonNavHost(container: AppContainer) {
                         }
                     )
                 }
-                composable(Routes.COMUNICADOS) { ComunicadosScreen(onBack = { navController.popBackStack() }) }
                 composable(Routes.MAIS) {
                     MaisScreen(
                         onBack = { navController.popBackStack() },
@@ -293,7 +288,6 @@ fun AvalonNavHost(container: AppContainer) {
                                 Modulo.NOTIFICACOES -> abrir(Routes.NOTIFICACOES)
                                 Modulo.RISCOS -> abrir(Routes.AVALIACAO)
                                 Modulo.FERIAS -> abrir(Routes.FERIAS)
-                                Modulo.MURAL -> abrir(Routes.COMUNICADOS)
                                 Modulo.BENEFICIOS -> abrir(Routes.BENEFICIOS)
                                 Modulo.DOWNLOADS -> abrir(Routes.DOWNLOADS)
                                 Modulo.DOCUMENTOS -> navController.irParaAba(Routes.DOCUMENTOS)

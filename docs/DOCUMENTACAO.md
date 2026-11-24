@@ -1262,3 +1262,10 @@ No emulador, os diálogos "Solicitar férias" e "Solicitar correção" (e os dem
 ### Correção no mesmo dia (23/11/2026): sentido do `status` da avaliação
 
 A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contrário: o Front-end cadastra a avaliação com `status` 0 e o Back-end (`encerrarAvaliacoesVencidas`) passa para 1 quando o prazo vence; o Front-end também mostra "Encerrada" quando `status` é 1. Com a leitura invertida, toda avaliação cadastrada pelo RH era descartada e o app continuava com "Não há avaliação pendente". Agora só `status` 1 exclui; o prazo continua decidindo o resto. Teste ajustado.
+
+## Atualização de 24/11/2026 (Mural de avisos removido)
+
+- **Removido do app:** o módulo "Mural de avisos" (tela, rota `comunicados`, `ComunicadosViewModel`, modelo `Comunicado`, método `comunicados()` do repositório e do mock), o atalho do menu "Mais" e a seção "Comunicados" da Home.
+- **Documentos:** o app não mudou para o download. O `GET /documento/download/{id}` já funciona; o erro "Arquivo indisponível no servidor. Procure o RH." vinha de arquivos físicos ausentes no Back-end (os caminhos de `tbl_documentos` apontavam para arquivos que não existiam em `uploads/documentos`).
+- **Referências antigas ao mural** neste documento e no README (seções de Sprint 4, `HomeViewModel`, `NotificacoesScreen`, tabela de rotas sem contrato) descrevem o estado anterior a 24/11/2026.
+

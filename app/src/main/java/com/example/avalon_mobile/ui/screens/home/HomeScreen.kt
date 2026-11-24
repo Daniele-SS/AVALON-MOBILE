@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avalon_mobile.R
-import com.example.avalon_mobile.ui.components.AvalonCard
 import com.example.avalon_mobile.ui.components.AvalonWordmark
 import com.example.avalon_mobile.ui.components.GradeAdaptavel
 import com.example.avalon_mobile.ui.components.LoadStateContent
@@ -68,7 +66,6 @@ import com.example.avalon_mobile.ui.theme.Success
 import com.example.avalon_mobile.ui.theme.SuccessContainer
 import com.example.avalon_mobile.ui.theme.SuccessText
 import com.example.avalon_mobile.ui.theme.TextPrimary
-import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.ui.theme.WarningBorder
 import com.example.avalon_mobile.ui.theme.WarningContainer
 import com.example.avalon_mobile.ui.theme.WarningText
@@ -89,7 +86,6 @@ enum class Atalho(val label: String, val icon: Int) {
 fun HomeScreen(
     onAtalho: (Atalho) -> Unit,
     onNotificacoes: () -> Unit,
-    onComunicados: () -> Unit,
     viewModel: HomeViewModel = avalonViewModel { c, _ -> HomeViewModel(c.avalonRepository, c.authRepository) }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -125,23 +121,6 @@ fun HomeScreen(
                 SectionTitle("Acessos rápidos", Modifier.padding(horizontal = 26.dp))
                 Spacer(Modifier.height(8.dp))
                 AtalhosGrid(onAtalho)
-                Spacer(Modifier.height(24.dp))
-                SectionTitle("Comunicados", Modifier.padding(horizontal = 26.dp))
-                Spacer(Modifier.height(6.dp))
-                Column(Modifier.padding(horizontal = 26.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (ui.comunicados.isEmpty()) Text("Nenhum comunicado no momento.", fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
-                    ui.comunicados.take(2).forEach { c ->
-                        AvalonCard(onClick = onComunicados) {
-                            Text(c.titulo, fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                            Spacer(Modifier.height(10.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(painterResource(R.drawable.ic_megaphone), null, tint = TextSecondary, modifier = Modifier.size(20.dp))
-                                Spacer(Modifier.width(14.dp))
-                                Text(c.detalhe, fontFamily = Inter, fontSize = 13.sp, color = TextSecondary)
-                            }
-                        }
-                    }
-                }
             }
         }
     }

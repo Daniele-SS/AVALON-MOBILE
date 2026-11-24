@@ -46,7 +46,6 @@ enum class Modulo(val label: String, val icon: Int) {
     NOTIFICACOES("Notificações", R.drawable.ic_bell),
     RISCOS("Riscos psicossociais", R.drawable.ic_shield),
     FERIAS("Férias", R.drawable.ic_umbrella_off),
-    MURAL("Mural de avisos", R.drawable.ic_users),
     BENEFICIOS("Benefícios", R.drawable.ic_gift),
     DOWNLOADS("Downloads", R.drawable.ic_cloud_download),
     DOCUMENTOS("Documentos", R.drawable.ic_file),

@@ -8,7 +8,6 @@ import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.Beneficio
 import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.Colaborador
-import com.example.avalon_mobile.model.Comunicado
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DashboardColaborador
 import com.example.avalon_mobile.model.DiaSemana
@@ -146,8 +145,6 @@ class MockAvalonRepository(
             )
         )
     )
-
-    override suspend fun comunicados() = ok(MockData.comunicados)
 
     override suspend fun perfil() = ok(
         usuarioLogado()
@@ -333,9 +330,5 @@ private object MockData {
         Notificacao(3, 4, "FERIAS", "Férias em análise", "Seu pedido de 15 a 24/12 foi encaminhado ao gestor.", lida = false, dataHora = "Hoje, 08:40"),
         Notificacao(2, 4, "FEEDBACK", "Novo feedback recebido", "Renata Costa enviou um reconhecimento.", lida = true, dataHora = "Ontem, 17:25"),
         Notificacao(1, 4, "DOCUMENTO", "Documento disponível", "Contracheque — Agosto 2026 já pode ser baixado.", lida = true, dataHora = "Ontem, 10:03")
-    )
-
-    val comunicados = listOf(
-        Comunicado(1, "Encontro mensal do time", "Dia 18, às 16h • Auditório principal")
     )
 }

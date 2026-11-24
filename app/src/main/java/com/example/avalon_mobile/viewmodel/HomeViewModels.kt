@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.avalon_mobile.data.AppResult
 import com.example.avalon_mobile.data.repository.AuthRepository
 import com.example.avalon_mobile.data.repository.AvalonRepository
-import com.example.avalon_mobile.model.Comunicado
 import com.example.avalon_mobile.model.Notificacao
 import com.example.avalon_mobile.ui.components.LoadState
 import kotlinx.coroutines.async
@@ -19,11 +18,10 @@ data class HomeUi(
     val pesquisasPendentes: Int,
     val feriasPendentes: Int,
     val feedbacksNovos: Int,
-    val notificacoesNaoLidas: Int,
-    val comunicados: List<Comunicado>
+    val notificacoesNaoLidas: Int
 )
 
-/** Dashboard principal e atalhos (Sprint 4 — 6.3.1 e 6.3.3) + mural de avisos (6.3.2). */
+/** Dashboard principal e atalhos (Sprint 4 — 6.3.1 e 6.3.3). */
 class HomeViewModel(
     private val repository: AvalonRepository,
     private val auth: AuthRepository
@@ -38,13 +36,11 @@ class HomeViewModel(
             val dashboard = async { repository.dashboard() }
             val feedbacks = async { repository.feedbacks() }
             val notificacoes = async { repository.notificacoes() }
-            val comunicados = async { repository.comunicados() }
             val perfil = async { repository.perfil() }
             _state.value = when (val d = dashboard.await()) {
                 is AppResult.Failure -> LoadState.Error(d.error.mensagem)
                 is AppResult.Success -> {
                     val c = d.data.colaborador
-                    val soReais = repository.homeSoDadosReais
                     LoadState.Content(
                         HomeUi(
                             nomeCompleto = (perfil.await() as? AppResult.Success)?.data?.nome
@@ -53,8 +49,7 @@ class HomeViewModel(
                             pesquisasPendentes = (c?.pesquisasPendentes ?: 0) + (c?.avaliacoesPendentes ?: 0),
                             feriasPendentes = c?.feriasEmAndamento ?: 0,
                             feedbacksNovos = (feedbacks.await() as? AppResult.Success)?.data?.count { it.lido == false } ?: 0,
-                            notificacoesNaoLidas = (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0,
-                            comunicados = if (soReais) emptyList() else (comunicados.await() as? AppResult.Success)?.data.orEmpty()
+                            notificacoesNaoLidas = (notificacoes.await() as? AppResult.Success)?.data?.count { it.lida == false } ?: 0
                         )
                     )
                 }
@@ -87,17 +82,5 @@ class NotificacoesViewModel(private val repository: AvalonRepository) : ViewMode
                 is AppResult.Failure -> LoadState.Error(r.error.mensagem)
             }
         }
-    }
-}
-
-class ComunicadosViewModel(private val repository: AvalonRepository) : ViewModel() {
-    private val _state = MutableStateFlow<LoadState<List<Comunicado>>>(LoadState.Loading)
-    val state: StateFlow<LoadState<List<Comunicado>>> = _state.asStateFlow()
-
-    init { carregar() }
-
-    fun carregar() {
-        _state.value = LoadState.Loading
-        viewModelScope.launch { _state.value = repository.comunicados().toLoadState() }
     }
 }

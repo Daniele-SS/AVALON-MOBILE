@@ -5,7 +5,6 @@ import com.example.avalon_mobile.model.Avaliacao
 import com.example.avalon_mobile.model.AvaliacaoPergunta
 import com.example.avalon_mobile.model.BeneficioItem
 import com.example.avalon_mobile.model.Colaborador
-import com.example.avalon_mobile.model.Comunicado
 import com.example.avalon_mobile.model.Dashboard
 import com.example.avalon_mobile.model.DiaSemana
 import com.example.avalon_mobile.model.Documento
@@ -42,7 +41,6 @@ interface AvalonRepository {
     val homeSoDadosReais: Boolean get() = false
 
     suspend fun dashboard(): AppResult<Dashboard>
-    suspend fun comunicados(): AppResult<List<Comunicado>>
 
     suspend fun perfil(): AppResult<Colaborador>
     suspend fun solicitarCorrecao(solicitacao: SolicitacaoCorrecao): AppResult<Unit>
