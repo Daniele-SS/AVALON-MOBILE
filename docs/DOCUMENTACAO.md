@@ -1277,3 +1277,8 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - **Fora do app agora:** o texto "Versão do aplicativo" que ficava no rodapé do "Mais".
 - As referências a "Mais", "Downloads" e "Modulo" nas seções anteriores deste documento e no Plano de Teste descrevem o estado anterior a 24/11/2026.
 
+## Atualização de 24/11/2026 (texto do Alto contraste)
+
+- Na tela Aparência e acessibilidade, a descrição do Alto contraste deixou de citar "7:1 (WCAG AAA)" e passou a dizer: "Deixa textos e bordas mais fortes e nítidos, facilitando a leitura para quem tem baixa visão."
+- O critério técnico não mudou: as paletas de alto contraste continuam com texto >= 7:1 (WCAG 2.1 nível AAA), como medido na seção de contraste deste documento.
+

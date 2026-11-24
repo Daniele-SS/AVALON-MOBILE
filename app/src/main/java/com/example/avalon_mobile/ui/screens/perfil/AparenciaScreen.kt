@@ -78,7 +78,7 @@ fun AparenciaScreen(aparencia: AparenciaState, onBack: () -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text("Alto contraste", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextStrong)
                         Text(
-                            "Texto e bordas com contraste mínimo de 7:1 (WCAG AAA).",
+                            "Deixa textos e bordas mais fortes e nítidos, facilitando a leitura para quem tem baixa visão.",
                             fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
                         )
                     }
