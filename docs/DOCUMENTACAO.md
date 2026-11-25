@@ -1314,3 +1314,4 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - Dias anteriores a amanhã ficam desabilitados (mesma regra de antes). O contador "N dias selecionados" e o aviso vermelho acima do saldo continuam iguais; o envio segue barrado no ViewModel.
 - As datas do componente vêm em UTC; a conversão usa `ZoneOffset.UTC` para não deslocar o dia. O calendário segue as 4 paletas pelo `MaterialTheme`.
 - Arquivo: `ui/screens/ferias/SolicitarFeriasSheet.kt`. Assinatura de `SolicitarFeriasSheet` inalterada.
+- **Ajuste (25/11):** o cabeçalho padrão do `DateRangePicker` ("Data de início – Data de término", traduzido pelo sistema) quebrava "Data de término" em duas linhas em telas estreitas. Foi trocado por um cabeçalho próprio de linha única (`maxLines = 1`, `softWrap = false`, fonte 15sp) que mostra os rótulos até as datas serem escolhidas e depois as datas (`dd/mm/aaaa`).
