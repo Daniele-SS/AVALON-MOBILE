@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonTextField
@@ -197,18 +196,18 @@ private fun CalendarioPeriodo(
             headline = {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         inicioEscolhido?.let { Datas.dataCurta(it.toString()) } ?: "Data de início",
-                        modifier = Modifier.weight(1f), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
+                        maxLines = 1, softWrap = false,
                         fontFamily = Inter, fontSize = 15.sp, color = TextPrimary
                     )
                     Text("–", fontFamily = Inter, fontSize = 15.sp, color = TextSecondary)
                     Text(
                         fimEscolhido?.let { Datas.dataCurta(it.toString()) } ?: "Data de término",
-                        modifier = Modifier.weight(1f), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
+                        maxLines = 1, softWrap = false,
                         fontFamily = Inter, fontSize = 15.sp, color = TextPrimary
                     )
                 }
