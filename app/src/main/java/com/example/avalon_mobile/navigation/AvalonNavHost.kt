@@ -106,11 +106,25 @@ private fun MainTab.route() = when (this) {
     MainTab.PERFIL -> Routes.PERFIL
 }
 
-/** Troca de aba preservando o estado de cada uma; após o login a raiz da pilha é sempre a Home. */
-private fun NavHostController.irParaAba(route: String) = navigate(route) {
-    popUpTo(Routes.HOME) { saveState = true }
-    launchSingleTop = true
-    restoreState = true
+/**
+ * Toca numa aba da barra inferior: sempre abre a tela inicial da aba, nunca uma subtela que tenha ficado aberta nela.
+ * Não se usa saveState/restoreState de propósito: eles restauravam a subtela descartada (ex.: Férias dentro da Home),
+ * e o toque em "Home" não saía dela. Após o login a raiz da pilha é sempre a Home.
+ */
+private fun NavHostController.irParaAba(route: String) {
+    if (route == Routes.HOME) {
+        if (!popBackStack(Routes.HOME, inclusive = false)) {
+            navigate(Routes.HOME) {
+                popUpTo(graph.id) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+        return
+    }
+    navigate(route) {
+        popUpTo(Routes.HOME)
+        launchSingleTop = true
+    }
 }
 
 /** Limpa a pilha inteira (login/logout/sessão expirada). */

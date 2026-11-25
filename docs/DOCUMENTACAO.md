@@ -1300,3 +1300,10 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 
 - Perfil > "Sair da Conta": nos temas Claro e Escuro nada mudou. No Claro de alto contraste o item ganhou fundo rosado (`#FFE5E5`) e no Escuro de alto contraste fundo avermelhado escuro (`#3A1A1F`), os mesmos tons dos temas base, com contorno de 2dp em `Danger` (`SairFundo` e `SairBordaLargura` em `ui/theme/Color.kt`).
 - `DangerContainer` do alto contraste (branco/preto) continua igual para os demais usos (erro do login e da pesquisa).
+
+## Atualização de 25/11/2026 (barra inferior sempre volta ao início da aba)
+
+- Bug: dentro de uma subtela da Home (ex.: Férias, Benefícios, Feedbacks), tocar em "Home" na barra inferior não saía dela.
+- Causa: `irParaAba` usava `popUpTo(HOME) { saveState = true }` com `restoreState = true`; ao tocar em Home o Navigation restaurava a subtela que acabara de descartar.
+- Correção (`navigation/AvalonNavHost.kt`): `irParaAba` não salva nem restaura estado. "Home" faz `popBackStack(HOME)`; Pesquisas, Documentos e Perfil abrem sempre a própria tela inicial, mesmo se houver subtela aberta na aba (ex.: Perfil > Jornada > toque em Perfil abre o Perfil).
+- Efeito colateral aceito: a posição de rolagem de uma aba não é mais lembrada ao voltar a ela.
