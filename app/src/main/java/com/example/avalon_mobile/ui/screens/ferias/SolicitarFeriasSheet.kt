@@ -12,6 +12,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.OutlinedButton
@@ -31,11 +32,13 @@ import androidx.compose.ui.unit.sp
 import com.example.avalon_mobile.ui.components.AvalonTextField
 import com.example.avalon_mobile.ui.components.ConfirmacaoEnvioDialog
 import com.example.avalon_mobile.ui.components.bordaDialogo
+import com.example.avalon_mobile.ui.theme.BorderSoft
 import com.example.avalon_mobile.ui.theme.Danger
 import com.example.avalon_mobile.ui.theme.Inter
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.Surface
 import com.example.avalon_mobile.ui.theme.TextPrimary
+import com.example.avalon_mobile.ui.theme.TextMuted
 import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.viewmodel.SolicitacaoState
@@ -154,9 +157,29 @@ private fun CalendarioPeriodo(
     val inicioEscolhido = estado.selectedStartDateMillis?.emData()
     val fimEscolhido = estado.selectedEndDateMillis?.emData()
 
+    // O tema do app não define surfaceContainerHigh/secondaryContainer, que o calendário usa por padrão (lilás):
+    // as cores são passadas explicitamente, para o corpo, o rodapé e o intervalo seguirem as 4 paletas.
+    val cores = DatePickerDefaults.colors(
+        containerColor = Surface,
+        titleContentColor = TextPrimary,
+        headlineContentColor = TextPrimary,
+        weekdayContentColor = TextSecondary,
+        subheadContentColor = TextSecondary,
+        navigationContentColor = TextPrimary,
+        dayContentColor = TextPrimary,
+        disabledDayContentColor = TextMuted,
+        selectedDayContainerColor = Navy,
+        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+        todayContentColor = TextPrimary,
+        todayDateBorderColor = Navy,
+        dayInSelectionRangeContainerColor = Navy.copy(alpha = 0.16f),
+        dayInSelectionRangeContentColor = TextPrimary,
+        dividerColor = BorderSoft
+    )
+
     DatePickerDialog(
         onDismissRequest = onCancelar,
-        colors = DatePickerDefaults.colors(containerColor = Surface),
+        colors = cores,
         confirmButton = {
             TextButton(
                 onClick = { if (inicioEscolhido != null && fimEscolhido != null) onConfirmar(inicioEscolhido, fimEscolhido) },
@@ -168,6 +191,7 @@ private fun CalendarioPeriodo(
         DateRangePicker(
             state = estado,
             modifier = Modifier.height(500.dp),
+            colors = cores,
             title = { Text("Selecione o período", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = TextPrimary, modifier = Modifier.padding(start = 24.dp, top = 16.dp)) },
             // Cabeçalho próprio: o padrão do Material 3 quebra "Data de término" em duas linhas em telas estreitas.
             headline = {
