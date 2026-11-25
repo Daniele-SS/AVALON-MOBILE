@@ -1,12 +1,18 @@
 package com.example.avalon_mobile.ui.screens.ferias
 
-import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -16,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,12 +37,13 @@ import com.example.avalon_mobile.ui.theme.TextSecondary
 import com.example.avalon_mobile.util.Datas
 import com.example.avalon_mobile.viewmodel.SolicitacaoState
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.Instant
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
 /**
  * Formulário de solicitação de férias (o protótipo só tem o botão; os campos seguem o contrato `FeriasInput`).
- * Usa apenas componentes estáveis: AlertDialog do Compose e o DatePickerDialog nativo do Android.
+ * O período (início e fim) é escolhido de uma vez em um único calendário (DateRangePicker do Material 3).
  */
 @Composable
 fun SolicitarFeriasSheet(
@@ -46,23 +52,13 @@ fun SolicitarFeriasSheet(
     onEnviar: (LocalDate, LocalDate, String) -> Unit,
     onFechar: () -> Unit
 ) {
-    val context = LocalContext.current
     var inicioIso by rememberSaveable { mutableStateOf<String?>(null) }
     var fimIso by rememberSaveable { mutableStateOf<String?>(null) }
     var observacao by rememberSaveable { mutableStateOf("") }
     val inicio = inicioIso?.let(LocalDate::parse)
     val fim = fimIso?.let(LocalDate::parse)
 
-    fun escolherData(inicial: LocalDate, minima: LocalDate, aoEscolher: (LocalDate) -> Unit) {
-        DatePickerDialog(
-            context,
-            { _, ano, mes, dia -> aoEscolher(LocalDate.of(ano, mes + 1, dia)) },
-            inicial.year, inicial.monthValue - 1, inicial.dayOfMonth
-        ).apply {
-            datePicker.minDate = minima.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        }.show()
-    }
-
+    var calendarioAberto by rememberSaveable { mutableStateOf(false) }
     val amanha = LocalDate.now().plusDays(1)
 
     if (state is SolicitacaoState.Enviada) {
@@ -74,6 +70,16 @@ fun SolicitarFeriasSheet(
         return
     }
 
+    if (calendarioAberto) {
+        CalendarioPeriodo(
+            inicio = inicio,
+            fim = fim,
+            primeiroDiaPermitido = amanha,
+            onConfirmar = { i, f -> inicioIso = i.toString(); fimIso = f.toString(); calendarioAberto = false },
+            onCancelar = { calendarioAberto = false }
+        )
+    }
+
     AlertDialog(
         modifier = Modifier.bordaDialogo(),
         onDismissRequest = onFechar,
@@ -81,18 +87,7 @@ fun SolicitarFeriasSheet(
         title = { Text("Solicitar férias", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CampoData("Início", inicio, Modifier.weight(1f)) {
-                        escolherData(inicio ?: amanha, amanha) { d ->
-                            inicioIso = d.toString()
-                            if (fim != null && fim.isBefore(d)) fimIso = null
-                        }
-                    }
-                    CampoData("Fim", fim, Modifier.weight(1f)) {
-                        val minimo = inicio ?: amanha
-                        escolherData(fim ?: minimo.plusDays(4), minimo) { d -> fimIso = d.toString() }
-                    }
-                }
+                CampoPeriodo(inicio, fim) { calendarioAberto = true }
                 if (inicio != null && fim != null) {
                     val dias = ChronoUnit.DAYS.between(inicio, fim) + 1
                     // Vermelho quando o período pedido passa do saldo disponível (o envio também é barrado no ViewModel).
@@ -116,11 +111,62 @@ fun SolicitarFeriasSheet(
 }
 
 @Composable
-private fun CampoData(rotulo: String, data: LocalDate?, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier) {
-        Text(rotulo, fontFamily = Inter, fontSize = 12.sp, color = TextSecondary)
+private fun CampoPeriodo(inicio: LocalDate?, fim: LocalDate?, onClick: () -> Unit) {
+    Column {
+        Text("Período", fontFamily = Inter, fontSize = 12.sp, color = TextSecondary)
         OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
-            Text(data?.let { Datas.dataCurta(it.toString()) } ?: "Selecionar", fontFamily = Inter, color = TextPrimary)
+            val texto = if (inicio != null && fim != null) "${Datas.dataCurta(inicio.toString())}  a  ${Datas.dataCurta(fim.toString())}"
+            else "Selecionar período"
+            Text(texto, fontFamily = Inter, color = TextPrimary)
         }
+    }
+}
+
+/**
+ * Calendário único com seleção de intervalo: toque na data inicial e, em seguida, na final.
+ * As datas do componente vêm em UTC (meia-noite); a conversão usa [ZoneOffset.UTC] para não deslocar o dia.
+ * Dias anteriores a [primeiroDiaPermitido] ficam desabilitados.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CalendarioPeriodo(
+    inicio: LocalDate?,
+    fim: LocalDate?,
+    primeiroDiaPermitido: LocalDate,
+    onConfirmar: (LocalDate, LocalDate) -> Unit,
+    onCancelar: () -> Unit
+) {
+    fun LocalDate.emMillis() = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    fun Long.emData() = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
+
+    val estado = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = inicio?.emMillis(),
+        initialSelectedEndDateMillis = fim?.emMillis(),
+        initialDisplayedMonthMillis = (inicio ?: primeiroDiaPermitido).emMillis(),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long) = !utcTimeMillis.emData().isBefore(primeiroDiaPermitido)
+            override fun isSelectableYear(year: Int) = year >= primeiroDiaPermitido.year
+        }
+    )
+    val inicioEscolhido = estado.selectedStartDateMillis?.emData()
+    val fimEscolhido = estado.selectedEndDateMillis?.emData()
+
+    DatePickerDialog(
+        onDismissRequest = onCancelar,
+        colors = DatePickerDefaults.colors(containerColor = Surface),
+        confirmButton = {
+            TextButton(
+                onClick = { if (inicioEscolhido != null && fimEscolhido != null) onConfirmar(inicioEscolhido, fimEscolhido) },
+                enabled = inicioEscolhido != null && fimEscolhido != null
+            ) { Text("Confirmar", color = Navy, fontFamily = Inter) }
+        },
+        dismissButton = { TextButton(onClick = onCancelar) { Text("Cancelar", color = TextSecondary, fontFamily = Inter) } }
+    ) {
+        DateRangePicker(
+            state = estado,
+            modifier = Modifier.height(500.dp),
+            title = { Text("Selecione o período", fontFamily = Inter, fontWeight = FontWeight.SemiBold, color = TextPrimary, modifier = Modifier.padding(start = 24.dp, top = 16.dp)) },
+            showModeToggle = false
+        )
     }
 }

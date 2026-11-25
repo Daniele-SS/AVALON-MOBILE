@@ -1307,3 +1307,10 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - Causa: `irParaAba` usava `popUpTo(HOME) { saveState = true }` com `restoreState = true`; ao tocar em Home o Navigation restaurava a subtela que acabara de descartar.
 - Correção (`navigation/AvalonNavHost.kt`): `irParaAba` não salva nem restaura estado. "Home" faz `popBackStack(HOME)`; Pesquisas, Documentos e Perfil abrem sempre a própria tela inicial, mesmo se houver subtela aberta na aba (ex.: Perfil > Jornada > toque em Perfil abre o Perfil).
 - Efeito colateral aceito: a posição de rolagem de uma aba não é mais lembrada ao voltar a ela.
+
+## Atualização de 25/11/2026 (férias: período em um único calendário)
+
+- Solicitar férias: os dois botões separados (Início e Fim, cada um abrindo um `DatePickerDialog` nativo do Android) foram trocados por um único campo "Período" que abre um calendário de intervalo (`DateRangePicker` do Material 3, dentro de `DatePickerDialog` do Material 3). O usuário toca na data inicial e depois na final, e confirma.
+- Dias anteriores a amanhã ficam desabilitados (mesma regra de antes). O contador "N dias selecionados" e o aviso vermelho acima do saldo continuam iguais; o envio segue barrado no ViewModel.
+- As datas do componente vêm em UTC; a conversão usa `ZoneOffset.UTC` para não deslocar o dia. O calendário segue as 4 paletas pelo `MaterialTheme`.
+- Arquivo: `ui/screens/ferias/SolicitarFeriasSheet.kt`. Assinatura de `SolicitarFeriasSheet` inalterada.
