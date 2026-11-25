@@ -1316,3 +1316,9 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - Arquivo: `ui/screens/ferias/SolicitarFeriasSheet.kt`. Assinatura de `SolicitarFeriasSheet` inalterada.
 - **Ajuste (25/11):** o cabeçalho padrão do `DateRangePicker` ("Data de início – Data de término") quebrava em telas estreitas e, depois, ficou redundante com o título. Foi removido (`headline = null`): fica só o título "Selecione o período"; as datas escolhidas aparecem no campo "Período" após confirmar.
 - **Ajuste (25/11, cores):** o calendário saía com o corpo lilás e o rodapé branco, porque o tema do app não define `surfaceContainerHigh` nem `secondaryContainer` (padrões do Material 3). `CalendarioPeriodo` passa agora um `DatePickerDefaults.colors(...)` explícito, ao diálogo e ao `DateRangePicker`: fundo `Surface`, dia selecionado `Navy`, intervalo `Navy` a 16%, dias bloqueados `TextMuted`, hoje com borda `Navy`.
+
+## Atualização de 25/11/2026 (avaliação psicossocial: introdução no alto contraste)
+
+- Tela de introdução de "Riscos psicossociais": nos temas Claro e Escuro nada mudou. Nos modos de alto contraste o quadrado do ícone e os dois quadros (verde e laranja) perdiam as cores, porque os tokens `BadgeBlueBg`, `BadgeGreenBg` e `BadgeOrangeBg` são branco/preto puros nessas paletas.
+- Novos tokens em `ui/theme/Color.kt` (`IntroIconeFundo`, `IntroVerdeFundo`, `IntroLaranjaFundo`, `IntroBordaLargura`): no HC claro usam os fundos do tema Claro e no HC escuro os do tema Escuro; o ícone e os quadros ganham contorno de 2dp (cor do texto/ícone de cada quadro; `Navy` no ícone). Os tokens `Badge*Bg` não foram alterados (chips e demais telas seguem iguais).
+- Arquivo: `ui/screens/pesquisa/AvaliacaoScreen.kt` (`Introducao` e `Quadro`).

@@ -2,6 +2,7 @@ package com.example.avalon_mobile.ui.screens.pesquisa
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,12 +35,13 @@ import com.example.avalon_mobile.ui.components.AvalonPrimaryButton
 import com.example.avalon_mobile.ui.components.EmptyState
 import com.example.avalon_mobile.ui.components.LoadStateContent
 import com.example.avalon_mobile.ui.theme.Background
-import com.example.avalon_mobile.ui.theme.BadgeBlueBg
-import com.example.avalon_mobile.ui.theme.BadgeGreenBg
 import com.example.avalon_mobile.ui.theme.BadgeGreenText
-import com.example.avalon_mobile.ui.theme.BadgeOrangeBg
 import com.example.avalon_mobile.ui.theme.BadgeOrangeText
 import com.example.avalon_mobile.ui.theme.Inter
+import com.example.avalon_mobile.ui.theme.IntroBordaLargura
+import com.example.avalon_mobile.ui.theme.IntroIconeFundo
+import com.example.avalon_mobile.ui.theme.IntroLaranjaFundo
+import com.example.avalon_mobile.ui.theme.IntroVerdeFundo
 import com.example.avalon_mobile.ui.theme.Navy
 import com.example.avalon_mobile.ui.theme.TextPrimary
 import com.example.avalon_mobile.ui.theme.TextSecondary
@@ -80,7 +82,12 @@ private fun Introducao(ui: AvaliacaoUi, onIniciar: () -> Unit) {
         Modifier.fillMaxSize().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        Box(Modifier.size(70.dp).background(BadgeBlueBg, RoundedCornerShape(18.dp)), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.size(70.dp)
+                .background(IntroIconeFundo, RoundedCornerShape(18.dp))
+                .then(if (IntroBordaLargura > 0.dp) Modifier.border(IntroBordaLargura, Navy, RoundedCornerShape(18.dp)) else Modifier),
+            contentAlignment = Alignment.Center
+        ) {
             Icon(painterResource(R.drawable.ic_feather), null, tint = Navy, modifier = Modifier.size(40.dp))
         }
         Text("Fatores de risco psicossocial", fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, color = TextPrimary)
@@ -88,10 +95,10 @@ private fun Introducao(ui: AvaliacaoUi, onIniciar: () -> Unit) {
             ui.avaliacao.descricao ?: "Esta avaliação faz parte das ações da empresa para acompanhar o ambiente de trabalho, conforme a NR-1. Leva cerca de 5 minutos.",
             fontFamily = Inter, fontSize = 17.sp, color = TextSecondary
         )
-        Quadro(R.drawable.ic_shield_check, BadgeGreenBg, BadgeGreenText,
+        Quadro(R.drawable.ic_shield_check, IntroVerdeFundo, BadgeGreenText,
             "Suas respostas são analisadas apenas de forma consolidada, junto com as de outros colaboradores.")
         // RF 1.1.28: nenhuma classificação individual de condição psicológica/médica.
-        Quadro(R.drawable.ic_shield_alert, BadgeOrangeBg, BadgeOrangeText,
+        Quadro(R.drawable.ic_shield_alert, IntroLaranjaFundo, BadgeOrangeText,
             "Este questionário não gera diagnóstico, classificação ou avaliação individual. Não substitui acompanhamento profissional de saúde.")
         ui.erro?.let { Aviso(it, erro = true) }
         AvalonPrimaryButton("Iniciar avaliação", onClick = onIniciar, loading = ui.carregandoPerguntas)
@@ -100,7 +107,13 @@ private fun Introducao(ui: AvaliacaoUi, onIniciar: () -> Unit) {
 
 @Composable
 private fun Quadro(icon: Int, bg: Color, fg: Color, texto: String) {
-    Row(Modifier.fillMaxWidth().background(bg, RoundedCornerShape(16.dp)).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        Modifier.fillMaxWidth()
+            .background(bg, RoundedCornerShape(16.dp))
+            .then(if (IntroBordaLargura > 0.dp) Modifier.border(IntroBordaLargura, fg, RoundedCornerShape(16.dp)) else Modifier)
+            .padding(18.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Icon(painterResource(icon), null, tint = fg, modifier = Modifier.size(36.dp))
         Spacer(Modifier.width(14.dp))
         Text(texto, fontFamily = Inter, fontSize = 15.sp, color = TextPrimary)

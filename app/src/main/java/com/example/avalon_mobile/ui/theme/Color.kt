@@ -360,6 +360,20 @@ val SairFundo: Color get() = when {
 }
 val SairBordaLargura: Dp get() = if (Paletas.altoContraste) 2.dp else 0.dp
 
+// Tela de introdução da avaliação psicossocial: nos temas Claro e Escuro o ícone e os dois quadros usam os tokens Badge*Bg.
+// No alto contraste esses tokens são branco/preto puros (usados em chips com borda), então a tela perderia as cores.
+// Por isso, no alto contraste, os fundos são os mesmos dos temas base (Claro para o HC claro, Escuro para o HC escuro)
+// e os quadros ganham contorno de 2dp na cor do texto/ícone (que no HC já é a de maior contraste).
+private fun baseDoAltoContraste(): Paleta? = when {
+    Paletas.atual === Paletas.ClaroAltoContraste -> Paletas.Claro
+    Paletas.atual === Paletas.EscuroAltoContraste -> Paletas.Escuro
+    else -> null
+}
+val IntroIconeFundo: Color get() = baseDoAltoContraste()?.badgeBlueBg ?: BadgeBlueBg
+val IntroVerdeFundo: Color get() = baseDoAltoContraste()?.badgeGreenBg ?: BadgeGreenBg
+val IntroLaranjaFundo: Color get() = baseDoAltoContraste()?.badgeOrangeBg ?: BadgeOrangeBg
+val IntroBordaLargura: Dp get() = if (Paletas.altoContraste) 2.dp else 0.dp
+
 // Dia de hoje na Jornada: azul-marinho com texto branco no tema claro; no escuro, preenchimento claro com texto escuro,
 // para se destacar dos dias de trabalho e de folga, que ficam escuros.
 val DiaHoje: Color get() = Paletas.atual.diaHoje
