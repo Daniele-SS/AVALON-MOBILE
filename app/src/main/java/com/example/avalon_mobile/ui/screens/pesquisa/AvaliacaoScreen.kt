@@ -143,7 +143,7 @@ private fun Perguntas(ui: AvaliacaoUi, viewModel: AvaliacaoViewModel) {
             loading = ui.enviando
         )
         Text(
-            "Respostas anônimas: enviadas em conjunto, sem vínculo com sua identidade.",
+            "Suas respostas são analisadas de forma consolidada.",
             Modifier.fillMaxWidth().padding(top = 4.dp),
             fontFamily = Inter, fontSize = 12.sp, color = TextSecondary
         )
