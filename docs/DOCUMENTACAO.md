@@ -1322,3 +1322,8 @@ A primeira versão tratava `status` verdadeiro como "ativa". No banco é o contr
 - Tela de introdução de "Riscos psicossociais": nos temas Claro e Escuro nada mudou. Nos modos de alto contraste o quadrado do ícone e os dois quadros (verde e laranja) perdiam as cores, porque os tokens `BadgeBlueBg`, `BadgeGreenBg` e `BadgeOrangeBg` são branco/preto puros nessas paletas.
 - Novos tokens em `ui/theme/Color.kt` (`IntroIconeFundo`, `IntroVerdeFundo`, `IntroLaranjaFundo`, `IntroBordaLargura`): no HC claro usam os fundos do tema Claro e no HC escuro os do tema Escuro; o ícone e os quadros ganham contorno de 2dp (cor do texto/ícone de cada quadro; `Navy` no ícone). Os tokens `Badge*Bg` não foram alterados (chips e demais telas seguem iguais).
 - Arquivo: `ui/screens/pesquisa/AvaliacaoScreen.kt` (`Introducao` e `Quadro`).
+
+## Atualização de 26/11/2026 (texto de sigilo na avaliação psicossocial)
+
+- Tela de perguntas da avaliação (`AvaliacaoScreen.kt`): o rodapé "Respostas anônimas: enviadas em conjunto, sem vínculo com sua identidade." foi trocado por "Suas respostas são analisadas de forma consolidada." (mesma frase da tela de introdução).
+- Motivo: o banco guarda o vínculo resposta → participação → colaborador (`tbl_avaliacao_resposta.id_avaliacao_participacao`), usado para impedir resposta duplicada; o texto antigo afirmava ausência de vínculo.
